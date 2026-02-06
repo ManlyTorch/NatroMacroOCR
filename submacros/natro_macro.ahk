@@ -2039,7 +2039,6 @@ hBitmapsSBT := Map(), hBitmapsSBT.CaseSense := 0
 #Include "boost\bitmaps.ahk"
 #Include "reconnect\bitmaps.ahk"
 #Include "fdc\bitmaps.ahk"
-#Include "offset\bitmaps.ahk"
 #Include "perfstats\bitmaps.ahk"
 #Include "gui\blendershrine_bitmaps.ahk"
 #Include "quests\bitmaps.ahk"
