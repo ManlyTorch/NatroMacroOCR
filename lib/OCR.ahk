@@ -1,4 +1,4 @@
-﻿#Requires AutoHotkey v2
+#Requires AutoHotkey v2
 
 ProcessImage(fileName, whiteThreshold := 200, delta := 30) {
     if SubStr(fileName, -4) == ".png" {
@@ -1611,7 +1611,10 @@ class OCR {
         return cls
     }
     
-    static CreateHString(str) => (DllCall("Combase.dll\WindowsCreateString", "wstr", str, "uint", StrLen(str), "ptr*", &hString:=0), hString)
+    static CreateHString(str, &hString:="")
+    {
+    	DllCall("Combase.dll\WindowsCreateString", "wstr", str, "uint", StrLen(str), "ptr*", &hString:=0)
+    }
     
     static DeleteHString(hString) => DllCall("Combase.dll\WindowsDeleteString", "ptr", hString)
     
