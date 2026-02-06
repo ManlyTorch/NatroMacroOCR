@@ -41,6 +41,94 @@ ProcessImage(fileName, whiteThreshold := 200, delta := 30) {
     return fileName . "_processed.png"
 }
 
+LevenshteinDistance(s1, s2) {
+	len1 := StrLen(s1), len2 := StrLen(s2)
+	s1 := StrSplit(s1), s2 := StrSplit(s2)
+	d := {}, d.0 := { 0: 0 }
+	Loop len1
+		d.%A_Index% := { 0: A_Index }
+	Loop len2
+		d.0.%A_Index% := A_Index
+	Loop len1 {
+		i := A_Index
+		Loop len2 {
+			j := A_Index  ; only for simplicity
+			cost := s1[i] != s2[j]
+			d.%i%.%j% := Min(d.%i - 1%.%j% + 1, d.%i%.%j - 1% + 1, d.%i - 1%.%j - 1% + cost)
+		}
+	}
+	return d.%len1%.%len2%
+}
+
+findTextInRegion(item, img:="", x:=0, y:=0, w:=0, h:=0, absolute:=False) {
+	wordsList := {}
+	if img != "" {
+		wordsList := OCR.FromFile(img)
+	} else {
+		wordsList := OCR.FromRect(x, y, w, h)
+	}
+
+	exactMatch := False
+	items := StrSplit(item, " ")
+	itemName := items[1]
+	region := ""
+    bestDist := [9999999999]
+	TextRegion := Map()
+	TextRegion["Words"] := wordsList.Words
+	if absolute {
+		for idx, word in wordsList.Words {
+			if itemName == word.Text {
+                if wordsList.Words.Length > idx {
+				    nextWord := wordsList.Words.Get(idx + 1)
+				    if (items.Length <= 1 ? nextWord.BoundingRect.y == word.BoundingRect.y : nextWord.Text != items[2]) {
+				    	continue
+				    }
+                }
+				TextRegion["Word"] := word
+				return TextRegion
+			}
+		}
+		return TextRegion
+	} else {
+		for idx, word in wordsList.Words {
+			text := word.Text
+			rect := word.BoundingRect
+			if itemName == text {
+                if wordsList.Words.Length > idx {
+				    nextWord := wordsList.Words.Get(idx + 1)
+				    if (items.Length <= 1 ? nextWord.BoundingRect.y == word.BoundingRect.y : nextWord.Text != items[2]) {
+				    	continue
+				    }
+                }
+				TextRegion["Word"] := word
+				return TextRegion
+			} else if StrLen(text) >= 1 {
+    	        foundPos := InStr(StrLower(itemName), StrLower(text))
+    	        dist := 0
+    	        if foundPos {
+    	            dist := (StrLen(text) - foundPos) / StrLen(itemName)
+    	        } else {
+    	            dist := LevenshteinDistance(itemName, text)
+    	        }
+    	        if bestDist[1] > dist {
+    	            bestDist := [dist, word]
+    	        }
+			}
+		}
+	}
+
+	word := bestDist[2]
+	text := word.Text
+	rect := word.BoundingRect
+    if bestDist[1] > .15 || bestDist[1] < 0 {
+        ; MsgBox bestDist[2].Text . ", " . rect.x . ", " . rect.y . ", " . rect.w . ", " . rect.h . ", " . bestDist[1]
+		; debug
+        return TextRegion
+	}
+	
+	return TextRegion
+}
+
 /**
  * OCR library: a wrapper for the the UWP Windows.Media.Ocr library.
  * Based on the UWP OCR function for AHK v1 by malcev.
@@ -1611,10 +1699,7 @@ class OCR {
         return cls
     }
     
-    static CreateHString(str, &hString:="")
-    {
-    	DllCall("Combase.dll\WindowsCreateString", "wstr", str, "uint", StrLen(str), "ptr*", &hString:=0)
-    }
+    static CreateHString(str) => (DllCall("Combase.dll\WindowsCreateString", "wstr", str, "uint", StrLen(str), "ptr*", &hString:=0), hString)
     
     static DeleteHString(hString) => DllCall("Combase.dll\WindowsDeleteString", "ptr", hString)
     
