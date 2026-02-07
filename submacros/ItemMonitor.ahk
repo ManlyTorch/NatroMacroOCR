@@ -12,7 +12,6 @@
 
 pToken := Gdip_Startup()
 (bitmaps := Map()).CaseSense := 0
-#Include "..\nm_image_assets\offset\bitmaps.ahk"
 #Include "..\nm_image_assets\itemmonitor\bitmaps.ahk"
 
 SetWorkingDir A_ScriptDir "\.."
