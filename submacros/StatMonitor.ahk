@@ -316,7 +316,7 @@ postdata :=
 )
 
 ; post to status
-Send_WM_COPYDATA(postdata, "Status.ahk ahk_class AutoHotkey")
+; Send_WM_COPYDATA(postdata, "Status.ahk ahk_class AutoHotkey")
 
 
 
