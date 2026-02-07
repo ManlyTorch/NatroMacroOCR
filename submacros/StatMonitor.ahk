@@ -833,7 +833,7 @@ DetectHoney()
 			Gdip_DisposeImage(pBMNew)
 			pIRandomAccessStream := OCR.HBitmapToRandomAccessStream(hBM)
 			DllCall("DeleteObject", "Ptr", hBM)
-			try detected[v := ((StrLen((n := RegExReplace(StrReplace(StrReplace(StrReplace(StrReplace(ocr(pIRandomAccessStream, ocr_language), "o", "0"), "i", "1"), "l", "1"), "a", "4"), "\D"))) > 0) ? n : 0)] := detected.Has(v) ? [detected[v][1]+1, detected[v][2] " " i . A_Index] : [1, i . A_Index]
+			try detected[v := ((StrLen((n := RegExReplace(StrReplace(StrReplace(StrReplace(StrReplace(ocr(pIRandomAccessStream, {lang: ocr_language}), "o", "0"), "i", "1"), "l", "1"), "a", "4"), "\D"))) > 0) ? n : 0)] := detected.Has(v) ? [detected[v][1]+1, detected[v][2] " " i . A_Index] : [1, i . A_Index]
 		}
 	}
 
