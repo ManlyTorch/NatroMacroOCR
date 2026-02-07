@@ -7,7 +7,6 @@ ProcessImage(fileName, whiteThreshold := 200, delta := 30) {
     imgPath := fileName . ".png"
     hBitmap := Gdip_CreateBitmapFromFile(imgPath)
     if !hBitmap {
-        MsgBox "A"
         return
     }
 
@@ -114,7 +113,6 @@ findTextInRegion(item, img:="", x:=0, y:=0, w:=0, h:=0, absolute:=False) {
 	TextRegion["Words"] := wordsList.Words
 	if absolute {
 		for idx, word in wordsList.Words {
-            MsgBox word.Text
 			if itemName == StrLower(word.Text) and isCorrectWord(items, wordsList, idx) {
 				TextRegion["Word"] := word
 				return TextRegion
