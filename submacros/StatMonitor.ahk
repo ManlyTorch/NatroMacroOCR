@@ -799,6 +799,13 @@ DetectBuffs()
 	return str
 }
 
+MultiStrReplace(str, replaceMap) {
+	for needle, replacement in replacement {
+		str := StrReplace(str, needle, replacement)
+	}
+	return str
+}
+
 /********************************************************************
 * @description: uses OCR to detect the current honey value in BSS
 * @returns: (string) current honey value or (integer) 0 on failure
@@ -833,7 +840,7 @@ DetectHoney()
 			Gdip_DisposeImage(pBMNew)
 			pIRandomAccessStream := OCR.HBitmapToRandomAccessStream(hBM)
 			DllCall("DeleteObject", "Ptr", hBM)
-			try detected[v := ((StrLen((n := RegExReplace(StrReplace(StrReplace(StrReplace(StrReplace(ocr(pIRandomAccessStream, {lang: ocr_language}), "o", "0"), "i", "1"), "l", "1"), "a", "4"), "\D"))) > 0) ? n : 0)] := detected.Has(v) ? [detected[v][1]+1, detected[v][2] " " i . A_Index] : [1, i . A_Index]
+			try detected[v := ((StrLen((n := RegExReplace(MultiStrReplace(OCR(pIRandomAccessStream).Text, Map("o", "0", "i", "1", "l", "1", "a", "4")), "\D"))) > 0) ? n : 0)] := detected.Has(v) ? [detected[v][1]+1, detected[v][2] " " i . A_Index] : [1, i . A_Index]
 		}
 	}
 
