@@ -2864,7 +2864,7 @@ Gdip_ResetClip(pGraphics)
 Gdip_GetClipRegion(pGraphics)
 {
 	Region := Gdip_CreateRegion()
-	DllCall("gdiplus\GdipGetClip", "UPtr", pGraphics, "UInt", Region)
+	DllCall("gdiplus\GdipGetClip", "UPtr", pGraphics, "UPtr", Region)
 	return Region
 }
 
