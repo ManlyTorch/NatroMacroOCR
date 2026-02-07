@@ -800,7 +800,7 @@ DetectBuffs()
 }
 
 MultiStrReplace(str, replaceMap) {
-	for needle, replacement in replacement {
+	for needle, replacement in replaceMap {
 		str := StrReplace(str, needle, replacement)
 	}
 	return str
