@@ -58,12 +58,18 @@ GetYOffset(hwnd?, &fail?)
 	{
 		try WinActivate "Roblox"
 		GetRobloxClientPos(hwnd)
+
+		if true {
+			fail := 0
+			return 22
+		}
+
 		Loop 20 ; for red vignette effect
 		{
-			TextRegion := findTextInRegion("Pollen",, windowX + windowWidth//2, windowY, 100, 100, True)
+			TextRegion := findTextInRegion("Pollen",, windowX, windowY, windowWidth, 100, True)
 			if TextRegion.Has("Word") {
 				hRoblox := hwnd, fail := 0
-				return offset := TextRegion["Word"].BoundingRect.y - windowY - 36
+				return offset := TextRegion["Word"].BoundingRect.y - windowY - 14
 			} else {
 				if (A_Index = 20) {
 					fail := 1

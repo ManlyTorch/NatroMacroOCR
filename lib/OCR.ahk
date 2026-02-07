@@ -7,6 +7,7 @@ ProcessImage(fileName, whiteThreshold := 200, delta := 30) {
     imgPath := fileName . ".png"
     hBitmap := Gdip_CreateBitmapFromFile(imgPath)
     if !hBitmap {
+        MsgBox "A"
         return
     }
 
@@ -62,14 +63,14 @@ LevenshteinDistance(s1, s2) {
 
 isCorrectWord(items, wordsList, idx) {
     word := wordsList.Words.Get(idx)
-    itemName := items[1]
+    itemName := StrLower(items[1])
     if wordsList.Words.Length > idx {
 	    nextWord := wordsList.Words.Get(idx + 1)
-	    if (items.Length <= 1 ? nextWord.BoundingRect.y == word.BoundingRect.y : nextWord.Text != items[2]) {
+	    if (items.Length <= 1 ? nextWord.BoundingRect.y == word.BoundingRect.y : StrLower(nextWord.Text) != StrLower(items[2])) {
 	    	return
 	    }
     } else {
-        return itemName == word.Text
+        return StrLower(itemName) == StrLower(word.Text)
     }
     return True
 }
@@ -78,13 +79,13 @@ isUnspacedWord(items, wordsList, idx, max:=4) {
     if items.Length <= 1 {
         ; I cbf trying to replace everything with spacing ngl
         word := wordsList.Words.Get(idx)
-        itemName := items[1]
-        text := word.Text
+        itemName := StrLower(items[1])
+        text := StrLower(word.Text)
         Loop max {
             curIdx := idx + A_Index
             if wordsList.Words.length >= curIdx {
                 nextWord := wordsList.Words.Get(curIdx)
-                text .= nextWord.Text
+                text .= StrLower(nextWord.Text)
                 if text == itemName {
                     return True
                 }
@@ -106,14 +107,15 @@ findTextInRegion(item, img:="", x:=0, y:=0, w:=0, h:=0, absolute:=False) {
 
 	exactMatch := False
 	items := StrSplit(item, " ")
-	itemName := items[1]
+	itemName := StrLower(items[1])
 	region := ""
     bestDist := [9999999999]
 	TextRegion := Map()
 	TextRegion["Words"] := wordsList.Words
 	if absolute {
 		for idx, word in wordsList.Words {
-			if itemName == word.Text and isCorrectWord(items, wordsList, idx) {
+            MsgBox word.Text
+			if itemName == StrLower(word.Text) and isCorrectWord(items, wordsList, idx) {
 				TextRegion["Word"] := word
 				return TextRegion
 			} else if isUnspacedWord(items, wordsList, idx) {
@@ -124,9 +126,9 @@ findTextInRegion(item, img:="", x:=0, y:=0, w:=0, h:=0, absolute:=False) {
 		return TextRegion
 	} else {
 		for idx, word in wordsList.Words {
-			text := word.Text
+			text := StrLower(word.Text)
 			rect := word.BoundingRect
-			if itemName == word.Text and isCorrectWord(items, wordsList, idx) {
+			if itemName == text and isCorrectWord(items, wordsList, idx) {
 				TextRegion["Word"] := word
 				return TextRegion
 			} else if StrLen(text) >= 1 {
