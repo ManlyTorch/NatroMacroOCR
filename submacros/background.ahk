@@ -11,7 +11,6 @@ Natro Macro is distributed in the hope that it will be useful. This does not giv
 You should have received a copy of the license along with Natro Macro. If not, please redownload from an official source.
 */
 
-;//todo: Lots of inefficient code here. Switch to PostMessages instead of writing to nm_config and general rewrites
 #SingleInstance Force
 #NoTrayIcon
 #MaxThreads 255
@@ -23,7 +22,8 @@ You should have received a copy of the license along with Natro Macro. If not, p
 #Include "DurationFromSeconds.ahk"
 #Include "OCR.ahk"
 #Include "nowUnix.ahk"
-#include "ErrorHandling.ahk"
+
+OnError (e, mode) => (mode = "Return") ? -1 : 0
 SetWorkingDir A_ScriptDir "\.."
 
 if (A_Args.Length = 0)
@@ -34,12 +34,12 @@ if (A_Args.Length = 0)
 
 ;initialization
 resetTime:=LastState:=LastConvertBalloon:=nowUnix()
-state:=0
+VBState:=state:=0
 MacroState:=2
-;NightLastDetected := A_Args[1] not in use
-;VBLastKilled := A_Args[2] not in use
+NightLastDetected := A_Args[1]
+VBLastKilled := A_Args[2]
 StingerCheck := A_Args[3]
-;StingerDailyBonusCheck := A_Args[4] not in use
+StingerDailyBonusCheck := A_Args[4]
 AnnounceGuidingStar := A_Args[5]
 ReconnectInterval := A_Args[6]
 ReconnectHour := A_Args[7]
@@ -47,7 +47,7 @@ ReconnectMin := A_Args[8]
 EmergencyBalloonPingCheck := A_Args[9]
 ConvertBalloon := A_Args[10]
 NightMemoryMatchCheck := A_Args[11]
-;LastNightMemoryMatch := A_Args[12] not in use
+LastNightMemoryMatch := A_Args[12]
 
 pToken := Gdip_Startup()
 bitmaps := Map(), bitmaps.CaseSense := 0
@@ -69,7 +69,7 @@ loop {
 	nm_deathCheck()
 	nm_guidCheck()
 	nm_popStarCheck()
-	nm_CheckNight()
+	nm_dayOrNight()
 	nm_backpackPercentFilter()
 	nm_guidingStarDetect()
 	nm_dailyReconnect()
@@ -79,10 +79,10 @@ loop {
 
 nm_setGlobalNum(wParam, lParam, *){
 	Critical
-	global resetTime, StingerCheck, LastConvertBalloon, NightMemoryMatchCheck
-	static arr:=["resetTime", 0, 0, "StingerCheck", 0, "LastConvertBalloon", "NightMemoryMatchCheck", 0]
+	global resetTime, NightLastDetected, VBState, StingerCheck, VBLastKilled, LastConvertBalloon, NightMemoryMatchCheck, LastNightMemoryMatch
+	static arr:=["resetTime", "NightLastDetected", "VBState", "StingerCheck", "VBLastKilled", "LastConvertBalloon", "NightMemoryMatchCheck", "LastNightMemoryMatch"]
 
-	try var := arr[wParam], %var% := lParam
+	var := arr[wParam], %var% := lParam
 	return 0
 }
 
@@ -176,54 +176,85 @@ nm_popStarCheck(){
 	}
 }
 
-nm_CheckNight() {
-	static nightConfidence := 0, NightLastDetected := 0, LastNightState := 0
-	; 0 = day, 1 = night, 2 = dusk
-	night := 0
-
-
-	if !StingerCheck && !NightMemoryMatchCheck
+nm_dayOrNight(){
+	;VBState 0=no VB, 1=searching for VB, 2=VB found
+	global NightLastDetected, StingerCheck, StingerDailyBonusCheck, VBLastKilled, VBState
+	static confirm:=0
+	if (StingerCheck=0 && NightMemoryMatchCheck=0)
 		return
-
-	if !CheckBitmap("day", 6) {
-		if CheckBitmap("night", 4) && nightConfidence < 6
-			nightConfidence++
-		else if  nightConfidence > 1
-			nightConfidence -= 2
-	}
-
-	; max confidence (first trigger) or within 5 mins of last detection means night
-	night := (nightConfidence >= 6 || nowUnix()-NightLastDetected < 300) ? 1 : (nightConfidence > 1 ? 2 : 0)
-	;tooltip "confidence: " nightConfidence "`nnight: " night "/" LastNightState
-	if night = 1 {
-		nightConfidence := 0
-		if (nowUnix()-NightLastDetected > 300 || nowUnix()-NightLastDetected < 0) {
-			NightLastDetected := nowUnix()
-			if WinExist("natro_macro ahk_class AutoHotkey") {
-				PostMessage 0x5552, 368, night
-				Send_WM_COPYDATA("Detected: Night", "natro_macro ahk_class AutoHotkey")
-			}
+	if(((VBState=1) && ((nowUnix()-NightLastDetected)>400 || (nowUnix()-NightLastDetected)<0)) || ((VBState=2) && ((nowUnix()-VBLastKilled)>(600) || (nowUnix()-VBLastKilled)<0))) {
+		VBState:=0
+		if WinExist("natro_macro ahk_class AutoHotkey") {
+			PostMessage 0x5555, 3, 0
 		}
 	}
+	;return if pollen text is not visible (darkened background)
+	; pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2 "|" windowY "|60|100")
+	; if (Gdip_ImageSearch(pBMScreen, bitmaps["toppollen"], , , , , , 8) != 1) {
+	; 	Gdip_DisposeImage(pBMScreen)
+	; 	return
+	; }
+	; Gdip_DisposeImage(pBMScreen)
 
-	if (WinExist("PlanterTimers.ahk ahk_class AutoHotkey") && (LastNightState != night))
-		PostMessage 0x5552, 367, night
-
-	; prevent excessive postmessages
-	LastNightState := night
-
-	CheckBitmap(time, variation){
+	try {
+		pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY + 2*windowHeight//5 "|" windowWidth "|" 3*windowHeight//5)
+		for k, v in bitmaps["day"] {
+			if (Gdip_ImageSearch(pBMScreen, v, , , , , , 6) = 1) {
+				result := 1
+				Gdip_DisposeImage(pBMScreen)
+				break
+			}
+		}
+		Gdip_DisposeImage(pBMScreen)
+	} catch
+		return
+	if result {
+		dayOrNight:="Day"
+	} else {
 		try {
 			pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY + windowHeight//2 "|" windowWidth "|" windowHeight//2)
-			for , v in bitmaps[time] {
-				if (Gdip_ImageSearch(pBMScreen, v,,,,,,4) = 1) {
+			for k, v in bitmaps["night"] {
+				if (Gdip_ImageSearch(pBMScreen, v, , , , , , 4) = 1)
+				{
+					result := 1
 					Gdip_DisposeImage(pBMScreen)
-					return 1
+					break
+				}
+			}		
+			Gdip_DisposeImage(pBMScreen)
+		} catch
+			return
+		if result  {
+			dayOrNight:="Dusk"
+		} else {
+			dayOrNight:="Day"
+		}
+	}
+	if (dayOrNight="Dusk" || dayOrNight="Night") {
+		confirm:=confirm+1
+	} else if (dayOrNight="Day") {
+		confirm:=0
+	}
+	if(confirm>=5) {
+		dayOrNight:="Night"
+		if((nowUnix()-NightLastDetected)>300 || (nowUnix()-NightLastDetected)<0) {
+			NightLastDetected:=nowUnix()
+			try IniWrite NightLastDetected, "settings\nm_config.ini", "Collect", "NightLastDetected"
+			if WinExist("natro_macro ahk_class AutoHotkey") {
+				PostMessage 0x5555, 2, NightLastDetected
+				Send_WM_COPYDATA("Detected: Night", "natro_macro ahk_class AutoHotkey")
+			}
+			if(((StingerCheck=1) && ((StingerDailyBonusCheck=0) || (nowUnix()-VBLastKilled)>79200) && VBState=0) || ((NightMemoryMatchCheck=1) && (nowUnix()-LastNightMemoryMatch)>28800)) {
+				VBState:=1 ;0=no VB, 1=searching for VB, 2=VB found
+				if WinExist("natro_macro ahk_class AutoHotkey") {
+					PostMessage 0x5555, 3, 1
 				}
 			}
-			Gdip_DisposeImage(pBMScreen)
 		}
-		return 0
+	}
+	;GuiControl,Text, timeOfDay, %dayOrNight%
+	if(winexist("PlanterTimers.ahk ahk_class AutoHotkey")) {
+		try IniWrite dayOrNight, "settings\nm_config.ini", "Planters", "DayOrNight" ;make this a PostMessage too, fewer disk reads/writes is better!
 	}
 }
 

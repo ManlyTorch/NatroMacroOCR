@@ -48,21 +48,11 @@ HyperSleep(200)
 ;pepper
 nm_Walk(13, FwdKey,RightKey)
 nm_Walk(10, RightKey)
-send "{shift down}"
-hypersleep(50)
-send "{shift up}"
-send "{space down}"
-hypersleep(2000)
-send "{space up}"
-send "{shift down}"
-send "{shift up}"
-hypersleep(1000)
+nm_Walk(1, LeftKey)
 send "{space down}"
 HyperSleep(120)
 send "{" RightKey " down}"
 HyperSleep(130)
 send "{space up}{" RightKey " up}"
-nm_Walk(13, RightKey)
-HyperSleep(750)
-
-; edited by b1ue_guy
+nm_Walk(15, RightKey)
+HyperSleep(300)

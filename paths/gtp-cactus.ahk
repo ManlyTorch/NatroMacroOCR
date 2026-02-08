@@ -10,9 +10,11 @@
     nm_Walk(1.5, FwdKey)
     nm_Walk(60, LeftKey)
     nm_Walk(49.5, FwdKey)
-    nm_Walk(40, RightKey)
-    nm_Walk(5, BackKey)
-    nm_Walk(3, LeftKey)
+    send "{" RotRight " 2}"
+    nm_Walk(35.5, FwdKey)
+    nm_Walk(3, RightKey)
+    nm_Walk(7, BackKey)
+    send "{" RotRight " 2}"
 }
 else {
     nm_gotoramp()
@@ -27,10 +29,10 @@ else {
     HyperSleep(1100)
     send "{" BackKey " up}{space}{" RotLeft " 4}"
     HyperSleep(600)
-    nm_Walk(20, FwdKey, RightKey)
-    nm_Walk(15, RightKey)
+    nm_Walk(15, FwdKey, RightKey)
+    nm_Walk(22, RightKey)
     nm_Walk(30, BackKey)
-    nm_Walk(3, LeftKey)
+    nm_Walk(7, LeftKey)
+    send "{" RotLeft " 4}"
 }
 ;path 230729 noobyguy
-; edited by Lorddrak

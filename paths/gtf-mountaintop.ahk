@@ -3,10 +3,14 @@
     nm_gotocannon()
     send "{e down}"
     HyperSleep(100)
-    send "{e up}"
-    Sleep 2800
-    nm_Walk(6, FwdKey)
-    nm_Walk(1, RightKey)
+    send "{e up}{" LeftKey " down}{" BackKey " down}"
+    HyperSleep(1525)
+    send "{space 2}"
+    HyperSleep(1100)
+    send "{" LeftKey " up}"
+    HyperSleep(350)
+    send "{" BackKey " up}{space}"
+    Sleep 1500
 } else {
     nm_gotoramp()
     nm_Walk(67.5, BackKey, LeftKey)
@@ -26,5 +30,4 @@
     nm_Walk(13.5, FwdKey)
     send "{" RotRight " 4}"
     ;path 230630 noobyguy -added corneralign and tweaked slightly 
-    ;path 250927 dully176 - removed glider at end of cannon
 }
