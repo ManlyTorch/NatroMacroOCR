@@ -17,7 +17,7 @@ Shrine := Map()
 
 #Include ..\nm_image_assets\general\bitmaps.ahk
 
-bitmaps["giftedstar"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAgMAAAC5YVYYAAAACVBMVEX9rDT+rDTrDOj6H2ZAAAAFElEQVR42mNYtYoBgVYyrFoBYQMAf4AKnlh184sAAAAASUVORK5CYII=")
+bitmaps["giftedstar"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAgMAAAC5YVYYAAAACVBMVEX9rDT+rDT/rDOj6H2ZAAAAFElEQVR42mNYtYoBgVYyrFoBYQMAf4AKnlh184sAAAAASUVORK5CYII=")
 
 if (MsgBox("WELCOME TO THE BASIC BEE REPLACEMENT PROGRAM!!!!!``nMade by anniespony#8135``n``nMake sure BEE SLOT TO CHANGE is always visible``nDO NOT MOVE THE SCREEN ORRESIZE WINDOW FROM NOW ON.``nMAKE SURE AUTO-JELLY IS DISABLED!!", "Basic Bee Replacement Program", 0x40001) = "Cancel")
 	ExitApp
@@ -69,24 +69,20 @@ Loop
 	SendEvent "{Click " beeX " " beeY " 0}"
 	Sleep 100
 	Send "{Click Up}"
+	found := false
 	Loop 10
 	{
 		Sleep 100
         TextInRegion := findTextInRegion("Yes",, windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2, true)
 		if TextInRegion.Has("Word") {
 			word := TextInRegion["Word"]
-			SendEvent "{Click " windowX + word.BoundingRect.x " " windowY + word.BoundingRect.y
+			Click windowX + word.BoundingRect.x, windowY + word.BoundingRect.y
+			; Send "{Click " windowX + word.BoundingRect.x " " windowY + word.BoundingRect.y " 0}"
+			found := true
+		} else if found {
 			break
 		}
         
-		pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY+offsetY+windowHeight//2-52 "|500|150")
-		if (Gdip_ImageSearch(pBMScreen, bitmaps["yes"], &pos, , , , , 2, , 2) = 1)
-		{
-			Gdip_DisposeImage(pBMScreen)
-			SendEvent "{Click " windowX+windowWidth//2-250+SubStr(pos, 1, InStr(pos, ",")-1) " " windowY+offsetY+windowHeight//2-52+SubStr(pos, InStr(pos, ",")+1) "}"
-			break
-		}
-		Gdip_DisposeImage(pBMScreen)
 		if (A_Index = 10)
 		{
 			rj := 1
@@ -96,6 +92,7 @@ Loop
 	Sleep 750
 
 	pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-155 "|" windowY+offsetY+((4*windowHeight)//10 - 135) "|310|205"), rj := 0
+	
 	if (Gdip_ImageSearch(pBMScreen, pBMM, , 50, 165, 260, 205, 2, , , 5) = 5) { ; Mythic Hatched
 		if (MsgBox("MYTHIC!!!!``nKeep this?", "Basic Bee Replacement Program", 0x40024) = "Yes")
 		{
