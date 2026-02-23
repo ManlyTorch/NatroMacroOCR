@@ -50,7 +50,7 @@ Gdip_SetInterpolationMode(G, 7)
 buff_characters := Map()
 
 #Include "%A_ScriptDir%\..\nm_image_assets\statmonitor\bitmaps.ahk"
-
+ 
 ; ▰▰▰▰▰▰▰▰▰▰▰▰
 ; INITIALISE VARIABLES
 ; ▰▰▰▰▰▰▰▰▰▰▰▰
