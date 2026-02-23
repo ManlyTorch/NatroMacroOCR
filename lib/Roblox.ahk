@@ -56,29 +56,30 @@ GetYOffset(hwnd?, &fail?)
 	}
 	else if WinExist("ahk_id " hwnd)
 	{
-		try WinActivate "Roblox"
-		GetRobloxClientPos(hwnd)
-
 		if true {
 			fail := 0
-			return 22
+			offset := 22
+			return offset
 		}
+		
+		;try WinActivate "Roblox"
+		;GetRobloxClientPos(hwnd)
 
-		Loop 20 ; for red vignette effect
-		{
-			TextRegion := findTextInRegion("Pollen",, windowX, windowY, windowWidth, 100, True)
-			if TextRegion.Has("Word") {
-				hRoblox := hwnd, fail := 0
-				return offset := TextRegion["Word"].BoundingRect.y - windowY - 14
-			} else {
-				if (A_Index = 20) {
-					fail := 1
-					return 0 ; default offset, change this if needed
-				} else {
-					Sleep 50
-				}				
-			}
-		}
+		;Loop 20 ; for red vignette effect
+		;{
+		;	TextRegion := findTextInRegion("Pollen",, windowX, windowY, windowWidth, 100, True)
+		;	if TextRegion.Has("Word") {
+		;		hRoblox := hwnd, fail := 0
+		;		return offset := TextRegion["Word"].BoundingRect.y - windowY - 14
+		;	} else {
+		;		if (A_Index = 20) {
+		;			fail := 1
+		;			return 0 ; default offset, change this if needed
+		;		} else {
+		;			Sleep 50
+		;		}				
+		;	}
+		;}
 	}
 	else
 		return 0
