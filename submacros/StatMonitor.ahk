@@ -27,14 +27,14 @@ You should have received a copy of the license along with Natro Macro. If not, p
 SetWorkingDir A_ScriptDir "\.."
 
 ; set version number
-version := "2.3"
+version := "3.0"
 
 ; ▰▰▰▰▰▰▰▰
 ; INITIAL SETUP
 ; ▰▰▰▰▰▰▰▰
 
 ; set image width and height, in pixels
-w := 6000, h := 5800
+w := 6000, h := 6800
 
 ; prepare graphics and template bitmap
 pToken := Gdip_Startup()
@@ -90,7 +90,16 @@ if (ocr_enabled = 1)
 			msgbox "No OCR supporting languages are installed on your system! Please follow the Knowledge Base guide to install a supported language as a secondary language on Windows.", "WARNING!!", 0x1030
 }
 
-global background, regionBorder, regionBackground, statRegionBorder, statRegionBackground, graphLine, graphBackground, ocrDisabled
+global background, regionBackground, graphBackground, honeyBackground, rightTabRegionBackground, backpackBackground, buffsRegionBackground
+global lasthourBackground, sessionBackground, buffsBackground, plantersBackground, generalstatsBackground, infoBackground
+global lasthourDisableRender, sessionDisableRender, buffsDisableRender, plantersDisableRender, generalstatsDisableRender, infoDisableRender
+global backgroundAlpha, regionAlpha, graphAlpha, honeyAlpha, rightTabRegionAlpha, backpackAlpha, buffsRegionAlpha
+global lasthourAlpha, sessionAlpha, buffsAlpha, plantersAlpha, generalstatsAlpha, infoAlpha
+global regionBorder, rightBarRegionBorder, graphLines, ocrDisabled
+
+global DEBUG_LOG, SaveImagesLocally, SavePath ; Debug/misc features
+
+extArray := Array("BMP", "DIB", "RLE", "JPG", "JPEG", "JPE", "JFIF", "GIF", "TIF", "TIFF", "PNG")
 
 ; HONEY MONITORING
 ; honey_values format: (A_Min):value
@@ -107,7 +116,7 @@ honey_12h[180] := start_honey
 ; BUFF MONITORING
 ; buff_values format: buff:{time_coefficient:value}
 (buff_values := Map()).CaseSense := 0
-for v in ["haste","melody","redboost","blueboost","whiteboost","focus","bombcombo","balloonaura","clock","jbshare","babylove","inspire","bear","pollenmark","honeymark","festivemark","popstar","comforting","motivating","satisfying","refreshing","invigorating","blessing","bloat","guiding","mondo","reindeerfetch","tideblessing"]
+for v in ["haste","melody","redboost","blueboost","whiteboost","focus","bombcombo","balloonaura","clock","jbshare","babylove","inspire","bear","pollenmark","honeymark","festivemark","popstar","comforting","motivating","satisfying","refreshing","invigorating","blessing","bloat","guiding","mondo","reindeerfetch","tideblessing", "snowflake", "puppylove", "fieldcorruption", "cloudbuff"]
 	buff_values[v] := Map()
 
 ; INFO FROM MAIN SCRIPT
@@ -140,7 +149,7 @@ for objItem in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_OperatingSy
 	os_version := Trim(StrReplace(StrReplace(StrReplace(StrReplace(objItem.Caption, "Microsoft"), "Майкрософт"), "مايكروسوفت"), "微软"))
 
 ; obtain natro version and other options (if exist)
-if ((A_Args.Length <= 1) && (natro_version := A_Args[1]))
+if ((A_Args.Length >= 0) && (natro_version := A_Args[1]))
 {
 	; read information from settings\nm_config.ini
 	Loop 3
@@ -212,44 +221,171 @@ nm_CreateFolder(folder) {
 }
 nm_CreateFolder("settings")
 
+defaultConfig := Array() ; store default values, these are loaded initially
+
+; stored in order in the ini now :)
+; added custom typing to format numbers into ARGB Hex
+defaultConfig.Push("Images", "These can be images or color values.`n" . 
+"Alpha only changes the transparency of images, not colors.`n" . 
+"The 1st 2 hex values are for color transparency the rest is normal hex", Array(
+	"background", "Color", 0xff121212,
+	"backgroundAlpha", "", 255,
+	"regionBackground", "Color", 0xff201e20,
+	"regionAlpha", "", 255,
+	"rightTabRegionBackground", "Color", 0xff2c2a2c,
+	"rightTabRegionAlpha", "", 255,
+	; "statRegionBackground", "Color", 0xff2c2a2c,
+	; "statRegionAlpha", "", 255,
+	"graphBackground", "Color", 0x80141414,
+	"graphAlpha", "", 255,
+	"honeyBackground", "ParentColor", "",
+	"honeyAlpha", "", 255,
+	"backpackBackground", "ParentColor", "",
+	"backpackAlpha", "", 255,
+	"buffsRegionBackground", "ParentColor", "",
+	"buffsRegionAlpha", "", 255
+))
+
+defaultConfig.Push("RightBar", "Images/Colors accepted`nEvery thing here is in the right tab area.`n" . 
+"In order of top to bottom, When disabling a render it stops showing it but the background image will be there.`n" . 
+"for disabling render, 0 is false (rendering) 1 is true (not rendering)", Array(
+	"lasthourBackground", "ParentColor", "",
+	"lasthourDisableRender", "", false,
+	"lasthourAlpha", "", 255,
+	"sessionBackground", "ParentColor", "",
+	"sessionDisableRender", "", false,
+	"sessionAlpha", "", 255,
+	"buffsBackground", "ParentColor", "",
+	"buffsDisableRender", "", false,
+	"buffsAlpha", "", 255,
+	"plantersBackground", "ParentColor", "",
+	"plantersDisableRender", "", false,
+	"plantersAlpha", "", 255,
+	"generalstatsBackground", "ParentColor", "",
+	"generalstatsDisableRender", "", false,
+	"generalstatsAlpha", "", 255,
+	"infoBackground", "ParentColor", "",
+	"infoDisableRender", "", false,
+	"infoAlpha", "", 255
+))
+
+defaultConfig.Push("Colors", "Colors only.`nBorders won't render if you use an image!", Array(
+	"regionBorder", "Color", 0xff282628,
+	"rightBarRegionBorder", "Color", 0xff353335,
+	"graphLines", "Color", 0x40c0c0f0,
+	"ocrDisabled", "Color", 0x40cc0000,
+))
+
+defaultConfig.Push("Debug", "The v3.0 monitor had some debug options so I figured I'd put a debug mode.`n"
+"1 to enable debug log, 0 to keep disabled.`n"
+"For the save path, make sure to not include `"`" around the path.`n"
+"If you define a path with .png/jpeg etc at the end it'll put the image with that name in the specified folder (IT WILL OVERWRITE EVERY HOUR)", Array(
+	"DEBUG_LOG", "", false,
+	"SaveImagesLocally", "", false,
+	"SavePath", "", ""
+))
+
+isColor(propType) {
+	return (propType = "Color" or propType = "ParentColor")
+}
+
 nm_importConfig()
 {
 	global
-	local config := Map() ; store default values, these are loaded initially
 
-	config["Colors"] := Map(
-		"background", "0xff121212",
-		"regionBorder", "0xff282628",
-		"regionBackground", "0xff201e20",
-		"statRegionBorder", "0xff353335",
-		"statRegionBackground", "0xff2c2a2c",
-		"graphLine", "0x40c0c0f0",
-		"graphBackground", "0x80141414",
-		"ocrDisabled", "0x40cc0000"
-	)
+	MapDefaultConfig := Map("PropTypes", Map())
+	sectionName := ""
+	for idx, arry in defaultConfig { ; load the default values as globals, will be overwritten if a new value exists when reading
+		modResult := Mod(idx, 3)
+		if modResult != 0 {
+			if modResult == 1 {
+				sectionName := arry
+			}
+			continue
+		}
 
-	local k, v, i, j
-	for k,v in config ; load the default values as globals, will be overwritten if a new value exists when reading
-		for i,j in v
-			%i% := j
+		propName := ""
+		propCustomType := ""
+		sectionMap := Map()
+		propSectionMap := Map()
+		for idx, propVal in arry {
+			result := Mod(idx, 3)
+			if result != 0 {
+				if result == 2 {
+					propCustomType := propVal
+				} else {
+					propName := propVal
+				}
+				continue
+			}
 
+			%propName% := propVal
+			sectionMap[propName] := propVal
+		}
+		MapDefaultConfig[sectionName] := sectionMap
+		MapDefaultConfig["PropTypes"][sectionName] := propSectionMap
+	}
 	local inipath := A_WorkingDir "\settings\statmonitorColors.ini"
 
-	if FileExist(inipath) ; update default values with new ones read from any existing .ini
+	if FileExist(inipath) { ; update default values with new ones read from any existing .ini
 		nm_ReadIni(inipath)
+	}
 
 	local ini := ""
-	for k,v in config ; overwrite any existing .ini with updated one with all new keys and old values
-	{
-		ini .= "[" k "]`r`n"
-		for i in v
-			if IsInteger(%i%) {
-				ini .= i "=" Format("0x{:08X}", %i%) "`r`n"
-			} else {
-				ini .= i "=" %i% "`r`n"
+	for idx, arry in defaultConfig { ; overwrite any existing .ini with updated one with all new keys and old values
+		curMod := Mod(idx, 3)
+		if curMod != 0 {
+			if curMod == 2 {
+				lines := StrSplit(arry, "`n")
+				for line in lines
+					ini .= "; " line "`r`n"
 			}
+			continue
+		}
+
+		propName := ""
+		propCustomType := ""
+		for idx, propVal in arry{
+			if Mod(idx, 3) == 1 {
+				propName := propVal
+				continue
+			} else if Mod(idx, 3) == 2 {
+				propCustomType := propVal
+				continue
+			}
+			
+			if isColor(propCustomType) {
+				if propCustomType == "ParentColor" && %propName% == ""{
+					ini .= propName "=`r`n"
+					continue
+				} else if IsInteger(%propName%) {
+					ini .= propName "=" StrLower(Format("0x{:08X}", %propName%)) "`r`n"
+				} else if not pngExists(%propName%) { ; Invalid value set, reset to default in config
+					if A_Args.Length > 1 { ; generating template, ask to replace with default color (just incase they miss named it or smth idk man, thought it'd be nice)
+						result := MsgBox("Property " propName " has been set to an image that does not exist. Would you like to automatically replace it with the default value?", "Invalid value in config", "YesNo")
+						orgVal := %propName%
+						%propName% := propVal
+
+						if result == "No" {
+							ini .= propName "=" orgVal "`r`n"
+						} else if not IsInteger(propVal) {
+							ini .= propName "=" propVal "`r`n"
+						} else {
+							ini .= propName "=" StrLower(Format("0x{:08X}", propVal)) "`r`n"
+						}
+					} else { ; Force set to original value cause it's an invalid value.
+						ini .= propName "=" orgVal "`r`n"
+					}
+				} else {
+					ini .= propName "=" %propName% "`r`n"
+				}
+			} else {
+				ini .= propName "=" %propName% "`r`n"
+			}
+		}
 		ini .= "`r`n"
 	}
+	defaultConfig := MapDefaultConfig
 
 	local file := FileOpen(inipath, "w-d")
 	file.Write(ini), file.Close()
@@ -277,6 +413,71 @@ nm_ReadIni(path)
 	}
 }
 
+tryExt(path) {
+	global extArray
+	local ext := ""
+	try {
+		FileExist(path) ; register refs
+		for ext in extArray {
+			if FileExist(path "." StrLower(ext)) {
+				return true
+			}
+		}
+	} catch { ; Is a reference variable
+		doRef(&path) {
+		for ext in extArray{
+			if FileExist(path "." StrLower(ext)) {
+				path .= "." StrLower(ext)
+				return true
+			}
+		}
+		}
+		return doRef(path)
+	}
+	return
+}
+
+pngExists(path) {
+	try {
+		if FileExist(path) or tryExt(path)
+        	return true
+	} catch {
+		reffHandler(&path) { ; I want to pass refs and strings WITHOUT A FIGHT DAMNNIT!
+			if FileExist(path) {
+				return true
+			} else if tryExt(&path) {
+				return true
+			}
+			return
+		}
+		return reffHandler(path)
+	}
+	return
+}
+
+load_Image(variable, alpha, section, region) {
+	global
+	path := %variable%
+	if pngExists(&path) {
+		pBMBackground := gdip_CreateBitmapFromFile(path)
+		Gdip_DrawImage(G, pBMBackground, region[1], region[2], region[3], region[4],,,,,alpha / 255)
+		Gdip_DisposeImage(pBMBackground)
+		return
+	} else if not IsInteger(%variable%) && IsInteger(defaultConfig[section][variable]) {
+		%variable% := defaultConfig[section][variable]
+		return
+	}
+	return true
+}
+
+renderDisabled(stat) {
+	try {
+		if %stat "DisableRender"% {
+			return true
+		}
+	}
+}
+
 ; ▰▰▰▰▰▰▰▰▰
 ; CREATE TEMPLATE
 ; ▰▰▰▰▰▰▰▰▰
@@ -284,91 +485,102 @@ nm_ReadIni(path)
 
 ; DRAW REGIONS
 ; draw background (fill with rounded dark grey rectangle)
-if Type(background) == "String" && FileExist(background) {
-	pBMBackground := Gdip_CreateBitmapFromFile(background)
-	Gdip_DrawImage(G, pBMBackground, 0, 0, w, h)
-	Gdip_DisposeImage(pBMBackground)
-} else {
+if load_Image("background", backgroundAlpha, "Images", [0, 0, w, h]) {
 	pBrush := Gdip_BrushCreateSolid(background)
 	Gdip_FillRoundedRectangle(G, pBrush, -1, -1, w+1, h+1, 60)
 	Gdip_DeleteBrush(pBrush)
 }
 
 ; regions format: region_name:[x,y,w,h]
-regions := Map("honey/sec", [120,120,4080,1080]
-	, "stats", [w-1560-120,120,1560,h-240]
+regions := Map("honey", [120,120,4080,1080]
+	, "rightTabRegion", [w-1560-120,120,1560,h-240]
 	, "backpack", [120,240+1080,4080,678]
-	, "buffs", [120,360+1758,4080,h-480-1758])
+	, "buffsRegion", [120,360+1758,4080,h-2238])
 
-stat_regions := Map("lasthour", [regions["stats"][1]+100,regions["stats"][2]+100,regions["stats"][3]-200,1206]
-	, "session", [regions["stats"][1]+100,regions["stats"][2]+1406,regions["stats"][3]-200,1289]
-	, "buffs", [regions["stats"][1]+100,regions["stats"][2]+2795,regions["stats"][3]-200,720]
-	, "planters", [regions["stats"][1]+100,regions["stats"][2]+3615,regions["stats"][3]-200,495]
-	, "stats", [regions["stats"][1]+100,regions["stats"][2]+4220,regions["stats"][3]-200,620]
-	, "info", [regions["stats"][1]+100,regions["stats"][2]+4940,regions["stats"][3]-200,regions["stats"][4]-4940-100])
+stat_regions := Map("lasthour", [regions["rightTabRegion"][1]+100,regions["rightTabRegion"][2]+100,regions["rightTabRegion"][3]-200,1206]
+	, "session", [regions["rightTabRegion"][1]+100,regions["rightTabRegion"][2]+1406,regions["rightTabRegion"][3]-200,1289]
+	, "buffs", [regions["rightTabRegion"][1]+100,regions["rightTabRegion"][2]+2795,regions["rightTabRegion"][3]-200,720]
+	, "planters", [regions["rightTabRegion"][1]+100,regions["rightTabRegion"][2]+3615,regions["rightTabRegion"][3]-200,495]
+	, "generalstats", [regions["rightTabRegion"][1]+100,regions["rightTabRegion"][2]+4220,regions["rightTabRegion"][3]-200,620]
+	, "info", [regions["rightTabRegion"][1]+100,regions["rightTabRegion"][2]+4940,regions["rightTabRegion"][3]-200,regions["rightTabRegion"][4]-5080])
 
 ; draw region backgrounds (dark grey background for each region)
 for k,v in regions
 {
-	pPen := Gdip_CreatePen(regionBorder, 10), Gdip_DrawRoundedRectangle(G, pPen, v[1], v[2], v[3], v[4], 20), Gdip_DeletePen(pPen)
-	pBrush := Gdip_BrushCreateSolid(regionBackground), Gdip_FillRoundedRectangle(G, pBrush, v[1], v[2], v[3], v[4], 20), Gdip_DeleteBrush(pBrush)
+	if load_Image(k "Background", %k "Alpha"%, "Images", v) {
+		pPen := Gdip_CreatePen(regionBorder, 10), Gdip_DrawRoundedRectangle(G, pPen, v[1], v[2], v[3], v[4], 20), Gdip_DeletePen(pPen)
+		pBrush := Gdip_BrushCreateSolid(regionBackground), Gdip_FillRoundedRectangle(G, pBrush, v[1], v[2], v[3], v[4], 20), Gdip_DeleteBrush(pBrush)
+	}
 }
 for k,v in stat_regions
 {
-	pPen := Gdip_CreatePen(statRegionBorder, 10), Gdip_DrawRoundedRectangle(G, pPen, v[1], v[2], v[3], v[4], 20), Gdip_DeletePen(pPen)
-	pBrush := Gdip_BrushCreateSolid(statRegionBackground), Gdip_FillRoundedRectangle(G, pBrush, v[1], v[2], v[3], v[4], 20), Gdip_DeleteBrush(pBrush)
+	if load_Image(k "Background", %k "Alpha"%, "RightBar", v) {
+		pPen := Gdip_CreatePen(rightBarRegionBorder, 10), Gdip_DrawRoundedRectangle(G, pPen, v[1], v[2], v[3], v[4], 20), Gdip_DeletePen(pPen)
+		pBrush := Gdip_BrushCreateSolid(rightTabRegionBackground), Gdip_FillRoundedRectangle(G, pBrush, v[1], v[2], v[3], v[4], 20), Gdip_DeleteBrush(pBrush)
+	}
 }
 
 ; draw region titles
-Gdip_TextToGraphics(G, "HONEY/SEC", "s64 Center Bold cffffffff x" regions["honey/sec"][1] " y" regions["honey/sec"][2]+16, "Segoe UI", regions["honey/sec"][3])
-Gdip_TextToGraphics(G, "BUFF UPTIME", "s64 Center Bold cffffffff x" regions["buffs"][1] " y" regions["buffs"][2]+16, "Segoe UI", regions["buffs"][3])
+Gdip_TextToGraphics(G, "HONEY/SEC", "s64 Center Bold cffffffff x" regions["honey"][1] " y" regions["honey"][2]+16, "Segoe UI", regions["honey"][3])
+Gdip_TextToGraphics(G, "BUFF UPTIME", "s64 Center Bold cffffffff x" regions["buffsRegion"][1] " y" regions["buffsRegion"][2]+16, "Segoe UI", regions["buffsRegion"][3])
 Gdip_TextToGraphics(G, "BACKPACK", "s64 Center Bold cffffffff x" regions["backpack"][1] " y" regions["backpack"][2]+16, "Segoe UI", regions["backpack"][3])
 
 
 ; DRAW GRAPHS AND OTHER ASSETS
 ; declare coordinate bounds for each graph
-graph_regions := Map("honey/sec", [regions["honey/sec"][1]+320,regions["honey/sec"][2]+130,3600,800]
+graph_regions := Map("honey", [regions["honey"][1]+320,regions["honey"][2]+130,3600,800]
 	, "backpack", [regions["backpack"][1]+320,regions["backpack"][2]+130,3600,400]
-	, "boost", [regions["buffs"][1]+320,regions["buffs"][2]+135,3600,280]
-	, "haste", [regions["buffs"][1]+320,regions["buffs"][2]+435,3600,280]
-	, "focus", [regions["buffs"][1]+320,regions["buffs"][2]+735,3600,280]
-	, "bombcombo", [regions["buffs"][1]+320,regions["buffs"][2]+1035,3600,280]
-	, "balloonaura", [regions["buffs"][1]+320,regions["buffs"][2]+1335,3600,280]
-	, "inspire", [regions["buffs"][1]+320,regions["buffs"][2]+1635,3600,280]
-	, "reindeerfetch", [regions["buffs"][1]+320,regions["buffs"][2]+1935,3600,280]
-	, "honeymark", [regions["buffs"][1]+320,regions["buffs"][2]+2235,3600,120]
-	, "pollenmark", [regions["buffs"][1]+320,regions["buffs"][2]+2375,3600,120]
-	, "festivemark", [regions["buffs"][1]+320,regions["buffs"][2]+2515,3600,120]
-	, "popstar", [regions["buffs"][1]+320,regions["buffs"][2]+2655,3600,110]
-	, "melody", [regions["buffs"][1]+320,regions["buffs"][2]+2785,3600,110]
-	, "bear", [regions["buffs"][1]+320,regions["buffs"][2]+2915,3600,110]
-	, "babylove", [regions["buffs"][1]+320,regions["buffs"][2]+3045,3600,110]
-	, "jbshare", [regions["buffs"][1]+320,regions["buffs"][2]+3175,3600,110]
-	, "guiding", [regions["buffs"][1]+320,regions["buffs"][2]+3305,3600,110]
-	, "honey", [stat_regions["lasthour"][1]+200,stat_regions["lasthour"][2]+650,1080,480]
-	, "honey12h", [stat_regions["session"][1]+200,stat_regions["session"][2]+734,1080,480])
+	, "boost", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+135,3600,280]
+	, "haste", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+435,3600,280]
+	, "focus", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+735,3600,280]
+	, "bombcombo", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+1035,3600,280]
+	, "balloonaura", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+1335,3600,280]
+	, "inspire", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+1635,3600,280]
+	, "reindeerfetch", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+1935,3600,280]
+	, "honeymark", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+2235,3600,120]
+	, "pollenmark", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+2375,3600,120]
+	, "festivemark", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+2515,3600,120]
+	, "popstar", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+2655,3600,110]
+	, "melody", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+2785,3600,110]
+	, "bear", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+2915,3600,110]
+	, "babylove", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+3045,3600,110]
+	, "jbshare", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+3175,3600,110]
+	, "guiding", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+3305,3600,110]
+	, "snowflake", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+3435,3600,110]
+	, "puppylove", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+3565,3600,110]
+	, "fieldcorruption", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+3695,3600,110]
+	, "cloudbuff", [regions["buffsRegion"][1]+320,regions["buffsRegion"][2]+3825,3600,110]
+	, "lasthour", [stat_regions["lasthour"][1]+200,stat_regions["lasthour"][2]+650,1080,480]
+	, "session", [stat_regions["session"][1]+200,stat_regions["session"][2]+734,1080,480])
 
 ; draw graph grids and axes
-pPen := Gdip_CreatePen(graphLine, 4)
+pPen := Gdip_CreatePen(graphLines, 4)
 Loop 61
 {
 	n := (Mod(A_Index, 10) = 1) ? 45 : 25
-	Gdip_DrawLine(G, pPen, graph_regions["honey/sec"][1]+graph_regions["honey/sec"][3]*(A_Index-1)//60, graph_regions["honey/sec"][2]+graph_regions["honey/sec"][4]+20, graph_regions["honey/sec"][1]+graph_regions["honey/sec"][3]*(A_Index-1)//60, graph_regions["honey/sec"][2]+graph_regions["honey/sec"][4]+20+n)
+	Gdip_DrawLine(G, pPen, graph_regions["honey"][1]+graph_regions["honey"][3]*(A_Index-1)//60, graph_regions["honey"][2]+graph_regions["honey"][4]+20, graph_regions["honey"][1]+graph_regions["honey"][3]*(A_Index-1)//60, graph_regions["honey"][2]+graph_regions["honey"][4]+20+n)
 	Gdip_DrawLine(G, pPen, graph_regions["backpack"][1]+graph_regions["backpack"][3]*(A_Index-1)//60, graph_regions["backpack"][2]+graph_regions["backpack"][4]+20, graph_regions["backpack"][1]+graph_regions["backpack"][3]*(A_Index-1)//60, graph_regions["backpack"][2]+graph_regions["backpack"][4]+20+n)
-	Gdip_DrawLine(G, pPen, graph_regions["boost"][1]+graph_regions["boost"][3]*(A_Index-1)//60, regions["buffs"][2]+regions["buffs"][4]-125, graph_regions["boost"][1]+graph_regions["boost"][3]*(A_Index-1)//60, regions["buffs"][2]+regions["buffs"][4]-125+n)
+	Gdip_DrawLine(G, pPen, graph_regions["boost"][1]+graph_regions["boost"][3]*(A_Index-1)//60, regions["buffsRegion"][2]+regions["buffsRegion"][4]-125, graph_regions["boost"][1]+graph_regions["boost"][3]*(A_Index-1)//60, regions["buffsRegion"][2]+regions["buffsRegion"][4]-125+n)
 
 	if (Mod(A_Index, 10) = 1)
 	{
 		i := A_Index
-		for k,v in graph_regions
+		for k,v in graph_regions {
+			if renderDisabled(k) {
+				continue
+			}
 			Gdip_DrawLine(G, pPen, v[1]+v[3]*(i-1)//60, v[2], v[1]+v[3]*(i-1)//60, v[2]+v[4])
+		}
 	}
 
 	if (A_Index < 5 && A_Index > 1)
-		y := regions["honey/sec"][2]+130+(regions["honey/sec"][4]-280)*(A_Index-1)//4, Gdip_DrawLine(G, pPen, regions["honey/sec"][1]+260, y, regions["honey/sec"][1]+regions["honey/sec"][3]-100, y)
+		y := regions["honey"][2]+130+(regions["honey"][4]-280)*(A_Index-1)//4, Gdip_DrawLine(G, pPen, regions["honey"][1]+260, y, regions["honey"][1]+regions["honey"][3]-100, y)
 }
 for k,v in graph_regions
 {
+	if renderDisabled(k) {
+		continue
+	}
 	if ((v[4] = 280) || (v[4] = 400))
 		Gdip_DrawLine(G, pPen, v[1]-60, v[2]+v[4]//2, v[1]+v[3]+60, v[2]+v[4]//2)
 	else if (v[4] = 480)
@@ -380,11 +592,14 @@ for k,v in graph_regions
 pBrush := Gdip_BrushCreateSolid(graphBackground)
 for k,v in graph_regions
 {
+	if renderDisabled(k) {
+		continue
+	}
 	Gdip_FillRectangle(G, pBrush, v[1]-60, v[2], v[3]+120, v[4])
 
 	if bitmaps.Has("pBM" k)
 	{
-		Gdip_DrawImage(G, bitmaps["pBM" k], regions["buffs"][1]+75, v[2]+v[4]//2-55, 110, 110), Gdip_DisposeImage(bitmaps["pBM" k])
+		Gdip_DrawImage(G, bitmaps["pBM" k], regions["buffsRegion"][1]+75, v[2]+v[4]//2-55, 110, 110), Gdip_DisposeImage(bitmaps["pBM" k])
 		Gdip_DrawLine(G, pPen, v[1]-60, v[2]+v[4]+10, v[1]+v[3]+60, v[2]+v[4]+10)
 	}
 }
@@ -392,75 +607,73 @@ Gdip_DeleteBrush(pBrush), Gdip_DeletePen(pPen)
 if (ocr_enabled = 0)
 {
 	pBrush := Gdip_BrushCreateSolid(ocrDisabled)
-	for k,v in ["honey/sec","honey","honey12h"]
+	for k,v in ["honey","lasthour","session"]
+		if renderDisabled(v) {
+			continue
+		}
 		Gdip_FillRectangle(G, pBrush, graph_regions[v][1], graph_regions[v][2], graph_regions[v][3], graph_regions[v][4])
 	Gdip_DeleteBrush(pBrush)
 }
 
 ; draw static buff images
-for k,v in ["clock","blessing","bloat","tideblessing","mondo"]
-	Gdip_DrawImage(G, bitmaps["pBM" v], stat_regions["buffs"][1]+48+(A_Index-1)*(stat_regions["buffs"][3]-96-220)/4, stat_regions["buffs"][2]+124, 220, 220), Gdip_DisposeImage(bitmaps["pBM" v])
+if not renderDisabled("buffs") {
+	for k,v in ["clock","blessing","bloat","tideblessing","mondo"]
+		Gdip_DrawImage(G, bitmaps["pBM" v], stat_regions["buffs"][1]+48+(A_Index-1)*(stat_regions["buffs"][3]-96-220)/4, stat_regions["buffs"][2]+124, 220, 220), Gdip_DisposeImage(bitmaps["pBM" v])
+}
 
 ; leave pBM as final graph template
 Gdip_DeleteGraphics(G)
 
-if A_Args.Length == 2 and A_Args[2] == "ForceTemplate" {
-	Gdip_SaveBitmapToFile(pBM, "template.png")
-	Gdip_DisposeImage(pBM)
-	ExitApp
-}
-
 ; ▰▰▰▰
 ; TESTING
 ; ▰▰▰▰
-/*
-start_time := A_Now
-status_changes[A_Min*60+A_Sec] := 0
 
-honey_values[0] := 170000000000000
-honey_12h[180] := 170000000000000
+if A_Args.Length == 2 and A_Args[2] == "ForceTemplate" {
+	start_time := A_Now
+	status_changes[A_Min*60+A_Sec] := 0
 
-Loop 60
-	honey_values[A_Index] := honey_values[A_Index-1] + ((Mod(A_Index, 15) < 4) ? 100000000000 : 10000000000)
+	honey_values[0] := 170000000000000
+	honey_12h[180] := 170000000000000
 
-Loop 3601
-{
-	if (Mod(A_Index, 5) = 1)
-		x := Random(0, 6)
-	backpack_values[A_Index-1] := ((Mod(A_Index, 900) < 240) ? 100 : 10) - x
-}
+	Loop 60
+		honey_values[A_Index] := honey_values[A_Index-1] + ((Mod(A_Index, 15) < 4) ? 100000000000 : 10000000000)
 
-status_changes := Map(0,2, 180,1 ,780,2, 1080,1, 1680,2, 1784,3 ,1832,2, 1980,1, 2100,3, 2120,1, 2580,2, 2880,1, 3480,2)
-
-stats[1][2] := 1000
-stats[6][2] := 100
-
-for k,v in buff_values
-{
-	v[0] := 2
-	Loop 600
+	Loop 3601
 	{
-		x := Random(0, (k = "redboost" || k = "whiteboost" || k = "precision") ? 2 : 10)
-		x := (x > 6) ? 10 : x
-		v[A_Index] := Abs(x-v[A_Index-1]) > 4 ? 10 : x
+		if (Mod(A_Index, 5) = 1)
+			x := Random(0, 6)
+		backpack_values[A_Index-1] := ((Mod(A_Index, 900) < 240) ? 100 : 10) - x
 	}
+
+	status_changes := Map(0,2, 180,1 ,780,2, 1080,1, 1680,2, 1784,3 ,1832,2, 1980,1, 2100,3, 2120,1, 2580,2, 2880,1, 3480,2)
+
+	stats[1][2] := 1000
+	stats[6][2] := 100
+
+	for k,v in buff_values
+	{
+		v[0] := 2
+		Loop 600
+		{
+			x := Random(0, (k = "redboost" || k = "whiteboost" || k = "precision") ? 2 : 10)
+			x := (x > 6) ? 10 : x
+			v[A_Index] := Abs(x-v[A_Index-1]) > 4 ? 10 : x
+		}
+	}
+
+	Loop 601
+	{
+		buff_values["tideblessing"][A_Index-1] := "1.10"
+		buff_values["bloat"][A_Index-1] := "6.00"
+	}
+	buff_values["comforting"][600] := 100
+
+	start_honey := 170000000000000
+	start_time := DateAdd(start_time, -1, "Hours")
+
+	SendHourlyReport(true)
+	ExitApp
 }
-
-Loop 601
-{
-	buff_values["tideblessing"][A_Index-1] := "1.10"
-	buff_values["bloat"][A_Index-1] := "6.00"
-}
-buff_values["comforting"][600] := 100
-
-start_honey := 170000000000000
-start_time := DateAdd(start_time, -1, "Hours")
-
-SendHourlyReport()
-KeyWait "F4", "D"
-Reload
-ExitApp
-*/
 
 ; ▰▰▰▰▰
 ; MAIN LOOP
@@ -514,7 +727,7 @@ Loop
 ********************************************************************************************/
 DetectBuffs()
 {
-	global buff_values, buff_characters, buff_bitmaps
+	global buff_values, buff_characters, buff_bitmaps, bitmaps
 
 	; set time value
 	time_value := (60*A_Min+A_Sec)//6
@@ -534,11 +747,31 @@ DetectBuffs()
 	}
 
 	; create bitmap for buffs
+	global pBMArea, list
 	pBMArea := Gdip_BitmapFromScreen(windowX "|" windowY+offsetY+30 "|" windowWidth "|50")
 
 	; basic on/off
-	for v in ["jbshare","babylove","festivemark","guiding"]
-		buff_values[v][i] := (Gdip_ImageSearch(pBMArea, buff_bitmaps["pBM" v], , , 30, , , InStr(v, "mark") ? 6 : (v = "guiding") ? 10 : 0, , 7) = 1)
+	for v in ["jbshare","babylove","festivemark", "fieldcorruption","guiding", "snowflake", "cloudbuff"] { ; CUSTOM STUFF added snowflake
+		if (v == "fieldcorruption") {
+			temp_val := (Gdip_ImageSearch(pBMArea, buff_bitmaps["pBM" v], , , , , , 30) = 1)
+			if DEBUG_LOG {
+				FileAppend("Index: " i ", Value: " temp_val "`n", "fieldcorruption_log.txt")
+			}
+			buff_values[v][i] := temp_val
+		} else if (v == "snowflake") {
+				;check that: science buff visible and e button not visible (buffs not obscured)
+				if ((Gdip_ImageSearch(pBMArea, bitmaps["science"]) = 1) && (Gdip_ImageSearch(pBMArea, bitmaps["e_button"]) = 0)) {
+					buff_values[v][i] := (Gdip_ImageSearch(pBMArea, buff_bitmaps["pBMSnowflake"], &pos, , 20, , , , , 7) = 1)
+				} else {
+					buff_values[v][i] := 0
+				}
+				if DEBUG_LOG {
+					FileAppend("Index: " i ", Value: " buff_values[v][i] "`n", "snowflake_log.txt")
+				}
+		} else {
+			buff_values[v][i] := (Gdip_ImageSearch(pBMArea, buff_bitmaps["pBM" v], , , 30, , , InStr(v, "mark") ? 6 : (v = "guiding") ? 10 : 0, , 7) = 1)
+		}
+	}
 
 	; bear morphs
 	buff_values["bear"][i] := 0
@@ -847,9 +1080,9 @@ DetectHoney()
 * @description: creates an hourly report (image) from the honey and buff arrays, then sends it to Discord
 * @author SP
 ********************************************************************************************************/
-SendHourlyReport()
+SendHourlyReport(generateTemplate:=false)
 {
-	global pBM, regions, stat_regions, honey_values, honey_12h, backpack_values, buff_values, buff_colors, status_changes, start_time, start_honey, stats, latest_boost, latest_winds, graph_regions, version, natro_version, os_version, bitmaps, ocr_enabled, ocr_language
+	global pBM, regions, stat_regions, honey_values, honey_12h, backpack_values, buff_values, buff_colors, status_changes, start_time, start_honey, stats, latest_boost, latest_winds, graph_regions, version, natro_version, os_version, bitmaps, ocr_enabled, ocr_language, polar_image, SavePath, SaveImagesLocally
 	static honey_average := 0, honey_earned := 0, convert_time := 0, gather_time := 0, other_time := 0, stats_old := [["Total Boss Kills",0],["Total Vic Kills",0],["Total Bug Kills",0],["Total Planters",0],["Quests Done",0],["Disconnects",0]]
 
 	if (honey_values.Count > 0)
@@ -926,16 +1159,25 @@ SendHourlyReport()
 	min_12h := minX(honey_12h), max_12h := Max(maxX(honey_12h), min_12h+1000), range_12h := max_12h - min_12h
 
 	; draw times
-	for v in ["honey/sec","backpack","buffs"]
+	for v in ["honey","backpack","buffsRegion"]
 		Loop 7
 			Gdip_TextToGraphics(G, times[A_Index], "s44 Center Bold cffffffff x" regions[v][1]+320+(regions[v][3]-480)*(A_Index-1)//6 " y" regions[v][2]+regions[v][4]-85, "Segoe UI")
-	for k,v in Map("honey","times", "honey12h","times_12h")
-		Loop 7
+	for k,v in Map("lasthour","times", "session","times_12h") {
+		if renderDisabled(k) {
+			continue
+		}
+		
+		Loop 7 {
 			Gdip_TextToGraphics(G, %v%[A_Index], "s30 Center Bold cffffffff x" graph_regions[k][1]+graph_regions[k][3]*(A_Index-1)//6 " y" graph_regions[k][2]+graph_regions[k][4]+14, "Segoe UI")
+		}
+	}
 
 	; draw graphs
 	for k,v in graph_regions
 	{
+		if renderDisabled(k) {
+			continue
+		}
 		pBMGraph := Gdip_CreateBitmap(v[3]+8, v[4]+8)
 		G_Graph := Gdip_GraphicsFromImage(pBMGraph)
 		Gdip_SetSmoothingMode(G_Graph, 4)
@@ -943,7 +1185,7 @@ SendHourlyReport()
 
 		switch k
 		{
-			case "honey/sec":
+			case "honey":
 			Loop 5
 				Gdip_TextToGraphics(G, FormatNumber(max_gradient-(range_gradient*(A_Index-1))//4), "s40 Right Bold cffffffff x" v[1]-320 " y" v[2]+v[4]*(A_Index-1)//4-28, "Segoe UI", 240)
 
@@ -976,7 +1218,7 @@ SendHourlyReport()
 			}
 
 
-			case "honey":
+			case "lasthour":
 			Loop 5
 				Gdip_TextToGraphics(G, FormatNumber(max_value-(range_value*(A_Index-1))//4), "s28 Right Bold cffffffff x" v[1] - 310 " y" v[2]+v[4]*(A_Index-1)//4 - 20, "Segoe UI", 240)
 
@@ -1009,7 +1251,7 @@ SendHourlyReport()
 			}
 
 
-			case "honey12h":
+			case "session":
 			Loop 5
 				Gdip_TextToGraphics(G, FormatNumber(max_12h-Floor((range_12h*(A_Index-1))/4)), "s28 Right Bold cffffffff x" v[1]-310 " y" v[2]+v[4]*(A_Index-1)//4-20, "Segoe UI", 240)
 
@@ -1118,13 +1360,17 @@ SendHourlyReport()
 			Gdip_DeleteBrush(pBrush)
 
 
-			case "festivemark","popstar","melody","bear","babylove","jbshare","guiding":
+			case "festivemark","popstar","melody","bear","babylove","jbshare","guiding","snowflake","puppylove", "fieldcorruption","cloudbuff":
 			color := (k = "festivemark") ? 0xffc84335
 				: (k = "popstar") ? 0xff0096ff
 				: (k = "melody") ? 0xfff0f0f0
 				: (k = "bear") ? 0xffb26f3e
 				: (k = "babylove") ? 0xff8de4f3
 				: (k = "jbshare") ? 0xfff9ccff
+				: (k = "snowflake") ? 0xffc6fbff
+				: (k = "puppylove") ? 0xffdc143c
+				: (k = "fieldcorruption") ? 0xff7352ba
+				: (k = "cloudbuff") ? 0xfffefefe
 				: 0xffffef8e
 
 			pBrush := Gdip_BrushCreateSolid(color-0x60000000)
@@ -1140,8 +1386,16 @@ SendHourlyReport()
 
 
 			default:
-			max_buff := (k = "inspire") ? Max(ceil(maxX(buff_values[k])/5)*5, 5) : 10
+				switch k {
+					case "inspire":
+						max_buff := Max(ceil(maxX(buff_values[k])/5)*5, 5)
 			Gdip_TextToGraphics(G, "x0-" max_buff, "s44 Center Bold cffffffff x" v[1]-190 " y" v[2]+190, "Segoe UI")
+					default:
+						max_buff := 10
+						Gdip_TextToGraphics(G, "x0-10", "s44 Center Bold cffffffff x" v[1]-190 " y" v[2]+190, "Segoe UI")
+				}
+			; max_buff := (k = "inspire") ? Max(ceil(maxX(buff_values[k])/5)*5, 5) : 10
+			; Gdip_TextToGraphics(G, "x0-" max_buff, "s44 Center Bold cffffffff x" v[1]-190 " y" v[2]+190, "Segoe UI")
 
 			total := 0
 			count := 0
@@ -1254,91 +1508,98 @@ SendHourlyReport()
 
 	; WRITE STATS
 	; section 1: last hour
-	Gdip_TextToGraphics(G, "LAST HOUR", "s64 Center Bold cffffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2 " y" stat_regions["lasthour"][2]+4, "Segoe UI")
+	if not renderDisabled("lasthour") {
+		Gdip_TextToGraphics(G, "LAST HOUR", "s64 Center Bold cffffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2 " y" stat_regions["lasthour"][2]+4, "Segoe UI")
 
-	Gdip_TextToGraphics(G, "Honey Earned", "s60 Right Bold ccfffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2-40 " y" stat_regions["lasthour"][2]+96, "Segoe UI")
-	pos := Gdip_TextToGraphics(G, FormatNumber(honey_earned), "s60 Left Bold cffffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2+40 " y" stat_regions["lasthour"][2]+96, "Segoe UI")
-	x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
-	pBrush := Gdip_BrushCreateSolid(hour_increase ? 0xff00ff00 : 0xffff0000), (x) && Gdip_FillPolygon(G, pBrush, hour_increase ? [[x+45, stat_regions["lasthour"][2]+119], [x+20, stat_regions["lasthour"][2]+161], [x+70, stat_regions["lasthour"][2]+161]] : [[x+20, stat_regions["lasthour"][2]+119], [x+70, stat_regions["lasthour"][2]+119], [x+45, stat_regions["lasthour"][2]+161]]), Gdip_DeleteBrush(pBrush)
+		Gdip_TextToGraphics(G, "Honey Earned", "s60 Right Bold ccfffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2-40 " y" stat_regions["lasthour"][2]+96, "Segoe UI")
+		pos := Gdip_TextToGraphics(G, FormatNumber(honey_earned), "s60 Left Bold cffffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2+40 " y" stat_regions["lasthour"][2]+96, "Segoe UI")
+		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
+		pBrush := Gdip_BrushCreateSolid(hour_increase ? 0xff00ff00 : 0xffff0000), (x) && Gdip_FillPolygon(G, pBrush, hour_increase ? [[x+45, stat_regions["lasthour"][2]+119], [x+20, stat_regions["lasthour"][2]+161], [x+70, stat_regions["lasthour"][2]+161]] : [[x+20, stat_regions["lasthour"][2]+119], [x+70, stat_regions["lasthour"][2]+119], [x+45, stat_regions["lasthour"][2]+161]]), Gdip_DeleteBrush(pBrush)
 
-	Gdip_TextToGraphics(G, "Hourly Average", "s60 Right Bold ccfffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2-40 " y" stat_regions["lasthour"][2]+180, "Segoe UI")
-	pos := Gdip_TextToGraphics(G, FormatNumber(honey_average), "s60 Left Bold cffffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2+40 " y" stat_regions["lasthour"][2]+180, "Segoe UI")
-	x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
-	Gdip_TextToGraphics(G, honey_change, "s60 Left Bold c" . (InStr(honey_change, "-") ? "ffff0000" : InStr(honey_change, "+0") ? "ff888888" : "ff00ff00") . " x" x " y" stat_regions["lasthour"][2]+180, "Segoe UI")
+		Gdip_TextToGraphics(G, "Hourly Average", "s60 Right Bold ccfffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2-40 " y" stat_regions["lasthour"][2]+180, "Segoe UI")
+		pos := Gdip_TextToGraphics(G, FormatNumber(honey_average), "s60 Left Bold cffffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2+40 " y" stat_regions["lasthour"][2]+180, "Segoe UI")
+		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
+		Gdip_TextToGraphics(G, honey_change, "s60 Left Bold c" . (InStr(honey_change, "-") ? "ffff0000" : InStr(honey_change, "+0") ? "ff888888" : "ff00ff00") . " x" x " y" stat_regions["lasthour"][2]+180, "Segoe UI")
 
-	angle := -90
-	for i,j in status_list
-	{
-		color := (j = "Gather") ? 0xffa6ff7c
-				: (j = "Convert") ? 0xfffeca40
-				: 0xff859aad
-		pBrush := Gdip_BrushCreateSolid(color)
-		Gdip_FillPie(G, pBrush, stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2-464, stat_regions["lasthour"][2]+318, 280, 280, angle, hour_%j%_time/10)
-		angle += hour_%j%_time/10
+		angle := -90
+		for i,j in status_list
+		{
+			color := (j = "Gather") ? 0xffa6ff7c
+					: (j = "Convert") ? 0xfffeca40
+					: 0xff859aad
+			pBrush := Gdip_BrushCreateSolid(color)
+			Gdip_FillPie(G, pBrush, stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2-464, stat_regions["lasthour"][2]+318, 280, 280, angle, hour_%j%_time/10)
+			angle += hour_%j%_time/10
 
-		Gdip_FillRoundedRectangle(G, pBrush, stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2+74, stat_regions["lasthour"][2]+348+(A_Index-1)*88, 44, 44, 4)
-		Gdip_DeleteBrush(pBrush)
+			Gdip_FillRoundedRectangle(G, pBrush, stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2+74, stat_regions["lasthour"][2]+348+(A_Index-1)*88, 44, 44, 4)
+			Gdip_DeleteBrush(pBrush)
 
-		Gdip_TextToGraphics(G, j, "s48 Right Bold ccfffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2+56 " y" stat_regions["lasthour"][2]+335+(A_Index-1)*88, "Segoe UI")
-		Gdip_TextToGraphics(G, DurationFromSeconds(hour_%j%_time), "s48 Left Bold cefffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2+135 " y" stat_regions["lasthour"][2]+335+(A_Index-1)*88, "Segoe UI")
-		Gdip_TextToGraphics(G, hour_%j%_percent, "s48 Right Bold cefffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2+476 " y" stat_regions["lasthour"][2]+335+(A_Index-1)*88, "Segoe UI")
+			Gdip_TextToGraphics(G, j, "s48 Right Bold ccfffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2+56 " y" stat_regions["lasthour"][2]+335+(A_Index-1)*88, "Segoe UI")
+			Gdip_TextToGraphics(G, DurationFromSeconds(hour_%j%_time), "s48 Left Bold cefffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2+135 " y" stat_regions["lasthour"][2]+335+(A_Index-1)*88, "Segoe UI")
+			Gdip_TextToGraphics(G, hour_%j%_percent, "s48 Right Bold cefffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2+476 " y" stat_regions["lasthour"][2]+335+(A_Index-1)*88, "Segoe UI")
+		}
 	}
 
 	; section 2: session
-	Gdip_TextToGraphics(G, "SESSION", "s64 Center Bold cffffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2 " y" stat_regions["session"][2]+4, "Segoe UI")
+	if not renderDisabled("session") {
 
-	Gdip_TextToGraphics(G, "Current Honey", "s60 Right Bold ccfffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2-40 " y" stat_regions["session"][2]+96, "Segoe UI")
-	Gdip_TextToGraphics(G, FormatNumber(current_honey), "s60 Left Bold cffffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2+40 " y" stat_regions["session"][2]+96, "Segoe UI")
+		Gdip_TextToGraphics(G, "SESSION", "s64 Center Bold cffffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2 " y" stat_regions["session"][2]+4, "Segoe UI")
 
-	Gdip_TextToGraphics(G, "Session Honey", "s60 Right Bold ccfffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2-40 " y" stat_regions["session"][2]+180, "Segoe UI")
-	Gdip_TextToGraphics(G, FormatNumber(session_total), "s60 Left Bold cffffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2+40 " y" stat_regions["session"][2]+180, "Segoe UI")
+		Gdip_TextToGraphics(G, "Current Honey", "s60 Right Bold ccfffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2-40 " y" stat_regions["session"][2]+96, "Segoe UI")
+		Gdip_TextToGraphics(G, FormatNumber(current_honey), "s60 Left Bold cffffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2+40 " y" stat_regions["session"][2]+96, "Segoe UI")
 
-	Gdip_TextToGraphics(G, "Session Time", "s60 Right Bold ccfffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2-40 " y" stat_regions["session"][2]+264, "Segoe UI")
-	session_time_F := DurationFromSeconds(session_time)
-	Gdip_TextToGraphics(G, session_time_F, "s60 Left Bold cffffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2+40 " y" stat_regions["session"][2]+264, "Segoe UI")
+		Gdip_TextToGraphics(G, "Session Honey", "s60 Right Bold ccfffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2-40 " y" stat_regions["session"][2]+180, "Segoe UI")
+		Gdip_TextToGraphics(G, FormatNumber(session_total), "s60 Left Bold cffffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2+40 " y" stat_regions["session"][2]+180, "Segoe UI")
 
-	angle := -90
-	for i,j in status_list
-	{
-		color := (j = "Gather") ? 0xffa6ff7c
-				: (j = "Convert") ? 0xfffeca40
-				: 0xff859aad
-		pBrush := Gdip_BrushCreateSolid(color)
-		Gdip_FillPie(G, pBrush, stat_regions["session"][1]+stat_regions["session"][3]//2-464, stat_regions["session"][2]+402, 280, 280, angle, %j%_time/session_time*360)
-		angle += %j%_time/session_time*360
+		Gdip_TextToGraphics(G, "Session Time", "s60 Right Bold ccfffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2-40 " y" stat_regions["session"][2]+264, "Segoe UI")
+		session_time_F := DurationFromSeconds(session_time)
+		Gdip_TextToGraphics(G, session_time_F, "s60 Left Bold cffffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2+40 " y" stat_regions["session"][2]+264, "Segoe UI")
 
-		Gdip_FillRoundedRectangle(G, pBrush, stat_regions["session"][1]+stat_regions["session"][3]//2+74, stat_regions["session"][2]+432+(A_Index-1)*88, 44, 44, 4)
-		Gdip_DeleteBrush(pBrush)
+		angle := -90
+		for i,j in status_list
+		{
+			color := (j = "Gather") ? 0xffa6ff7c
+					: (j = "Convert") ? 0xfffeca40
+					: 0xff859aad
+			pBrush := Gdip_BrushCreateSolid(color)
+			Gdip_FillPie(G, pBrush, stat_regions["session"][1]+stat_regions["session"][3]//2-464, stat_regions["session"][2]+402, 280, 280, angle, %j%_time/session_time*360)
+			angle += %j%_time/session_time*360
 
-		Gdip_TextToGraphics(G, j, "s48 Right Bold ccfffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2+56 " y" stat_regions["session"][2]+419+(A_Index-1)*88, "Segoe UI")
-		Gdip_TextToGraphics(G, DurationFromSeconds(%j%_time), "s48 Left Bold cefffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2+135 " y" stat_regions["session"][2]+419+(A_Index-1)*88, "Segoe UI")
-		Gdip_TextToGraphics(G, %j%_percent, "s48 Right Bold cefffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2+476 " y" stat_regions["session"][2]+419+(A_Index-1)*88, "Segoe UI")
+			Gdip_FillRoundedRectangle(G, pBrush, stat_regions["session"][1]+stat_regions["session"][3]//2+74, stat_regions["session"][2]+432+(A_Index-1)*88, 44, 44, 4)
+			Gdip_DeleteBrush(pBrush)
+
+			Gdip_TextToGraphics(G, j, "s48 Right Bold ccfffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2+56 " y" stat_regions["session"][2]+419+(A_Index-1)*88, "Segoe UI")
+			Gdip_TextToGraphics(G, DurationFromSeconds(%j%_time), "s48 Left Bold cefffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2+135 " y" stat_regions["session"][2]+419+(A_Index-1)*88, "Segoe UI")
+			Gdip_TextToGraphics(G, %j%_percent, "s48 Right Bold cefffffff x" stat_regions["session"][1]+stat_regions["session"][3]//2+476 " y" stat_regions["session"][2]+419+(A_Index-1)*88, "Segoe UI")
+		}
 	}
 
 	; section 3: buffs
-	Gdip_TextToGraphics(G, "BUFFS", "s64 Center Bold cffffffff x" stat_regions["buffs"][1]+stat_regions["buffs"][3]//2 " y" stat_regions["buffs"][2]+4, "Segoe UI")
+	if not renderDisabled("buffs") {
+		Gdip_TextToGraphics(G, "BUFFS", "s64 Center Bold cffffffff x" stat_regions["buffs"][1]+stat_regions["buffs"][3]//2 " y" stat_regions["buffs"][2]+4, "Segoe UI")
 
-	for k,v in ["clock","blessing","bloat","tideblessing","mondo"]
-	{
-		i := A_Index
-		Loop 601
+		for k,v in ["clock","blessing","bloat","tideblessing","mondo"]
 		{
-			if (buff_values[v].Has(601-A_Index) && (buff_values[v][601-A_Index] > 0))
+			i := A_Index
+			Loop 601
 			{
-				if (i = 3 || i = 4)
-					pBrush := Gdip_BrushCreateSolid(0x70000000), Gdip_FillRectangle(G, pBrush, stat_regions["buffs"][1]+47+(i-1)*(stat_regions["buffs"][3]-96-220)/4, stat_regions["buffs"][2]+123, 221, 1+Min((1-((buff_values[v][601-A_Index]-1)/((i = 3) ? 5.00 : 0.20))) * 220, 220)), Gdip_DeleteBrush(pBrush)
+				if (buff_values[v].Has(601-A_Index) && (buff_values[v][601-A_Index] > 0))
+				{
+					if (i = 3 || i = 4)
+						pBrush := Gdip_BrushCreateSolid(0x70000000), Gdip_FillRectangle(G, pBrush, stat_regions["buffs"][1]+47+(i-1)*(stat_regions["buffs"][3]-96-220)/4, 	stat_regions["buffs"][2]+123, 221, 1+Min((1-((buff_values[v][601-A_Index]-1)/((i = 3) ? 5.00 : 0.20))) * 220, 220)), Gdip_DeleteBrush(pBrush)
 
-				pBrush := Gdip_BrushCreateSolid(0xffffffff), pPen := Gdip_CreatePen(0xff000000, 10)
-				Gdip_DrawOrientedString(G, "x" buff_values[v][601-A_Index], "Segoe UI", 72, 1, stat_regions["buffs"][1]+48+(i-1)*(stat_regions["buffs"][3]-96-220)/4, stat_regions["buffs"][2]+254, 220, 90, , pBrush, pPen, 2)
-				Gdip_DeletePen(pPen), Gdip_DeleteBrush(pBrush)
-				break
-			}
-			if (A_Index = 601)
-			{
-				pBrush := Gdip_BrushCreateSolid(0x70000000), Gdip_FillRectangle(G, pBrush, stat_regions["buffs"][1]+47+(i-1)*(stat_regions["buffs"][3]-96-220)/4, stat_regions["buffs"][2]+123, 221, 221), Gdip_DeleteBrush(pBrush)
-				pBrush := Gdip_BrushCreateSolid(0xffffffff), pPen := Gdip_CreatePen(0xff000000, 10)
-				Gdip_DrawOrientedString(G, "x0", "Segoe UI", 72, 1, stat_regions["buffs"][1]+48+(i-1)*(stat_regions["buffs"][3]-96-220)/4, stat_regions["buffs"][2]+254, 220, 90, , pBrush, pPen, 2)
-				Gdip_DeletePen(pPen), Gdip_DeleteBrush(pBrush)
+					pBrush := Gdip_BrushCreateSolid(0xffffffff), pPen := Gdip_CreatePen(0xff000000, 10)
+					Gdip_DrawOrientedString(G, "x" buff_values[v][601-A_Index], "Segoe UI", 72, 1, stat_regions["buffs"][1]+48+(i-1)*(stat_regions["buffs"][3]-96-220)/4, 	stat_regions["buffs"][2]+254, 220, 90, , pBrush, pPen, 2)
+					Gdip_DeletePen(pPen), Gdip_DeleteBrush(pBrush)
+					break
+				}
+				if (A_Index = 601)
+				{
+					pBrush := Gdip_BrushCreateSolid(0x70000000), Gdip_FillRectangle(G, pBrush, stat_regions["buffs"][1]+47+(i-1)*(stat_regions["buffs"][3]-96-220)/4, stat_regions	["buffs"][2]+123, 221, 221), Gdip_DeleteBrush(pBrush)
+					pBrush := Gdip_BrushCreateSolid(0xffffffff), pPen := Gdip_CreatePen(0xff000000, 10)
+					Gdip_DrawOrientedString(G, "x0", "Segoe UI", 72, 1, stat_regions["buffs"][1]+48+(i-1)*(stat_regions["buffs"][3]-96-220)/4, stat_regions["buffs"][2]+254, 220, 	90, , pBrush, pPen, 2)
+					Gdip_DeletePen(pPen), Gdip_DeleteBrush(pBrush)
+				}
 			}
 		}
 	}
@@ -1364,175 +1625,227 @@ SendHourlyReport()
 			planters++
 	}
 
-	for i,j in ["comforting","motivating","satisfying","refreshing","invigorating"]
-	{
-		color := (j = "comforting") ? 0xff7e9eb3
-			: (j = "motivating") ? 0xff937db3
-			: (j = "satisfying") ? 0xffb398a7
-			: (j = "refreshing") ? 0xff78b375
-			: 0xffb35951 ; invigorating
-
-		nectar_value := 0
-		Loop 601
+	if not renderDisabled("buffs") {
+		for i,j in ["comforting","motivating","satisfying","refreshing","invigorating"]
 		{
-			if (buff_values[j].Has(601-A_Index) && (buff_values[j][601-A_Index] > 0))
+			color := (j = "comforting") ? 0xff7e9eb3
+				: (j = "motivating") ? 0xff937db3
+				: (j = "satisfying") ? 0xffb398a7
+				: (j = "refreshing") ? 0xff78b375
+				: 0xffb35951 ; invigorating
+
+			nectar_value := 0
+			Loop 601
 			{
-				nectar_value := buff_values[j][601-A_Index]
-				break
+				if (buff_values[j].Has(601-A_Index) && (buff_values[j][601-A_Index] > 0))
+				{
+					nectar_value := buff_values[j][601-A_Index]
+					break
+				}
 			}
-		}
 
-		projected_value := 0
-		Loop 3
-			projected_value += (PlanterNectar%A_Index% = j) ? (PlanterEstPercent%A_Index% - Max(PlanterHarvestTime%A_Index% - unix_now, 0)/864) : 0
-		projected_value := Max(Min(projected_value, 100-nectar_value), 0)
+			projected_value := 0
+			Loop 3
+				projected_value += (PlanterNectar%A_Index% = j) ? (PlanterEstPercent%A_Index% - Max(PlanterHarvestTime%A_Index% - unix_now, 0)/864) : 0
+			projected_value := Max(Min(projected_value, 100-nectar_value), 0)
 
-		pPen := Gdip_CreatePen(color, 32), Gdip_DrawArc(G, pPen, stat_regions["buffs"][1]+50+(A_Index-1)*(stat_regions["buffs"][3]-100-200)/4, stat_regions["buffs"][2]+410, 200, 200, -90, nectar_value/100*360), Gdip_DeletePen(pPen)
+			pPen := Gdip_CreatePen(color, 32), Gdip_DrawArc(G, pPen, stat_regions["buffs"][1]+50+(A_Index-1)*(stat_regions["buffs"][3]-100-200)/4, stat_regions["buffs"][2]+410, 200, 200, -90, nectar_value/100*360), Gdip_DeletePen(pPen)
 
-		pBrush := Gdip_BrushCreateHatch(color, color-0xa0000000, 34), pPen := Gdip_CreatePenFromBrush(pBrush, 32), Gdip_DeleteBrush(pBrush), Gdip_DrawArc(G, pPen, stat_regions["buffs"][1]+50+(A_Index-1)*(stat_regions["buffs"][3]-100-200)/4, stat_regions["buffs"][2]+410, 200, 200, -90-1+nectar_value/100*360, projected_value/100*360+1), Gdip_DeletePen(pPen)
+			pBrush := Gdip_BrushCreateHatch(color, color-0xa0000000, 34), pPen := Gdip_CreatePenFromBrush(pBrush, 32), Gdip_DeleteBrush(pBrush), Gdip_DrawArc(G, pPen, stat_regions["buffs"][1]+50+(A_Index-1)*(stat_regions["buffs"][3]-100-200)/4, stat_regions["buffs"][2]+410, 200, 200, -90-1+nectar_value/100*360, projected_value/100*360+1), Gdip_DeletePen(pPen)
 
-		pPen := Gdip_CreatePen(color-0xd0000000, 32), Gdip_DrawArc(G, pPen, stat_regions["buffs"][1]+50+(A_Index-1)*(stat_regions["buffs"][3]-100-200)/4, stat_regions["buffs"][2]+410, 200, 200, -90-1+(nectar_value+projected_value)/100*360, 360+2-(nectar_value+projected_value)/100*360), Gdip_DeletePen(pPen)
+			pPen := Gdip_CreatePen(color-0xd0000000, 32), Gdip_DrawArc(G, pPen, stat_regions["buffs"][1]+50+(A_Index-1)*(stat_regions["buffs"][3]-100-200)/4, stat_regions["buffs"][2]+410, 200, 200, -90-1+(nectar_value+projected_value)/100*360, 360+2-(nectar_value+projected_value)/100*360), Gdip_DeletePen(pPen)
 
-		pBrush := Gdip_BrushCreateSolid(color)
-		Gdip_TextToGraphics(G, nectar_value "%", "s54 Center Bold c" pBrush " x" stat_regions["buffs"][1]+150+(A_Index-1)*(stat_regions["buffs"][3]-100-200)/4 " y" stat_regions["buffs"][2]+(projected_value ? 456 : 472), "Segoe UI")
-		Gdip_TextToGraphics(G, Format("{1:Us}", SubStr(j, 1, 3)), "s48 Center Bold c" pBrush " x" stat_regions["buffs"][1]+150+(A_Index-1)*(stat_regions["buffs"][3]-100-200)/4 " y" stat_regions["buffs"][2]+630, "Segoe UI")
-		Gdip_DeleteBrush(pBrush)
-
-		if projected_value
-		{
-			pBrush := Gdip_BrushCreateSolid(color-0x40000000)
-			Gdip_TextToGraphics(G, "(+" Round(projected_value) "%)", "s28 Center Bold c" pBrush " x" stat_regions["buffs"][1]+150+(A_Index-1)*(stat_regions["buffs"][3]-100-200)/4 " y" stat_regions["buffs"][2]+516, "Segoe UI")
+			pBrush := Gdip_BrushCreateSolid(color)
+			Gdip_TextToGraphics(G, nectar_value "%", "s54 Center Bold c" pBrush " x" stat_regions["buffs"][1]+150+(A_Index-1)*(stat_regions["buffs"][3]-100-200)/4 " y" stat_regions["buffs"][2]+(projected_value ? 456 : 472), "Segoe UI")
+			Gdip_TextToGraphics(G, Format("{1:Us}", SubStr(j, 1, 3)), "s48 Center Bold c" pBrush " x" stat_regions["buffs"][1]+150+(A_Index-1)*(stat_regions["buffs"][3]-100-200)/4 " y" stat_regions["buffs"][2]+630, "Segoe UI")
 			Gdip_DeleteBrush(pBrush)
+
+			if projected_value {
+				pBrush := Gdip_BrushCreateSolid(color-0x40000000)
+				Gdip_TextToGraphics(G, "(+" Round(projected_value) "%)", "s28 Center Bold c" pBrush " x" stat_regions["buffs"][1]+150+(A_Index-1)*(stat_regions["buffs"][3]-100-200)/4 " y" stat_regions["buffs"][2]+516, "Segoe UI")
+				Gdip_DeleteBrush(pBrush)
+			}
 		}
 	}
 
 	; section 4: planters
-	Gdip_TextToGraphics(G, "PLANTERS", "s64 Center Bold cffffffff x" stat_regions["planters"][1]+stat_regions["planters"][3]//2 " y" stat_regions["planters"][2]+4, "Segoe UI")
+	if not renderDisabled("planters") {
+		Gdip_TextToGraphics(G, "PLANTERS", "s64 Center Bold cffffffff x" stat_regions["planters"][1]+stat_regions["planters"][3]//2 " y" stat_regions["planters"][2]+4, "Segoe UI")
 
-	if planters
-	{
-		i := 0
-		Loop 3
+		if planters
 		{
-			if (PlanterName%A_Index% = "None")
-				continue
+			i := 0
+			Loop 3
+			{
+				if (PlanterName%A_Index% = "None")
+					continue
 
-			i++
-			Gdip_DrawImage(G, bitmaps["pBM" PlanterName%A_Index%], stat_regions["planters"][1]+stat_regions["planters"][3]//2-(110+220*(planters-1))+(i-1)*440, stat_regions["planters"][2]+110, 220, 220)
+				i++
+				Gdip_DrawImage(G, bitmaps["pBM" PlanterName%A_Index%], stat_regions["planters"][1]+stat_regions["planters"][3]//2-(110+220*(planters-1))+(i-1)*440, stat_regions["planters"][2]+110, 220, 220)
 
-			pos := Gdip_TextToGraphics(G, PlanterField%A_Index%, "s52 Center Bold cffffffff x" stat_regions["planters"][1]+stat_regions["planters"][3]//2-(110+220*(planters-1))+(i-1)*440+74 " y" stat_regions["planters"][2]+340, "Segoe UI")
-			x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
-			Gdip_DrawImage(G, bitmaps["pBM" ((PlanterNectar%A_Index% = "None") ? "Unknown" : PlanterNectar%A_Index%)], x+6, stat_regions["planters"][2]+348, 60, 60)
+				pos := Gdip_TextToGraphics(G, PlanterField%A_Index%, "s52 Center Bold cffffffff x" stat_regions["planters"][1]+stat_regions["planters"][3]//2-(110+220*(planters-1))+(i-1)*440+74 " y" stat_regions["planters"][2]+340, "Segoe UI")
+				x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
+				Gdip_DrawImage(G, bitmaps["pBM" ((PlanterNectar%A_Index% = "None") ? "Unknown" : PlanterNectar%A_Index%)], x+6, stat_regions["planters"][2]+348, 60, 60)
 
-			MPlanterHold%i% := IniRead("settings\nm_config.ini", "Planters", "MPlanterHold" i)
-			MPlanterSmoking%i% := IniRead("settings\nm_config.ini", "Planters", "MPlanterSmoking" i)
-			PlanterMode := IniRead("settings\nm_config.ini", "Planters", "PlanterMode")
-			duration := ((time := PlanterHarvestTime%A_Index% - unix_now) > 360000) ? "N/A" : (time > 0) ? hmsFromSeconds(PlanterHarvestTime%A_Index% - unix_now) : (((MPlanterSmoking%i%) && (PlanterMode = 1)) ? "Smoking" : ((MPlanterHold%i%) && (PlanterMode = 1)) ? "Holding" :  "Ready")
-			pos := Gdip_TextToGraphics(G, duration, "s46 Center Bold ccfffffff x" stat_regions["planters"][1]+stat_regions["planters"][3]//2-(110+220*(planters-1))+(i-1)*440+130 " y" stat_regions["planters"][2]+406, "Segoe UI")
-			x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)
-			Gdip_DrawImage(G, bitmaps["pBMTimer"], x-60, stat_regions["planters"][2]+410, 56, 56, , , , , 0.811765)
+				MPlanterHold%i% := IniRead("settings\nm_config.ini", "Planters", "MPlanterHold" i)
+				MPlanterSmoking%i% := IniRead("settings\nm_config.ini", "Planters", "MPlanterSmoking" i)
+				PlanterMode := IniRead("settings\nm_config.ini", "Planters", "PlanterMode")
+				duration := ((time := PlanterHarvestTime%A_Index% - unix_now) > 360000) ? "N/A" : (time > 0) ? hmsFromSeconds(PlanterHarvestTime%A_Index% - unix_now) : (((MPlanterSmoking%i%) && (PlanterMode = 1)) ? "Smoking" : ((MPlanterHold%i%) && (PlanterMode = 1)) ? "Holding" :  "Ready")
+				pos := Gdip_TextToGraphics(G, duration, "s46 Center Bold ccfffffff x" stat_regions["planters"][1]+stat_regions["planters"][3]//2-(110+220*(planters-1))+(i-1)*440+130 " y" stat_regions["planters"][2]+406, "Segoe UI")
+				x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)
+				Gdip_DrawImage(G, bitmaps["pBMTimer"], x-60, stat_regions["planters"][2]+410, 56, 56, , , , , 0.811765)
 
-			if (i >= planters)
-				break
-		}
-		Loop (planters - i)
-		{
-			Gdip_DrawImage(G, bitmaps["pBMUnknown"], stat_regions["planters"][1]+stat_regions["planters"][3]//2-(110+220*(planters-1))+(i+A_Index-1)*440, stat_regions["planters"][2]+110, 220, 220)
+				if (i >= planters)
+					break
+			}
+			Loop (planters - i)
+			{
+				Gdip_DrawImage(G, bitmaps["pBMUnknown"], stat_regions["planters"][1]+stat_regions["planters"][3]//2-(110+220*(planters-1))+(i+A_Index-1)*440, stat_regions["planters"][2]+110, 220, 220)
 
-			pos := Gdip_TextToGraphics(G, "None", "s52 Center Bold cffffffff x" stat_regions["planters"][1]+stat_regions["planters"][3]//2-(110+220*(planters-1))+(i+A_Index-1)*440+74 " y" stat_regions["planters"][2]+340, "Segoe UI")
-			x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
-			Gdip_DrawImage(G, bitmaps["pBMUnknown"], x+6, stat_regions["planters"][2]+348, 60, 60)
+				pos := Gdip_TextToGraphics(G, "None", "s52 Center Bold cffffffff x" stat_regions["planters"][1]+stat_regions["planters"][3]//2-(110+220*(planters-1))+(i+A_Index-1)*440+74 " y" stat_regions["planters"][2]+340, "Segoe UI")
+				x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
+				Gdip_DrawImage(G, bitmaps["pBMUnknown"], x+6, stat_regions["planters"][2]+348, 60, 60)
 
-			pos := Gdip_TextToGraphics(G, "N/A", "s46 Center Bold ccfffffff x" stat_regions["planters"][1]+stat_regions["planters"][3]//2-(110+220*(planters-1))+(i+A_Index-1)*440+130 " y" stat_regions["planters"][2]+406, "Segoe UI")
-			x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)
-			Gdip_DrawImage(G, bitmaps["pBMTimer"], x-60, stat_regions["planters"][2]+410, 56, 56, , , , , 0.811765)
+				pos := Gdip_TextToGraphics(G, "N/A", "s46 Center Bold ccfffffff x" stat_regions["planters"][1]+stat_regions["planters"][3]//2-(110+220*(planters-1))+(i+A_Index-1)*440+130 " y" stat_regions["planters"][2]+406, "Segoe UI")
+				x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)
+				Gdip_DrawImage(G, bitmaps["pBMTimer"], x-60, stat_regions["planters"][2]+410, 56, 56, , , , , 0.811765)
+			}
 		}
 	}
-
 	; section 5: stats
-	pos := Gdip_TextToGraphics(G, "STATS", "s64 Center Bold cffffffff x" stat_regions["stats"][1]+stat_regions["stats"][3]//2 " y" stat_regions["stats"][2]+4, "Segoe UI")
-	y := SubStr(pos, InStr(pos, "|", , , 1)+1, InStr(pos, "|", , , 2)-InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 3)+1, InStr(pos, "|", , , 4)-InStr(pos, "|", , , 3)-1)+4
+	if not renderDisabled("generalstats") {
+		pos := Gdip_TextToGraphics(G, "STATS", "s64 Center Bold cffffffff x" stat_regions["generalstats"][1]+stat_regions["generalstats"][3]//2 " y" stat_regions["generalstats"][2]+4, "Segoe UI")
+		y := SubStr(pos, InStr(pos, "|", , , 1)+1, InStr(pos, "|", , , 2)-InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 3)+1, InStr(pos, "|", , , 4)-InStr(pos, "|", , , 3)-1)+4
 
-	for i,j in stats
-	{
-		Gdip_TextToGraphics(G, j[1], "s60 Right Bold ccfffffff x" stat_regions["stats"][1]+stat_regions["stats"][3]//2-40 " y" y, "Segoe UI")
-		pos := Gdip_TextToGraphics(G, j[2], "s60 Left Bold cffffffff x" stat_regions["stats"][1]+stat_regions["stats"][3]//2+40 " y" y, "Segoe UI")
-		if (j[2] > stats_old[i][2])
+		for i,j in stats
 		{
-			x := stat_regions["stats"][1]+stat_regions["stats"][3]//2+240
-			pBrush := Gdip_BrushCreateSolid((j[1] = "Disconnects") ? 0xffff0000 : 0xff00ff00), Gdip_FillPolygon(G, pBrush, [[x+45, y+23], [x+20, y+65], [x+70, y+65]]), Gdip_DeleteBrush(pBrush)
-			x := stat_regions["stats"][1]+stat_regions["stats"][3]//2+312
-			Gdip_TextToGraphics(G, j[2]-stats_old[i][2], "s40 Left Bold cafffffff x" x " y" y+16, "Segoe UI")
+			Gdip_TextToGraphics(G, j[1], "s60 Right Bold ccfffffff x" stat_regions["generalstats"][1]+stat_regions["generalstats"][3]//2-40 " y" y, "Segoe UI")
+			pos := Gdip_TextToGraphics(G, j[2], "s60 Left Bold cffffffff x" stat_regions["generalstats"][1]+stat_regions["generalstats"][3]//2+40 " y" y, "Segoe UI")
+			if (j[2] > stats_old[i][2])
+			{
+				x := stat_regions["generalstats"][1]+stat_regions["generalstats"][3]//2+240
+				pBrush := Gdip_BrushCreateSolid((j[1] = "Disconnects") ? 0xffff0000 : 0xff00ff00), Gdip_FillPolygon(G, pBrush, [[x+45, y+23], [x+20, y+65], [x+70, y+65]]), Gdip_DeleteBrush(pBrush)
+				x := stat_regions["generalstats"][1]+stat_regions["generalstats"][3]//2+312
+				Gdip_TextToGraphics(G, j[2]-stats_old[i][2], "s40 Left Bold cafffffff x" x " y" y+16, "Segoe UI")
+			}
+			else
+			{
+				pBrush := Gdip_BrushCreateSolid(0xff666666)
+				Gdip_FillRoundedRectangle(G, pBrush, stat_regions["generalstats"][1]+stat_regions["generalstats"][3]//2+260, y+36, 50, 12, 6)
+				Gdip_DeleteBrush(pBrush)
+			}
+			y := SubStr(pos, InStr(pos, "|", , , 1)+1, InStr(pos, "|", , , 2)-InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 3)+1, InStr(pos, "|", , , 4)-InStr(pos, "|", , , 3)-1)-4
 		}
-		else
-		{
-			pBrush := Gdip_BrushCreateSolid(0xff666666)
-			Gdip_FillRoundedRectangle(G, pBrush, stat_regions["stats"][1]+stat_regions["stats"][3]//2+260, y+36, 50, 12, 6)
-			Gdip_DeleteBrush(pBrush)
-		}
-		y := SubStr(pos, InStr(pos, "|", , , 1)+1, InStr(pos, "|", , , 2)-InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 3)+1, InStr(pos, "|", , , 4)-InStr(pos, "|", , , 3)-1)-4
 	}
 
 	; section 6: info
 	; row 1: statmonitor and natro version
-	y := stat_regions["info"][2]+60
-	pos := Gdip_TextToGraphics(G, "StatMonitor v" version " by SP", "s56 Center Bold c00ffffff x" stat_regions["info"][1]+stat_regions["info"][3]//2 " y" y, "Segoe UI")
-	x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)
+	halfX := stat_regions["info"][1]+stat_regions["info"][3]//2
+	if not renderDisabled("info") {
+		y := stat_regions["info"][2]+60
+		pos := Gdip_TextToGraphics(G, "StatMonitor v" version " by SP & Snarling", "s56 Center Bold c00ffffff x" halfX " y" y, "Segoe UI")
+		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)
 
-	pos := Gdip_TextToGraphics(G, "StatMonitor v" version " by ", "s56 Left Bold cafffffff x" x " y" y, "Segoe UI")
-	x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
-
-	pos := Gdip_TextToGraphics(G, "SP", "s56 Left Bold cffff5f1f x" x " y" y, "Segoe UI")
-	x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
-
-	; row 2: report timestamp
-	y := stat_regions["info"][2]+140
-	FormatStr := Buffer(256), DllCall("GetLocaleInfoEx", "Ptr",0, "UInt",0x20, "Ptr",FormatStr.Ptr, "Int",256)
-	DateStr := Buffer(512), DllCall("GetDateFormatEx", "Ptr",0, "UInt",0, "Ptr",0, "Str",StrReplace(StrReplace(StrReplace(StrReplace(StrGet(FormatStr), ", dddd"), "dddd, "), " dddd"), "dddd "), "Ptr",DateStr.Ptr, "Int",512, "Ptr",0)
-	pos := Gdip_TextToGraphics(G, times[1] " - " times[7] " • " StrGet(DateStr), "s56 Center Bold c00ffffff x" stat_regions["info"][1]+stat_regions["info"][3]//2 " y" y, "Segoe UI")
-	x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)
-
-	pos := Gdip_TextToGraphics(G, times[1] " - " times[7] " ", "s56 Left Bold cffffda3d x" x " y" y, "Segoe UI")
-	x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
-
-	pos := Gdip_TextToGraphics(G, "•", "s56 Left Bold cafffffff x" x " y" y, "Segoe UI")
-	x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
-
-	Gdip_TextToGraphics(G, StrGet(DateStr), "s56 Left Bold cffffda3d x" x " y" y, "Segoe UI")
-
-	; row 3: OCR status
-	y := stat_regions["info"][2]+220
-	pos := Gdip_TextToGraphics(G, "OCR: " (ocr_enabled ? ("Enabled (" ocr_language ")") : ("Disabled")), "s56 Center Bold c00ffffff x" stat_regions["info"][1]+stat_regions["info"][3]//2 " y" y, "Segoe UI")
-	x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)
-
-	pos := Gdip_TextToGraphics(G, "OCR: ", "s56 Left Bold cafffffff x" x " y" y, "Segoe UI")
-	x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
-
-	Gdip_TextToGraphics(G, (ocr_enabled ? ("Enabled (" ocr_language ")") : ("Disabled")), "s56 Left Bold c" (ocr_enabled ? "ff4fdf26" : "ffcc0000") " x" x " y" y, "Segoe UI")
-
-	; row 4: windows version
-	y := stat_regions["info"][2]+300
-	Gdip_TextToGraphics(G, os_version, "s56 Center Bold cff04b4e4 x" stat_regions["info"][1]+stat_regions["info"][3]//2 " y" y, "Segoe UI")
-
-	; row 5: natro information
-	if IsSet(natro_version)
-	{
-		y := stat_regions["info"][2]+380
-		x := stat_regions["info"][1]+stat_regions["info"][3]//2-50
-
-		pos := Gdip_TextToGraphics(G, "Natro v" natro_version, "s56 Left Bold c00ffffff x" x " y" y, "Segoe UI")
-		x -= SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)/2
-		pos := Gdip_TextToGraphics(G, "discord.gg/natromacro", "s56 Left Bold c00ffffff x" x " y" y, "Segoe UI")
-		x -= SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)/2
-
-		pos := Gdip_TextToGraphics(G, "discord.gg/natromacro", "s56 Left Bold Underline cff3366cc x" x " y" y, "Segoe UI")
+		pos := Gdip_TextToGraphics(G, "StatMonitor v" version " by ", "s56 Left Bold cafffffff x" x " y" y, "Segoe UI")
 		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
-		Gdip_DrawImage(G, bitmaps["pBMNatroLogo"], x+10, y, 80, 80)
-		Gdip_TextToGraphics(G, "Natro v" natro_version, "s56 Left Bold cffb47bd1 x" x+100 " y" y, "Segoe UI")
-	}
 
+		pos := Gdip_TextToGraphics(G, "SP & Snarling", "s56 Left Bold cffff5f1f x" x " y" y, "Segoe UI")
+		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
+		y += 80
+
+		pos := Gdip_TextToGraphics(G, "Simple customization by ManlyTorch", "s56 Center Bold c00ffffff x" halfX " y" y, "Segoe UI")
+		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)
+
+		pos := Gdip_TextToGraphics(G, "Simple customization by ", "s56 Left Bold cafffffff x" x " y" y, "Segoe UI")
+		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
+
+		pos := Gdip_TextToGraphics(G, "ManlyTorch", "s56 Left Bold cffff5f1f x" x " y" y, "Segoe UI")
+		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
+		
+
+		; row 2: report timestamp
+		y += 80
+		FormatStr := Buffer(256), DllCall("GetLocaleInfoEx", "Ptr",0, "UInt",0x20, "Ptr",FormatStr.Ptr, "Int",256)
+		DateStr := Buffer(512), DllCall("GetDateFormatEx", "Ptr",0, "UInt",0, "Ptr",0, "Str",StrReplace(StrReplace(StrReplace(StrReplace(StrGet(FormatStr), ", dddd"), "dddd, "), " dddd"), "dddd "), "Ptr",DateStr.Ptr, "Int",512, "Ptr",0)
+		pos := Gdip_TextToGraphics(G, times[1] " - " times[7] " • " StrGet(DateStr), "s56 Center Bold c00ffffff x" halfX " y" y, "Segoe UI")
+		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)
+
+		pos := Gdip_TextToGraphics(G, times[1] " - " times[7] " ", "s56 Left Bold cffffda3d x" x " y" y, "Segoe UI")
+		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
+
+		pos := Gdip_TextToGraphics(G, "•", "s56 Left Bold cafffffff x" x " y" y, "Segoe UI")
+		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
+
+		Gdip_TextToGraphics(G, StrGet(DateStr), "s56 Left Bold cffffda3d x" x " y" y, "Segoe UI")
+
+		; row 3: OCR status
+		y += 80
+		pos := Gdip_TextToGraphics(G, "OCR: " (ocr_enabled ? ("Enabled (" ocr_language ")") : ("Disabled")), "s56 Center Bold c00ffffff x" halfX " y" y, "Segoe UI")
+		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)
+
+		pos := Gdip_TextToGraphics(G, "OCR: ", "s56 Left Bold cafffffff x" x " y" y, "Segoe UI")
+		x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
+
+		Gdip_TextToGraphics(G, (ocr_enabled ? ("Enabled (" ocr_language ")") : ("Disabled")), "s56 Left Bold c" (ocr_enabled ? "ff4fdf26" : "ffcc0000") " x" x " y" y, "Segoe UI")
+
+		; row 4: windows version
+		y += 80
+		Gdip_TextToGraphics(G, os_version, "s56 Center Bold cff04b4e4 x" halfX " y" y, "Segoe UI")
+
+		; row 5: natro information
+		if IsSet(natro_version)
+		{
+			y += 80
+			x := halfX-50
+
+			pos := Gdip_TextToGraphics(G, "Natro v" natro_version, "s56 Left Bold c00ffffff x" x " y" y, "Segoe UI")
+			x -= SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)/2
+			pos := Gdip_TextToGraphics(G, "discord.gg/natromacro", "s56 Left Bold c00ffffff x" x " y" y, "Segoe UI")
+			x -= SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)/2
+
+			pos := Gdip_TextToGraphics(G, "discord.gg/natromacro", "s56 Left Bold Underline cff3366cc x" x " y" y, "Segoe UI")
+			x := SubStr(pos, 1, InStr(pos, "|", , , 1)-1)+SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1)
+			Gdip_DrawImage(G, bitmaps["pBMNatroLogo"], x+10, y, 80, 80)
+			Gdip_TextToGraphics(G, "Natro v" natro_version, "s56 Left Bold cffb47bd1 x" x+100 " y" y, "Segoe UI")
+		}
+	}
+	; row 6: Custom Bitmaps
+	CustomBitmapData := "" ; IniRead("settings\statmonitorColors.ini", "Settings", "CustomBitmap")
+	if (CustomBitmapData == "") {
+		; Render default image in center (900x900) if bitmap loading fails
+		DefaultBitmap := bitmaps["pBMNatroLogo"], defaultWidth := 900, defaultHeight := 900
+		targetX := halfX - defaultWidth//2
+		targetY := y+200 + (880 - defaultHeight) // 2 - 40
+		Gdip_DrawImage(G, DefaultBitmap, targetX, targetY, defaultWidth, defaultHeight)
+	} else {
+		try {
+			CustomBitmap := Gdip_BitmapFromBase64(CustomBitmapData)
+			bitmapWidth := Gdip_GetImageWidth(CustomBitmap)
+			bitmapHeight := Gdip_GetImageHeight(CustomBitmap)
+			targetX := halfX-650 + (1300 - bitmapWidth) // 2
+			targetY := y+200 + (880 - bitmapHeight) // 2 - 40
+			Gdip_DrawImage(G, CustomBitmap, targetX, targetY, bitmapWidth, bitmapHeight)
+		} catch {
+			; Render default image in center (900x900) if bitmap loading fails
+			DefaultBitmap := bitmaps["pBMNatroLogo"], defaultWidth := 900, defaultHeight := 900
+			targetX := halfX - defaultWidth//2
+			targetY := y+200 + (880 - defaultHeight) // 2 - 40
+			Gdip_DrawImage(G, DefaultBitmap, targetX, targetY, defaultWidth, defaultHeight)
+		}
+	}
 	Gdip_DeleteGraphics(G)
 
+	if generateTemplate {
+		Gdip_SaveBitmapToFile(pBMReport, "template.png")
+		return
+	} else if SaveImagesLocally {
+		path := SavePath = "" ? A_Hour "h " A_Mon "_" A_MDay "_" A_Year " Hourly.png" : SavePath
+		SplitPath path,,,&extension:=""
+		if !RegExMatch(extension, "^(?i:BMP|DIB|RLE|JPG|JPEG|JPE|JFIF|GIF|TIF|TIFF|PNG)$") {
+			path .= "\" A_Hour "h " A_Mon "_" A_MDay "_" A_Year " Hourly.png"
+		}
+		Gdip_SaveBitmapToFile(pBMReport, path)
+	}
 	webhook := IniRead("settings\nm_config.ini", "Status", "webhook")
 	bottoken := IniRead("settings\nm_config.ini", "Status", "bottoken")
 	discordMode := IniRead("settings\nm_config.ini", "Status", "discordMode")
