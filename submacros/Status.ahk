@@ -806,6 +806,13 @@ CreateHoneyBitmap(honey := 1, backpack := 1)
 	return pBM
 }
 
+PostSubmacroMessage(submacro, args*){
+	DetectHiddenWindows 1
+	if WinExist(submacro ".ahk ahk_class AutoHotkey") {
+		try PostMessage(args*)
+	}
+	DetectHiddenWindows 0
+}
 
 nm_command(command)
 {
@@ -1133,6 +1140,9 @@ nm_command(command)
 			Gdip_DisposeImage(pBM)
 		}
 
+		case "forceReport":
+			PostSubmacroMessage("StatMonitor", 0x5558)
+
 		case "nl", "newlogo": ; CUSTOM STUFF bitmaps rendering
 		; Accepts 1 to 3 parameters: params[2] (bitmap/base64)
 		if (params.Length >= 2 or command.url) {
@@ -1188,7 +1198,6 @@ nm_command(command)
 		else
 			discord.SendEmbed("Error: Macro not found!", 16711731, , , , id)
 
-
 		case "pause","unpause":
 		if (MacroState = 0)
 			discord.SendEmbed("Macro is not running!", 16711731, , , , id)
@@ -1204,7 +1213,6 @@ nm_command(command)
 				discord.SendEmbed("Error: Macro not found!", 16711731, , , , id)
 		}
 
-
 		case "start":
 		if (MacroState = 0)
 		{
@@ -1218,7 +1226,6 @@ nm_command(command)
 		}
 		else
 			discord.SendEmbed("Macro has already been started!", 16711731, , , , id)
-
 
 		case "close":
 		DetectHiddenWindows 0
@@ -1243,7 +1250,6 @@ nm_command(command)
 		else
 			discord.SendEmbed('Window ``' StrReplace(StrReplace(window, "\", "\\"), '"', '\"') '`` not found!', 16711731, , , , id)
 
-
 		case "activate":
 		DetectHiddenWindows 0
 		if (hwnd := WinExist(window := Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name)))))
@@ -1259,7 +1265,6 @@ nm_command(command)
 		}
 		else
 			discord.SendEmbed('Window ``' StrReplace(StrReplace(window, "\", "\\"), '"', '\"') '`` not found!', 16711731, , , , id)
-
 
 		case "minimise","minimize":
 		DetectHiddenWindows 0
@@ -1277,7 +1282,6 @@ nm_command(command)
 		else
 			discord.SendEmbed('Window ``' StrReplace(StrReplace(window, "\", "\\"), '"', '\"') '`` not found!', 16711731, , , , id)
 
-
 		case "rejoin":
 		if (!params[2] || ((params[2] ~= "i)^[0-9]+$") && (params[2] <= 600)))
 		{
@@ -1294,10 +1298,8 @@ nm_command(command)
 		else
 			discord.SendEmbed("Reconnect delay must be an integer less than or equal to 600!\nYou entered ``" params[2] "``.", 16711731, , , , id)
 
-
 		case "log":
 		discord.SendFile("settings\debug_log.txt", id)
-
 
 		case "keep":
 		DetectHiddenWindows 1
@@ -1325,7 +1327,6 @@ nm_command(command)
 		else
 			discord.SendEmbed("Error: Macro not found!", 16711731, , , , id)
 
-
 		case "replace":
 		DetectHiddenWindows 1
 		if WinExist("natro_macro ahk_class AutoHotkey")
@@ -1351,7 +1352,6 @@ nm_command(command)
 		}
 		else
 			discord.SendEmbed("Error: Macro not found!", 16711731, , , , id)
-
 
 		case "planter","planters":
 		(vars := Map()).CaseSense := 0
@@ -1598,7 +1598,6 @@ nm_command(command)
 			discord.CreateFormData(&postdata, &contentType, objParam)
 			discord.SendMessageAPI(postdata, contentType)
 		}
-
 
 		case "timers","timer","time":
 		(vars := Map()).CaseSense := 0
@@ -1872,7 +1871,6 @@ nm_command(command)
 			discord.SendMessageAPI(postdata, contentType)
 		}
 
-
 		case "prefix":
 		if ((newPrefix := SubStr(params[2], 1, 3)) && (StrLen(newPrefix) > 0))
 		{
@@ -1882,7 +1880,6 @@ nm_command(command)
 		}
 		else
 			discord.SendEmbed("``" ((StrLen(params[2]) > 0) ? params[2] : "<blank>") "`` is not a valid prefix!" ((StrLen(params[2]) = 0) ? "\nYou cannot have an empty prefix!" : ""), 16711731, , , , id)
-
 
 		case "set":
 		switch params[2], 0
@@ -1952,7 +1949,6 @@ nm_command(command)
 			}
 		}
 
-
 		case "get":
 		switch params[2], 0 {
 			case "priority", "priorityList", "priorityListNumeric":
@@ -2019,10 +2015,8 @@ nm_command(command)
 		Send (options := Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name))))
 		discord.SendEmbed('Used ``````ahk\nSend \"' StrReplace(options, '"', '\"') '\"``````', 5066239, , , , id)
 
-
 		case "upload":
 		discord.SendFile(Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name))), id)
-
 
 		case "download":
 		if (url := command.url)
@@ -2055,7 +2049,6 @@ nm_command(command)
 		}
 		else
 			discord.SendEmbed("No attachment found to download!", 16711731, , , , id)
-
 
 		case "click":
 		switch params[2], 0
@@ -2116,7 +2109,6 @@ nm_command(command)
 			}
 		}
 
-
 		case "shiftlock":
 		switch params[2], 0
 		{
@@ -2148,11 +2140,9 @@ nm_command(command)
 			discord.SendEmbed("You must specify ``on`` or ``off``!", 16711731, , , , id)
 		}
 
-
 		case "restart":
 		discord.SendEmbed("Restarting System...", 5066239, , , , id)
 		Shutdown 6
-
 
 		case "shrine":
 		(vars := Map()).CaseSense := 0
@@ -2230,7 +2220,6 @@ nm_command(command)
 			)
 		}
 		discord.SendMessageAPI(postdata)
-
 
 		case "Blender":
 		(vars := Map()).CaseSense := 0
@@ -2343,7 +2332,6 @@ nm_command(command)
 			discord.CreateFormData(&postdata, &contentType, objParam)
 			discord.SendMessageAPI(postdata, contentType)
 		}
-
 
 		case "mm","memorymatch":
 		(vars := Map()).CaseSense := 0
@@ -2523,7 +2511,6 @@ nm_command(command)
 
 
 		#Include "*i %A_ScriptDir%\..\settings\personal_commands.ahk"
-
 
 		default:
 		discord.SendEmbed("``" commandPrefix name "`` is not a valid command!\nUse ``" commandPrefix "help`` for a list of commonly used commands.", 16711731, , , , id)
