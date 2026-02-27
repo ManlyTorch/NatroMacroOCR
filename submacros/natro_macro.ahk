@@ -31,10 +31,26 @@ You should have received a copy of the license along with Natro Macro. If not, p
 #Include "nowUnix.ahk"
 #include "OCR.ahk"
 #include "ErrorHandling.ahk"
+#include "AutoUpdate.ahk"
 
 #Warn VarUnset, Off
 
 SetWorkingDir A_ScriptDir "\.."
+Updater := AutoUpdater("ManlyTorch", "NatroMacroOCR", "itemmonitorNS", "settings\natro_version")
+
+if Updater.newVersion {
+	Response := MsgBox("There's a new update! would you like to download it?`n" . Updater.GetCommitMessages(), "AutoUpdater", "YesNo")
+	if Response == "Yes" {
+		if not FileExist("settings") {
+			nm_CreateFolder("settings")
+		}
+		SetWorkingDir A_ScriptDir "\.."
+		Updater.UpdateFiles()
+		Run "start.bat"
+		ExitApp
+	}
+}
+
 CoordMode "Mouse", "Screen"
 CoordMode "Pixel", "Screen"
 SendMode "Event"
