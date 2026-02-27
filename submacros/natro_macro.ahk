@@ -36,7 +36,7 @@ You should have received a copy of the license along with Natro Macro. If not, p
 #Warn VarUnset, Off
 
 SetWorkingDir A_ScriptDir "\.."
-Updater := AutoUpdater("ManlyTorch", "NatroMacroOCR", "itemmonitorNS", "settings\natro_version")
+Updater := AutoUpdater("ManlyTorch", "NatroMacroOCR", "itemmonitor", "settings\natro_version")
 
 if Updater.newVersion {
 	Response := MsgBox("There's a new update! would you like to download it?`n" . Updater.GetCommitMessages(), "AutoUpdater", "YesNo")
