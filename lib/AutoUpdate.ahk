@@ -93,7 +93,8 @@ class AutoUpdater {
                 Download(this.fileURL . fileDir, fileDir)
             }
         }
-        versionFile := FileOpen(this.savePath, "w")
+        versionFile := FileOpen(this.savePath, "w-d")
         versionFile.Write(this.latestCommitID)
+        versionFile.Close()
     }
 }

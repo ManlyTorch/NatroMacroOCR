@@ -867,7 +867,7 @@ nm_importConfig()
 		, "RedClayPlanterCheck", 1
 		, "TackyPlanterCheck", 1
 		, "PesticidePlanterCheck", 1
-		, "HeatTreatedPlanterCheck", 0
+		, "Heat-TreatedPlanterCheck", 0
 		, "HydroponicPlanterCheck", 0
 		, "PetalPlanterCheck", 0
 		, "PaperPlanterCheck", 0
@@ -3405,7 +3405,7 @@ MainGui.Add("Text", "x147 y42 w108 h1 0x7 vTextLine5" hidden)
 (GuiCtrl := MainGui.Add("CheckBox", "xp yp+14 vRedClayPlanterCheck Disabled Checked" RedClayPlanterCheck hidden, "Red Clay")).Section := "Planters", GuiCtrl.OnEvent("Click", nm_saveConfig)
 (GuiCtrl := MainGui.Add("CheckBox", "xp yp+14 vTackyPlanterCheck Disabled Checked" TackyPlanterCheck hidden, "Tacky")).Section := "Planters", GuiCtrl.OnEvent("Click", nm_saveConfig)
 (GuiCtrl := MainGui.Add("CheckBox", "xp yp+14 vPesticidePlanterCheck Disabled Checked" PesticidePlanterCheck hidden, "Pesticide")).Section := "Planters", GuiCtrl.OnEvent("Click", nm_saveConfig)
-(GuiCtrl := MainGui.Add("CheckBox", "xp yp+14 vHeatTreatedPlanterCheck Disabled Checked" HeatTreatedPlanterCheck hidden, "Heat-Treated")).Section := "Planters", GuiCtrl.OnEvent("Click", nm_saveConfig)
+(GuiCtrl := MainGui.Add("CheckBox", "xp yp+14 vHeat-TreatedPlanterCheck Disabled Checked" Heat-TreatedPlanterCheck hidden, "Heat-Treated")).Section := "Planters", GuiCtrl.OnEvent("Click", nm_saveConfig)
 (GuiCtrl := MainGui.Add("CheckBox", "xp yp+14 vHydroponicPlanterCheck Disabled Checked" HydroponicPlanterCheck hidden, "Hydroponic")).Section := "Planters", GuiCtrl.OnEvent("Click", nm_saveConfig)
 (GuiCtrl := MainGui.Add("CheckBox", "xp yp+14 vPetalPlanterCheck Disabled Checked" PetalPlanterCheck hidden, "Petal")).Section := "Planters", GuiCtrl.OnEvent("Click", nm_saveConfig)
 (GuiCtrl := MainGui.Add("CheckBox", "xp yp+14 w100 h13 vPlanterOfPlentyCheck Disabled Checked" PlanterOfPlentyCheck hidden, "Planter of Plenty")).Section := "Planters", GuiCtrl.OnEvent("Click", nm_saveConfig)
@@ -4142,7 +4142,7 @@ nm_TabPlantersLock(){
 	MainGui["RedClayPlanterCheck"].Enabled := 0
 	MainGui["TackyPlanterCheck"].Enabled := 0
 	MainGui["PesticidePlanterCheck"].Enabled := 0
-	MainGui["HeatTreatedPlanterCheck"].Enabled := 0
+	MainGui["Heat-TreatedPlanterCheck"].Enabled := 0
 	MainGui["HydroponicPlanterCheck"].Enabled := 0
 	MainGui["PetalPlanterCheck"].Enabled := 0
 	MainGui["PlanterOfPlentyCheck"].Enabled := 0
@@ -4214,7 +4214,7 @@ nm_TabPlantersUnLock(){
 	MainGui["RedClayPlanterCheck"].Enabled := 1
 	MainGui["TackyPlanterCheck"].Enabled := 1
 	MainGui["PesticidePlanterCheck"].Enabled := 1
-	MainGui["HeatTreatedPlanterCheck"].Enabled := 1
+	MainGui["Heat-TreatedPlanterCheck"].Enabled := 1
 	MainGui["HydroponicPlanterCheck"].Enabled := 1
 	MainGui["PetalPlanterCheck"].Enabled := 1
 	MainGui["PlanterOfPlentyCheck"].Enabled := 1
@@ -6285,7 +6285,7 @@ ba_planterSwitch(*){
 		,"TextZone1","TextZone2","TextZone3","TextZone4","TextZone5","TextZone6"
 		,"NPreset","TextPresets","TextNp","TextMin"
 		,"PlasticPlanterCheck","CandyPlanterCheck","BlueClayPlanterCheck","RedClayPlanterCheck","TackyPlanterCheck","PesticidePlanterCheck"
-		,"HeatTreatedPlanterCheck","HydroponicPlanterCheck","PetalPlanterCheck","PlanterOfPlentyCheck","PaperPlanterCheck","TicketPlanterCheck"
+		,"Heat-TreatedPlanterCheck","HydroponicPlanterCheck","PetalPlanterCheck","PlanterOfPlentyCheck","PaperPlanterCheck","TicketPlanterCheck"
 		,"TextHarvest","HarvestFullGrown","gotoPlanterField","gatherFieldSipping","TextHours","TextMax","MaxAllowedPlanters","MaxAllowedPlantersText"
 		,"TextAllowedPlanters","TextAllowedFields","TimersButton","AutomaticHarvestInterval","ConvertFullBagHarvest","GatherPlanterLoot","TextBox1"
 		,"NPLeft","NPRight","NP1Left","NP1Right","NP2Left","NP2Right","NP3Left","NP3Right","NP4Left","NP4Right","NP5Left","NP5Right"]
@@ -7006,7 +7006,7 @@ ba_saveConfig_(*){ ;//todo: needs replacing!
 	RedClayPlanterCheck := MainGui["RedClayPlanterCheck"].Value
 	TackyPlanterCheck := MainGui["TackyPlanterCheck"].Value
 	PesticidePlanterCheck := MainGui["PesticidePlanterCheck"].Value
-	HeatTreatedPlanterCheck := MainGui["HeatTreatedPlanterCheck"].Value
+	Heat-TreatedPlanterCheck := MainGui["Heat-TreatedPlanterCheck"].Value
 	HydroponicPlanterCheck := MainGui["HydroponicPlanterCheck"].Value
 	PetalPlanterCheck := MainGui["PetalPlanterCheck"].Value
 	PaperPlanterCheck := MainGui["PaperPlanterCheck"].Value
@@ -7048,7 +7048,7 @@ ba_saveConfig_(*){ ;//todo: needs replacing!
 	IniWrite RedClayPlanterCheck, "settings\nm_config.ini", "Planters", "RedClayPlanterCheck"
 	IniWrite TackyPlanterCheck, "settings\nm_config.ini", "Planters", "TackyPlanterCheck"
 	IniWrite PesticidePlanterCheck, "settings\nm_config.ini", "Planters", "PesticidePlanterCheck"
-	IniWrite HeatTreatedPlanterCheck, "settings\nm_config.ini", "Planters", "HeatTreatedPlanterCheck"
+	IniWrite Heat-TreatedPlanterCheck, "settings\nm_config.ini", "Planters", "Heat-TreatedPlanterCheck"
 	IniWrite HydroponicPlanterCheck, "settings\nm_config.ini", "Planters", "HydroponicPlanterCheck"
 	IniWrite PetalPlanterCheck, "settings\nm_config.ini", "Planters", "PetalPlanterCheck"
 	IniWrite PaperPlanterCheck, "settings\nm_config.ini", "Planters", "PaperPlanterCheck"
@@ -19740,7 +19740,7 @@ ba_planter(){
 	global RedClayPlanterCheck
 	global TackyPlanterCheck
 	global PesticidePlanterCheck
-	global HeatTreatedPlanterCheck
+	global Heat-TreatedPlanterCheck
 	global HydroponicPlanterCheck
 	global PetalPlanterCheck
 	global PaperPlanterCheck
@@ -20431,7 +20431,7 @@ ba_getLastField(currentnectar){
 ba_getNextPlanter(nextfield){
 	global BambooPlanters, BlueFlowerPlanters, CactusPlanters, CloverPlanters, CoconutPlanters, DandelionPlanters, MountainTopPlanters, MushroomPlanters, PepperPlanters
 		, PineTreePlanters, PineapplePlanters, PumpkinPlanters, RosePlanters, SpiderPlanters, StrawberryPlanters, StumpPlanters, SunflowerPlanters
-		, PlasticPlanterCheck, CandyPlanterCheck, BlueClayPlanterCheck, RedClayPlanterCheck, TackyPlanterCheck, PesticidePlanterCheck, HeatTreatedPlanterCheck
+		, PlasticPlanterCheck, CandyPlanterCheck, BlueClayPlanterCheck, RedClayPlanterCheck, TackyPlanterCheck, PesticidePlanterCheck, Heat-TreatedPlanterCheck
 		, HydroponicPlanterCheck, PetalPlanterCheck, PaperPlanterCheck, TicketPlanterCheck, PlanterOfPlentyCheck
 		, PlanterName1, PlanterName2, PlanterName3
 	global LostPlanters
@@ -20745,7 +20745,7 @@ ba_SavePlacedPlanter(fieldName, planter, planterNum, nectar){
 		, PlanterNectar1, PlanterNectar2, PlanterNectar3
 		, PlanterEstPercent1, PlanterEstPercent2, PlanterEstPercent3
 		, LastComfortingField, LastMotivatingField, LastSatisfyingField, LastRefreshingField, LastInvigoratingField, HarvestInterval
-	global PlasticPlanterCheck, CandyPlanterCheck, BlueClayPlanterCheck, RedClayPlanterCheck, TackyPlanterCheck, PesticidePlanterCheck, HeatTreatedPlanterCheck
+	global PlasticPlanterCheck, CandyPlanterCheck, BlueClayPlanterCheck, RedClayPlanterCheck, TackyPlanterCheck, PesticidePlanterCheck, Heat-TreatedPlanterCheck
 		, HydroponicPlanterCheck, PetalPlanterCheck, PaperPlanterCheck, TicketPlanterCheck, PlanterOfPlentyCheck
 		, n1minPercent, n2minPercent, n3minPercent, n4minPercent, n5minPercent, AutomaticHarvestInterval, HarvestFullGrown
 	;temp1:=planter[1]
