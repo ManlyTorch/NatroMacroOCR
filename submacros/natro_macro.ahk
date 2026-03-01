@@ -20462,6 +20462,9 @@ ba_getNextPlanter(nextfield){
 }
 
 placePlanter(planterName) {
+	if planterName == "HeatTreatedPlanter" {
+		planterName := "Heat-TreatedPlanter"
+	}
 	Loop 10
 	{
 		GetRobloxClientPos(hwnd)
