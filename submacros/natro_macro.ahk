@@ -32,6 +32,7 @@ You should have received a copy of the license along with Natro Macro. If not, p
 #include "OCR.ahk"
 #include "ErrorHandling.ahk"
 #include "AutoUpdate.ahk"
+#Include "HashFile.ahk"
 
 #Warn VarUnset, Off
 
@@ -128,7 +129,7 @@ OnMessage(0x5560, nm_copyDebugLog)
 OnMessage(0x0020, nm_WM_SETCURSOR)
 
 ; set version identifier
-VersionID := "1.1.0-B3"
+VersionID := "1.1.1"
 
 ;initial load warnings
 if (A_ScreenDPI != 96)
@@ -194,10 +195,19 @@ nm_importPatterns()
 		"Auryn", "CornerXSnake", "Diamonds", "e_lol", "Fork", "Lines", "Slimline", "Snake", "Squares", "Stationary", "SuperCat", "XSnake"
 	]
 
+	installedPatternHashes := []
+
+
+
 	if FileExist("settings\imported\patterns.ahk")
 		file := FileOpen("settings\imported\patterns.ahk", "r"), imported := file.Read(), file.Close()
 	else
 		imported := ""
+
+	if FileExist("settings\imported\patternHashes.ahk")
+		getHashes()
+	else
+		hashDefaults()
 
 	import := ""
 	Loop Files A_WorkingDir "\patterns\*.ahk"
@@ -214,8 +224,9 @@ nm_importPatterns()
 			), "Error", 0x40010 " T60"
 		if !InStr(imported, imported_pattern := '("' (pattern_name := StrReplace(A_LoopFileName, "." A_LoopFileExt)) '")`r`n' pattern '`r`n`r`n') 
 		{
-			for name in defaultpatterns {
-				if pattern_name = name {
+			patternhash := HashFile(A_LoopFilePath, 6)
+			for hash in installedPatternHashes {
+				if patternhash = hash {
 					bypassWarning := 1
 				}
 			}
@@ -292,6 +303,23 @@ nm_importPatterns()
 
 	if (import != imported)
 		file := FileOpen(A_WorkingDir "\settings\imported\patterns.ahk", "w-d"), file.Write(import), file.Close()
+
+
+	hashDefaults(){
+		hashes := []
+
+		output := FileOpen(A_WorkingDir "\settings\imported\patternHashes.ahk", "w-d")
+
+		loop files "patterns/*.ahk" {
+			fileHash := HashFile(A_LoopFileFullPath, 6)
+			hashes.push(fileHash)
+		}
+
+		output.Write(JSON.stringify(hashes))
+		output.Close()
+		installedPatternHashes := hashes
+	}
+	getHashes() => (installedPatternHashes := JSON.parse(FileRead("settings\imported\patternHashes.ahk")))
 }
 nm_importPatterns()
 
@@ -8852,6 +8880,9 @@ nm_ContributorsImage(page:=1, contributors:=""){
 			, ["idote",0xfff47fff,"350433227380621322"]
 			, ["mahirishere",0xffa3bded,"724740667158429747"]
 			, ["Pinwheel",0xfff49fbc,"849962858774003712"]
+			, ["symbol_101", 0xffa42d2d,"1210002709894266911"]
+			, ["data ^-^", 0xfffcb1ff,"https://www.roblox.com/users/841425386/profile"]
+			, ["Trystar001", 0xff15199e,""]
 		]
 
 		pBM := Gdip_CreateBitmap(244,212)
@@ -8922,10 +8953,12 @@ nm_ContributorsImage(page:=1, contributors:=""){
 			{
 				if ((x >= v[4][1]) && (x <= v[4][3]) && (y >= v[4][2]) && (y <= v[4][4]))
 				{
-					if InStr(v[3], "http")
-						Run(v[3])
-					else
-						nm_RunDiscord("users/" v[3])
+					if v[3] {
+						if InStr(v[3], "http")
+							Run(v[3])
+						else
+							nm_RunDiscord("users/" v[3])
+					}
 					break
 				}
 			}
@@ -17611,42 +17644,6 @@ nm_IncrementStat(stat, amount:=1){ ; //todo: add to Quests/Bugrun when they are 
 	IniWrite (++Total%stat%), "settings\nm_config.ini", "Status", "Total" stat
 	IniWrite (++Session%stat%), "settings\nm_config.ini", "Status", "Session" stat
 	PostSubmacroMessage("StatMonitor", 0x5555, StatEnum[stat], amount)
-}
-nm_saveCustomBitmap(GuiCtrl, *) {
-	global CustomBitmap
-	p := EditGetCurrentCol(GuiCtrl)
-	CustomBitmap := GuiCtrl.Value
-	IniWrite CustomBitmap, "settings\statmonitorColors.ini", "", "CustomLogo"
-}
-nm_BitmapTestingGUI(*){
-	global CustomBitmap, bitmaps
-	GuiClose(*){
-		if (IsSet(BitmapTestingGUI) && IsObject(BitmapTestingGUI)) 
-			BitmapTestingGUI.Destroy(), BitmapTestingGUI := ""
-	}
-	GuiClose()
-	BitmapTestingGUI := Gui("+AlwaysOnTop +Border", "Bitmap Testing")
-	BitmapTestingGUI.OnEvent("Close", GuiClose)
-	BitmapTestingGUI.SetFont("s8 cDefault Bold", "Tahoma")
-	BitmapTestingGUI.Add("Picture", "x50 y50 w300 h300 vMyPic")
-	; --- Image Rendering ---
-	try {
-		if (CustomBitmap == "") {
-			BitmapTestingGUI["MyPic"].Value := ""
-			BitmapTestingGUI.Add("Text", "x50 y180 w300 h40 Center vErrorText", "Empty Bitmap")
-			BitmapTestingGUI["ErrorText"].SetFont("s16 cRed Bold", "Segoe UI")
-		} else {
-			pCustomBitmap := Gdip_BitmapFromBase64(CustomBitmap)
-			hBitmap := Gdip_CreateHBITMAPFromBitmap(pCustomBitmap)
-			BitmapTestingGUI["MyPic"].Value := "HBITMAP:*" hBitmap
-			Gdip_DisposeImage(pCustomBitmap)
-		}
-	} catch {
-		BitmapTestingGUI["MyPic"].Value := ""
-		BitmapTestingGUI.Add("Text", "x50 y180 w300 h40 Center vErrorText", "Invalid Bitmap")
-		BitmapTestingGUI["ErrorText"].SetFont("s16 cRed Bold", "Segoe UI")
-	}
-	BitmapTestingGUI.Show("w400 h400")
 }
 nm_hotbar(boost:=0){
 	global state, fieldOverrideReason, GatherStartTime, ActiveHotkeys, bitmaps

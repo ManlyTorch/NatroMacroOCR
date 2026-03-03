@@ -654,6 +654,8 @@ bitmaps["moon"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAMAAA
 
 discordUIDCommands_is_role := strlen(discordUIDCommands) && SubStr(discordUIDCommands, 1, 1) == "&"
 
+discordUIDCommands_is_role := strlen(discordUIDCommands) && SubStr(discordUIDCommands, 1, 1) == "&"
+
 Loop
 {
 	(status_buffer.Length > 0) && nm_status(status_buffer[1])
