@@ -186,7 +186,6 @@ SC_Space:="sc039" ; Space
 SC_1:="sc002" ; 1
 SC_Slash  := "sc035" ; /
 
-#include "../lib/data/patternHashes.ahk" 
 ; import patterns and syntax check
 nm_importPatterns()
 {
