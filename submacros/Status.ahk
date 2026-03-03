@@ -654,12 +654,11 @@ bitmaps["moon"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAMAAA
 
 discordUIDCommands_is_role := strlen(discordUIDCommands) && SubStr(discordUIDCommands, 1, 1) == "&"
 
-Loop
-{
+Loop {
 	(status_buffer.Length > 0) && nm_status(status_buffer[1])
 	(Mod(A_Index, 5) = 0) && discord.GetCommands(MainChannelID)
 	(command_buffer.Length > 0) && nm_command(command_buffer[1])
-	(Mod(A_Index, 10) = 0) && nm_honey()
+	(Mod(A_Index, 50) = 0) && nm_honey()
 	((DebugLogEnabled = 1) && (logsize > 8000000)) && nm_TrimLog(4194304) ; trim to 4MiB
 	Sleep 100
 }
