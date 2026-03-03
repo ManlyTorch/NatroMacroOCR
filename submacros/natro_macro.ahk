@@ -186,15 +186,13 @@ SC_Space:="sc039" ; Space
 SC_1:="sc002" ; 1
 SC_Slash  := "sc035" ; /
 
+#include "../lib/data/patternHashes.ahk" 
 ; import patterns and syntax check
 nm_importPatterns()
 {
 	global patterns := Map()
 	patterns.CaseSense := 0
 	global patternlist := []
-	defaultpatterns := [
-		"Auryn", "CornerXSnake", "Diamonds", "e_lol", "Fork", "Lines", "Slimline", "Snake", "Squares", "Stationary", "SuperCat", "XSnake"
-	]
 
 	installedPatternHashes := []
 
@@ -8865,7 +8863,7 @@ nm_ContributorsImage(page:=1, contributors:=""){
 			, ["mis.c",0xffa174fe,"https://github.com/misc-et"]
 			, ["ninju",0xffe6a157,"727937385274540046"]
 			, ["Dully176",0xff138718,"522940239904243712"]
-			, ["nooby", 0xff915dd5, "https://n-by.me"]
+			, ["nooby", 0xff915dd5,"https://n-by.me"]
 		]
 
 		testers := [
