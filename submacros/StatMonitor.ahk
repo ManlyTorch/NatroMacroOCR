@@ -1095,7 +1095,7 @@ UpdateStatusList() {
 *******************************************************/
 ArrayHasEntry(ary, entry) {
 	for item in ary {
-		if item == entry {
+		if InStr(item, entry) {
 			return true
 		}
 	}
@@ -1313,7 +1313,7 @@ nm_ReadIni(path) {
 				}
 				%curArrayName% := curArray
 				continue
-			} else {
+			} else if not ArrayHasEntry(curArray, line) {
 				curArray.Push(IsInteger(line) ? Integer(line) : line)
 			}
 		} else if varSetPos {
