@@ -1014,7 +1014,12 @@ PopulateHoneyValues() {
 			}
 		}
 	}
-
+	Loop 61 {
+		if !honey_values.Has(A_Index-1) {
+			honey_values[A_Index-1] := min_value
+		}
+	}
+	
 	Loop 166 {
 		try {
 			honey_12h[A_Index - 1] := honey_12h[A_Index + 14]
@@ -1022,12 +1027,6 @@ PopulateHoneyValues() {
 	}
 	Loop 15 {
 		honey_12h[A_Index + 165] := honey_values[4*A_Index]
-	}
-	
-	Loop 61 {
-		if !honey_values.Has(A_Index-1) {
-			honey_values[A_Index-1] := min_value
-		}
 	}
 }
 
