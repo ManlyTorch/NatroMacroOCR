@@ -362,7 +362,7 @@ for k,v in stat_regions {
 	if load_Image(k "Background", %k "Alpha"%, "RightBar", v) {
 		backgroundColor := %k "Background"% or rightTabRegionBackground
 		pPen := Gdip_CreatePen(rightBarRegionBorder, 10), Gdip_DrawRoundedRectangle(G, pPen, v[1], v[2], v[3], v[4], 20), Gdip_DeletePen(pPen)
-		pBrush := Gdip_BrushCreateSolid(rightTabRegionBackground), Gdip_FillRoundedRectangle(G, pBrush, v[1], v[2], v[3], v[4], 20), Gdip_DeleteBrush(pBrush)
+		pBrush := Gdip_BrushCreateSolid(backgroundColor), Gdip_FillRoundedRectangle(G, pBrush, v[1], v[2], v[3], v[4], 20), Gdip_DeleteBrush(pBrush)
 	}
 }
 
@@ -425,9 +425,13 @@ for buff in buff_order {
 ; draw graph grids and axes
 pPen := Gdip_CreatePen(graphLines, 4)
 Loop 61 {
-	n := (Mod(A_Index, 10) = 1) ? 45 : 25
-	Gdip_DrawLine(G, pPen, graph_regions["honey"][1]+graph_regions["honey"][3]*(A_Index-1)//60, graph_regions["honey"][2]+graph_regions["honey"][4]+20, graph_regions["honey"][1]+graph_regions["honey"][3]*(A_Index-1)//60, graph_regions["honey"][2]+graph_regions["honey"][4]+20+n)
-	Gdip_DrawLine(G, pPen, graph_regions["backpack"][1]+graph_regions["backpack"][3]*(A_Index-1)//60, graph_regions["backpack"][2]+graph_regions["backpack"][4]+20, graph_regions["backpack"][1]+graph_regions["backpack"][3]*(A_Index-1)//60, graph_regions["backpack"][2]+graph_regions["backpack"][4]+20+n)
+	; tL (time line)
+	tLHeight := (Mod(A_Index, 10) = 1) ? 45 : 25
+	tLYHoneyPos := graph_regions["honey"][2] + graph_regions["honey"][4] + 20
+	tLYBackpackPos := graph_regions["backpack"][2] + graph_regions["backpack"][4] + 20
+	lineXPos := buffXPos + buffXWidth * (A_Index - 1) / 60 ; literally the same value for all regions except lasthour & session :/
+	Gdip_DrawLine(G, pPen, lineXPos, tLYHoneyPos, lineXPos, tLYHoneyPos + tLHeight)
+	Gdip_DrawLine(G, pPen, lineXPos, tLYBackpackPos, lineXPos, tLYBackpackPos + tLHeight)
 	/*
 	; this use to not render, but whenever I made it work with buff_order it does?? dunno why, just commenting it out cause it looks bad
 	y := buff_Data["boost"][1][1]
@@ -435,21 +439,27 @@ Loop 61 {
 	Gdip_DrawLine(G, pPen, calc, y + h - 125, calc, y + h - 125 + n)
 	*/
 	
-	calc := buffXPos+buffXWidth*(A_Index-1)//60
 	if (Mod(A_Index, 10) = 1) {
 		for regionName, region in graph_regions {
 			if renderDisabled(regionName) {
 				continue
 			}
-			Gdip_DrawLine(G, pPen, calc, region[2], calc, region[2]+region[4])
+
+			regionLineXPos := lineXPos
+			
+			if regionName == "lasthour" or regionName == "session" {
+				regionLineXPos := region[1] + region[3] * (A_Index - 1) / 60
+			}
+			
+			Gdip_DrawLine(G, pPen, regionLineXPos, region[2], regionLineXPos, region[2] + region[4])
 		}
 
 		for buff in buff_order {
 			args := buff_Data[buff]
 			y := args[1][1]
 			h := args[1][2]
-
-			Gdip_DrawLine(G, pPen, calc, y, calc, y + h)
+			
+			Gdip_DrawLine(G, pPen, lineXPos, y, lineXPos, y + h)
 		}
 	}
 
@@ -573,7 +583,7 @@ if A_Args.Length == 2 and A_Args[2] == "ForceTemplate" {
 	start_honey := 170000000000000
 	start_time := DateAdd(start_time, -1, "Hours")
 
-	SendHourlyReport(true, true)
+	SendHourlyReport(true)
 	ExitApp
 }
 
@@ -1781,7 +1791,7 @@ DrawSessionStats() {
 * @author SP
 ********************************************************************************************************/
 SendHourlyReport(generateTemplate:=false, keepStats:=false) {
-	global G
+	global G, scale
 	static honey_average := 0, honey_earned := 0, stats_old := [["Total Boss Kills",0],["Total Vic Kills",0],["Total Bug Kills",0],["Total Planters",0],["Quests Done",0],["Disconnects",0]]
 
 	; Identify misread values and add missing ones
@@ -2085,32 +2095,9 @@ SendHourlyReport(generateTemplate:=false, keepStats:=false) {
 	}
 	Gdip_DeleteGraphics(G)
 
-	mb := 1048576
-	bitmapMBSize := Gdip_GetBitmapSize(pBMReport) / mb
-	; downsize image if its to large
-	if bitmapMBSize > 8 {
-		scale := Sqrt(bitmapMBSize / 8)
-		width := Gdip_GetImageWidth(pBMReport)
-		height := Gdip_GetImageHeight(pBMReport)
-    	newW := width / scale
-    	newH := height / scale
-    	pBMReport := Gdip_ResizeBitmap(pBMReport, newW, newH)
-
-		bitmapMBSize := Gdip_GetBitmapSize(pBMReport) / mb
-		while bitmapMBSize > 8 {
-			scale += .05
-    		newW := width / scale
-    		newH := height / scale
-    		pBMReport := Gdip_ResizeBitmap(pBMReport, newW, newH)
-			bitmapMBSize := Gdip_GetBitmapSize(pBMReport) / mb
-		}
-	}
-
+	; save non downsized template
 	if generateTemplate {
-		if keepStats {
-			Gdip_SaveBitmapToFile(pBMReport, "template.png")
-		}
-		return
+		Gdip_SaveBitmapToFile(pBMReport, "template.png")
 	} else if SaveImagesLocally {
 		path := SavePath = "" ? A_Hour "h " A_Mon "_" A_MDay "_" A_Year " Hourly.png" : SavePath
 		SplitPath path,,,&extension:=""
@@ -2119,6 +2106,45 @@ SendHourlyReport(generateTemplate:=false, keepStats:=false) {
 		}
 		Gdip_SaveBitmapToFile(pBMReport, path)
 	}
+
+	mb := 1048576
+	bitmapMBSize := Gdip_GetBitmapSize(pBMReport) / mb
+	compressed := bitmapMBSize > 8
+	; downsize image if its to large
+	if bitmapMBSize > 8 {
+		orgSize := bitmapMBSize
+		scale := IsSet(scale) ? scale : Sqrt(bitmapMBSize / 8)
+		width := Gdip_GetImageWidth(pBMReport)
+		height := Gdip_GetImageHeight(pBMReport)
+		compressedReport := ""
+		while bitmapMBSize > 8 {
+			newW := width / scale
+    		newH := height / scale
+
+			if compressedReport {
+				Gdip_DisposeImage(compressedReport)
+			}
+			
+    		compressedReport := Gdip_ResizeBitmap(pBMReport, newW, newH)
+			bitmapMBSize := Gdip_GetBitmapSize(compressedReport) / mb
+			scale += .2
+		}
+
+		Gdip_DisposeImage(pBMReport)
+		pBMReport := compressedReport
+	}
+
+	; save downsized template if it it had to downsize to go below 8mb size
+	if generateTemplate {
+		if not compressed {
+			return
+		}
+
+		Gdip_SaveBitmapToFile(pBMReport, "compressed-template.png")
+
+		return
+	}
+
 	webhook := IniRead("settings\nm_config.ini", "Status", "webhook")
 	bottoken := IniRead("settings\nm_config.ini", "Status", "bottoken")
 	discordMode := IniRead("settings\nm_config.ini", "Status", "discordMode")
