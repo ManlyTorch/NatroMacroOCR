@@ -1840,7 +1840,7 @@ SendHourlyReport(generateTemplate:=false, keepStats:=false) {
 
 	; WRITE STATS
 	; section 1: last hour
-	if not renderDisabled("lasthour") and false {
+	if not renderDisabled("lasthour") {
 		Gdip_TextToGraphics(G, "LAST HOUR", "s64 Center Bold cffffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2 " y" stat_regions["lasthour"][2]+4, "Segoe UI")
 
 		Gdip_TextToGraphics(G, "Honey Earned", "s60 Right Bold ccfffffff x" stat_regions["lasthour"][1]+stat_regions["lasthour"][3]//2-40 " y" stat_regions["lasthour"][2]+96, "Segoe UI")
