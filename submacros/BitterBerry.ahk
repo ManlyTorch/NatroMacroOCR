@@ -1,4 +1,3 @@
-
 #NoTrayIcon
 #SingleInstance Force
 
@@ -19,23 +18,27 @@ Shrine := Map()
 #Include ..\nm_image_assets\general\bitmaps.ahk
 bitmaps["greensuccess"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAA4AAAALCAYAAABPhbxiAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAhdEVYdENyZWF0aW9uIFRpbWUAMjAyMzowMzowOCAxNToyMzo1N/c+ABwAAAAdSURBVChTY3T+H/6fgQzABKVJBqMa8YDhr5GBAQBwxAKu5PiUjAAAAA5lWElmTU0AKgAAAAgAAAAAAAAA0lOTAAAAAElFTkSuQmCC")
 
-if (MsgBox("BITTERBERRY AUTO FEEDER v0.2 by anniespony#8135``nMake sure BEE SLOT TO MUTATE is always visible``nDO NOT MOVE THE SCREEN OR RESIZE WINDOW FROM NOW ON.``nMAKE SURE BEE IS RADIOACTIVE AT ALL TIMES!", "Bitterberry Auto-Feeder v0.2", 0x40001) = "Cancel")
+if (MsgBox("BITTERBERRY AUTO FEEDER v0.2 by anniespony#8135``nMake sure BEE SLOT TO MUTATE is always visible``nDO NOT MOVE THE SCREEN OR RESIZE WINDOW FROM NOW ON.``nMAKE SURE BEE IS RADIOACTIVE AT ALL TIMES!", "Bitterberry Auto-Feeder v0.2", 0x40001) = "Cancel") {
     ExitApp
+}
 
 loop 10 {
     bitterberrynos := InputBox("Enter the amount of bitterberry used each time", "How many bitterberry?", "w320 h180 T60").Value
     if IsInteger(bitterberrynos) {
-        if (bitterberrynos > 30)
-            if (MsgBox("You have entered " bitterberrynos " which is more than 30.``nAre you sure?", "Bitterberry Auto-Feeder v0.2", 0x40034) = "No")
+        if (bitterberrynos > 30) {
+            if (MsgBox("You have entered " bitterberrynos " which is more than 30.``nAre you sure?", "Bitterberry Auto-Feeder v0.2", 0x40034) = "No") {
                 ExitApp
+            }
+        }
         break
     } else {
         MsgBox "You must enter a number for Bitterberries!!", "Bitterberry Auto-Feeder v0.2", 0x40010
     }
 }
 
-if (MsgBox("After dismissing this message,``nleft click ONLY once on BEE SLOT", "Bitterberry Auto-Feeder v0.2", 0x40001) = "Cancel")
+if (MsgBox("After dismissing this message,``nleft click ONLY once on BEE SLOT", "Bitterberry Auto-Feeder v0.2", 0x40001) = "Cancel") {
     ExitApp
+}
 
 hwnd := GetRobloxHWND()
 ActivateRoblox()
@@ -59,40 +62,36 @@ Gdip_GraphicsClear(G), Gdip_FillRectangle(G, pBrush := Gdip_BrushCreateSolid(0xd
 Gdip_TextToGraphics(G, "Mutating... Right Click or Shift to Stop!", "x0 y0 cffff5f1f Bold Center vCenter s24", "Tahoma", windowWidth, 38)
 UpdateLayeredWindow(StatusBar.Hwnd, hdc, windowX, windowY, windowWidth, 38)
 SelectObject(hdc, obm), DeleteObject(hbm), DeleteDC(hdc), Gdip_DeleteGraphics(G)
-try
-{
+try {
     Hotkey "Shift", ExitFunc, "On"
     Hotkey "RButton", ExitFunc, "On"
     Hotkey "F11", ExitFunc, "On"
 }
 Sleep 250
 
-Loop
-{
-    if ((pos := nm_InventorySearch("bitterberry", "down", , , , (A_Index = 1) ? 40 : 4)) = 0)
-    {
+Loop {
+    bitterBerryPos := nm_InventorySearch("bitterberry", "down", , , , (A_Index = 1) ? 40 : 4)
+    if bitterBerryPos == 0 {
         MsgBox "You ran out of Bitterberries!", "Bitterberry Auto-Feeder v0.2", 0x40010
         break
     }
+    
     GetRobloxClientPos(hwnd)
 
-    SendEvent "{Click " windowX+pos[1] " " windowY+pos[2] " 0}"
+    SendEvent "{Click " windowX + 30 " " windowY + bitterBerryPos[3] + bitterBerryPos[4] " 0}"
     Send "{Click Down}"
     Sleep 100
     SendEvent "{Click " beeX " " beeY " 0}"
     Sleep 100
     Send "{Click Up}"
-    Loop 10
-    {
+    Loop 10 {
         Sleep 100
         pBMScreen := Gdip_BitmapFromScreen(windowX+(54*windowWidth)//100-300 "|" windowY+offsetY+(46*windowHeight)//100-59 "|250|100")
-        if (Gdip_ImageSearch(pBMScreen, bitmaps["feed"], &pos, , , , , 2, , 2) = 1)
-        {
+        if (Gdip_ImageSearch(pBMScreen, bitmaps["feed"], &pos, , , , , 2, , 2) = 1) {
             Gdip_DisposeImage(pBMScreen)
             SendEvent "{Click " windowX+(54*windowWidth)//100-300+SubStr(pos, 1, InStr(pos, ",")-1)+140 " " windowY+offsetY+(46*windowHeight)//100-59+SubStr(pos, InStr(pos, ",")+1)+5 "}" ; Click Number
             Sleep 100
-            Loop StrLen(bitterberrynos)
-            {
+            Loop StrLen(bitterberrynos) {
                 SendEvent "{Text}" SubStr(bitterberrynos, A_Index, 1)
                 Sleep 100
             }
@@ -100,20 +99,18 @@ Loop
             break
         }
         Gdip_DisposeImage(pBMScreen)
-        if (A_Index = 10)
+        if (A_Index = 10) {
             continue 2
+        }
     }
     Sleep 750
     
     pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-295 "|" windowY+offsetY+((4*windowHeight)//10 - 15) "|150|50")
     if (Gdip_ImageSearch(pBMScreen, bitmaps["greensuccess"], , , , , , 20) = 1) {
-        if (MsgBox("SUCCESS!!!!``nKeep this?", "Bitterberry Auto-Feeder v0.2", 0x40024) = "Yes")
-        {
+        if (MsgBox("SUCCESS!!!!``nKeep this?", "Bitterberry Auto-Feeder v0.2", 0x40024) = "Yes") {
             Gdip_DisposeImage(pBMScreen)
             break
-        }
-        else
-        {
+        } else {
             ActivateRoblox()
             SendEvent "{Click " windowX + (windowWidth//2 - 132) " " windowY + offsetY + ((4*windowHeight)//10 - 150) "}" ; Close Bee
         }
@@ -121,8 +118,7 @@ Loop
     Gdip_DisposeImage(pBMScreen)
 }
 
-ExitFunc(*)
-{
+ExitFunc(*) {
     try StatusBar.Destroy()
     try Gdip_Shutdown(pToken)
     ExitApp

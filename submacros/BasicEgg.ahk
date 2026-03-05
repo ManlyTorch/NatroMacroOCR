@@ -54,24 +54,29 @@ Sleep 250
 pBMC := Gdip_CreateBitmap(2,2), G := Gdip_GraphicsFromImage(pBMC), Gdip_GraphicsClear(G,0xffae792f), Gdip_DeleteGraphics(G) ; Common
 pBMM := Gdip_CreateBitmap(2,2), G := Gdip_GraphicsFromImage(pBMM), Gdip_GraphicsClear(G,0xffbda4ff), Gdip_DeleteGraphics(G) ; Mythic
 
-rj := 0
-Loop
-{
-	if ((pos := (A_Index = 1) ? nm_InventorySearch("basicegg", "up", , , , 70) : (rj = 1) ? nm_InventorySearch("royaljelly", "up", , , 0, 7) : nm_InventorySearch("basicegg", "up", , , 0, 7)) = 0)
-	{
-		MsgBox "You ran out of " ((rj = 1) ? "Royal Jellies!" : "Basic Eggs!"), "Basic Bee Replacement Program", 0x40010
+pos := 0
+curItem := "basicegg"
+displayName := Map(
+	"basicegg", "Basic Eggs!",
+	"royaljelly", "Royal Jellies!"
+)
+
+Loop {
+	pos := nm_InventorySearch(curItem, "up", , , , 70)
+	if not pos {
+		MsgBox "You ran out of " displayName[curItem], "Basic Bee Replacement Program", 0x40010
 		break
 	}
+
 	GetRobloxClientPos(hwnd)
-	SendEvent "{Click " windowX+pos[1] " " windowY+pos[2] " 0}"
+	SendEvent "{Click " windowX + 30 " " windowY + pos[3] + pos[4] " 0}"
 	Send "{Click Down}"
 	Sleep 100
 	SendEvent "{Click " beeX " " beeY " 0}"
 	Sleep 100
 	Send "{Click Up}"
 	found := false
-	Loop 10
-	{
+	Loop 10 {
 		Sleep 100
         TextInRegion := findTextInRegion("Yes",, windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2, true)
 		if TextInRegion.Has("Word") {
@@ -81,26 +86,24 @@ Loop
 		} else if found {
 			break
 		}
-        
-		if (A_Index = 10)
-		{
-			rj := 1
+
+		if (A_Index = 10) {
+			curItem := "royaljelly"
 			continue 2
 		}
 	}
 	Sleep 750
 
-	pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-155 "|" windowY+offsetY+((4*windowHeight)//10 - 135) "|310|205"), rj := 0
+	pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-155 "|" windowY+offsetY+((4*windowHeight)//10 - 135) "|310|205")
 	
 	if (Gdip_ImageSearch(pBMScreen, pBMM, , 50, 165, 260, 205, 2, , , 5) = 5) { ; Mythic Hatched
-		if (MsgBox("MYTHIC!!!!``nKeep this?", "Basic Bee Replacement Program", 0x40024) = "Yes")
-		{
+		if (MsgBox("MYTHIC!!!!``nKeep this?", "Basic Bee Replacement Program", 0x40024) = "Yes") {
 			Gdip_DisposeImage(pBMScreen)
 			break
 		}
 	}
 	else if (Gdip_ImageSearch(pBMScreen, pBMC, , 50, 165, 260, 205, 2, , , 5) = 5) {
-		rj := 1
+		curItem := "royaljelly"
 		if (Gdip_ImageSearch(pBMScreen, bitmaps["giftedstar"], , 0, 20, 130, 50, 5) = 1) { ; If gifted is hatched, stop
 			MsgBox "SUCCESS!!!!", "Basic Bee Replacement Program", 0x40020
 			Gdip_DisposeImage(pBMScreen)
@@ -108,8 +111,7 @@ Loop
 		}
 	}
 	else if (Gdip_ImageSearch(pBMScreen, bitmaps["giftedstar"], , 0, 20, 130, 50, 5) = 1) { ; Non-Basic Gifted Hatched
-		if (MsgBox("GIFTED!!!!``nKeep this?", "Basic Bee Replacement Program", 0x40024) = "Yes")
-		{
+		if (MsgBox("GIFTED!!!!``nKeep this?", "Basic Bee Replacement Program", 0x40024) = "Yes") {
 			Gdip_DisposeImage(pBMScreen)
 			break
 		}
@@ -118,8 +120,7 @@ Loop
 }
 ExitApp
 
-ExitFunc(*)
-{
+ExitFunc(*) {
 	try Gdip_DisposeImage(pBMC), Gdip_DisposeImage(pBMM)
 	try StatusBar.Destroy()
 	try Gdip_Shutdown(pToken)
