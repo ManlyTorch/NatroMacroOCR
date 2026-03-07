@@ -8,8 +8,7 @@
 ; Updates global variables windowX, windowY, windowWidth, windowHeight
 ; Optionally takes a known window handle to skip GetRobloxHWND call
 ; Returns: 1 = successful; 0 = TargetError
-GetRobloxClientPos(hwnd?)
-{
+GetRobloxClientPos(hwnd?) {
     global windowX, windowY, windowWidth, windowHeight
     if !IsSet(hwnd)
         hwnd := GetRobloxHWND()
@@ -23,12 +22,10 @@ GetRobloxClientPos(hwnd?)
 }
 
 ; Returns: hWnd = successful; 0 = window not found
-GetRobloxHWND()
-{
+GetRobloxHWND() {
 	if (hwnd := WinExist("Roblox ahk_exe RobloxPlayerBeta.exe"))
 		return hwnd
-	else if (WinExist("Roblox ahk_exe ApplicationFrameHost.exe"))
-    {
+	else if (WinExist("Roblox ahk_exe ApplicationFrameHost.exe")) {
         try
             hwnd := ControlGetHwnd("ApplicationFrameInputSinkWindow1")
         catch TargetError
@@ -43,19 +40,16 @@ GetRobloxHWND()
 ; Image is specific to BSS but can be altered for use in other games
 ; Optionally takes a known window handle to skip GetRobloxHWND call
 ; Returns: offset (integer), defaults to 0 on fail (ByRef param fail is then set to 1, else 0)
-GetYOffset(hwnd?, &fail?)
-{
+GetYOffset(hwnd?, &fail?) {
 	static hRoblox := 0, offset := 0
     if !IsSet(hwnd)
         hwnd := GetRobloxHWND()
 
-	if (hwnd = hRoblox)
-	{
+	if (hwnd = hRoblox) {
 		fail := 0
 		return offset
 	}
-	else if WinExist("ahk_id " hwnd)
-	{
+	else if WinExist("ahk_id " hwnd) {
 		if true {
 			fail := 0
 			return 22
@@ -86,8 +80,7 @@ GetYOffset(hwnd?, &fail?)
 }
 
 ; Returns: 1 = successful; 0 = TargetError
-ActivateRoblox()
-{
+ActivateRoblox() {
 	try
 		WinActivate "Roblox"
 	catch

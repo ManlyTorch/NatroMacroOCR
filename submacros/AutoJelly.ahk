@@ -132,19 +132,9 @@ getConfig() {
 w:=500,h:=397
 ;===Bee Array===
 beeArr := ["Bomber", "Brave", "Bumble", "Cool", "Hasty", "Looker", "Rad", "Rascal", "Stubborn", "Bubble", "Bucko", "Commander", "Demo", "Exhausted", "Fire", "Frosty", "Honey", "Rage", "Riley", "Shocked", "Baby", "Carpenter", "Demon", "Diamond", "Lion", "Music", "Ninja", "Shy", "Buoyant", "Fuzzy", "Precise", "Spicy", "Tadpole", "Vector"]
-mutationsArr := [
-    {name:"Ability", triggers:["rate", "abil", "ity"], full:"AbilityRate"},
-    {name:"Gather", triggers:["gath", "herAm"], full:"GatherAmount"},
-    {name:"Convert", triggers:["convert", "vertAm"], full:"ConvertAmount"},
-    {name:"Instant", triggers:["inst", "antConv"], full:"InstantConversion"},
-    {name:"Crit", triggers:["crit", "chance"], full:"CriticalChance"},
-    {name:"Attack", triggers:["attack", "att", "ack"], full:"Attack"},
-    {name:"Energy", triggers:["energy", "rgy"], full:"Energy"},
-    {name:"Movespeed", triggers:["movespeed", "speed", "move"], full:"MoveSpeed"},
+mutationsArr := [ {name:"Ability", triggers:["rate", "abil", "ity"], full:"AbilityRate"}, {name:"Gather", triggers:["gath", "herAm"], full:"GatherAmount"}, {name:"Convert", triggers:["convert", "vertAm"], full:"ConvertAmount"}, {name:"Instant", triggers:["inst", "antConv"], full:"InstantConversion"}, {name:"Crit", triggers:["crit", "chance"], full:"CriticalChance"}, {name:"Attack", triggers:["attack", "att", "ack"], full:"Attack"}, {name:"Energy", triggers:["energy", "rgy"], full:"Energy"}, {name:"Movespeed", triggers:["movespeed", "speed", "move"], full:"MoveSpeed"},
 ]
-extrasettings:=[
-    {name:"mythicStop", text: "Stop on mythics"},
-    {name:"giftedStop", text: "Stop on gifteds"}
+extrasettings:=[ {name:"mythicStop", text: "Stop on mythics"}, {name:"giftedStop", text: "Stop on gifteds"}
 ]
 getConfig()
 (bitmaps := Map()).CaseSense:=0
@@ -155,13 +145,7 @@ startGui() {
     local i,j,y,hBM,x
     (mgui := Gui("+E" (0x00080000) " +OwnDialogs -Caption -DPIScale", "Auto-Jelly")).OnEvent("Close", ExitApp)
     mgui.Show()
-    for i, j in [
-        {name:"move", options:"x0 y0 w" w " h36"},
-        {name:"selectall", options:"x" w-330 " y220 w40 h18"},
-        {name:"mutations", options:"x" w-170 " y220 w40 h18"},
-        {name:"close", options:"x" w-40 " y5 w28 h28"},
-        {name:"roll", options:"x10 y" h-42 " w" w-56 " h30"},
-        {name:"help", options:"x" w-40 " y" h-42 " w28 h28"}
+    for i, j in [ {name:"move", options:"x0 y0 w" w " h36"}, {name:"selectall", options:"x" w-330 " y220 w40 h18"}, {name:"mutations", options:"x" w-170 " y220 w40 h18"}, {name:"close", options:"x" w-40 " y5 w28 h28"}, {name:"roll", options:"x10 y" h-42 " w" w-56 " h30"}, {name:"help", options:"x" w-40 " y" h-42 " w28 h28"}
     ]
         mgui.AddText("v" j.name " " j.options)
     for i, j in beeArr {
@@ -330,8 +314,7 @@ WM_MOUSEMOVE(wParam, lParam, msg, hwnd) {
     ReplaceSystemCursors()
     DrawGUI()
 }
-ReplaceSystemCursors(IDC := "")
-{
+ReplaceSystemCursors(IDC := "") {
     static IMAGE_CURSOR := 2, SPI_SETCURSORS := 0x57
         , SysCursors := Map(  "IDC_APPSTARTING", 32650
                             , "IDC_ARROW"      , 32512
@@ -349,11 +332,9 @@ ReplaceSystemCursors(IDC := "")
                             , "IDC_WAIT"       , 32514 )
     if !IDC
         DllCall("SystemParametersInfo", "UInt", SPI_SETCURSORS, "UInt", 0, "UInt", 0, "UInt", 0)
-    else
-    {
+    else {
         hCursor := DllCall("LoadCursor", "Ptr", 0, "UInt", SysCursors[IDC], "Ptr")
-        for k, v in SysCursors
-        {
+        for k, v in SysCursors {
             hCopy := DllCall("CopyImage", "Ptr", hCursor, "UInt", IMAGE_CURSOR, "Int", 0, "Int", 0, "UInt", 0, "Ptr")
             DllCall("SetSystemCursor", "Ptr", hCopy, "UInt", v)
         }
@@ -376,14 +357,12 @@ blc_start() {
 
     ocr_enabled := 1
     ocr_language := ""
-    for k,v in Map("Windows.Globalization.Language","{9B0252AC-0C27-44F8-B792-9793FB66C63E}", "Windows.Graphics.Imaging.BitmapDecoder","{438CCB26-BCEF-4E95-BAD6-23A822E58D01}",    "Windows.Media.Ocr.OcrEngine","{5BFFA85A-3384-3540-9940-699120D428A8}")
-    {
+    for k,v in Map("Windows.Globalization.Language","{9B0252AC-0C27-44F8-B792-9793FB66C63E}", "Windows.Graphics.Imaging.BitmapDecoder","{438CCB26-BCEF-4E95-BAD6-23A822E58D01}",    "Windows.Media.Ocr.OcrEngine","{5BFFA85A-3384-3540-9940-699120D428A8}") {
     	hString := OCR.CreateHString(k)
     	GUID := Buffer(16), DllCall("ole32\CLSIDFromString", "WStr", v, "Ptr", GUID)
     	result := DllCall("Combase.dll\RoGetActivationFactory", "Ptr", hString, "Ptr", GUID, "PtrP", &pClass:=0)
     	OCR.DeleteHString(hString)
-    	if (result != 0)
-    	{
+    	if (result != 0) {
     		ocr_enabled := 0
     		break
     	}

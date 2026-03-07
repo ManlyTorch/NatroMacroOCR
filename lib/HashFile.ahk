@@ -13,8 +13,7 @@ HASH types:
 5 - SHA384
 6 - SHA512
 */
-HashFile(filePath, hashType:=2)
-{
+HashFile(filePath, hashType:=2) {
 	static PROV_RSA_AES := 24
 	static CRYPT_VERIFYCONTEXT := 0xF0000000
 	static BUFF_SIZE := 1024 * 1024 ; 1 MB
@@ -62,8 +61,7 @@ HashFile(filePath, hashType:=2)
 	
 	read_buf := Buffer(BUFF_SIZE, 0)
 	
-	While (cbCount := f.RawRead(read_buf, BUFF_SIZE))
-	{
+	While (cbCount := f.RawRead(read_buf, BUFF_SIZE)) {
 		if !DllCall("Advapi32\CryptHashData"
 					, "Ptr", hHash
 					, "Ptr", read_buf

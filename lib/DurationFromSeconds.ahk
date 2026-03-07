@@ -4,8 +4,7 @@
 * @author SP
 *****************************************************************************************/
 
-DurationFromSeconds(secs, format:="hh:mm:ss", capacity:=64)
-{
+DurationFromSeconds(secs, format:="hh:mm:ss", capacity:=64) {
 	dur := Buffer(capacity), DllCall("GetDurationFormatEx"
 		, "Ptr", 0
 		, "UInt", 0

@@ -24,8 +24,7 @@ DetectHiddenWindows 1
 SetWorkingDir A_ScriptDir "\.."
 
 ; check for the correct AHK version before starting
-if (A_PtrSize != 4)
-{
+if (A_PtrSize != 4) {
 	SplitPath(A_AhkPath, , &ahkDirectory)
 
 	if (!FileExist(ahkPath := ahkDirectory "\AutoHotkey32.exe"))
@@ -51,10 +50,8 @@ DllCall(DllCall("GetProcAddress"
 TimerX := IniRead("settings\nm_config.ini", "Planters", "TimerX", 0)
 TimerY := IniRead("settings\nm_config.ini", "Planters", "TimerY", 0)
 TimerGuiTransparency := IniRead("settings\nm_config.ini", "Planters", "TimerGuiTransparency", 0)
-if (TimerX && TimerY)
-{
-	Loop (MonitorCount := MonitorGetCount())
-	{
+if (TimerX && TimerY) {
+	Loop (MonitorCount := MonitorGetCount()) {
 		MonitorGetWorkArea A_Index, &MonLeft, &MonTop, &MonRight, &MonBottom
 		if (TimerX > MonLeft && TimerX < MonRight && TimerY > MonTop && TimerY < MonBottom)
 			break
@@ -205,17 +202,14 @@ global PlanterField1, PlanterField2, PlanterField3
 
 
 Loop {
-	Loop 3
-	{
+	Loop 3 {
 		i := A_Index
 
 		for k, v in ["name", "field", "nectar", "harvesttime", "estpercent"]
 			Planter%v%%i% := IniRead("settings\nm_config.ini", "Planters", "Planter" v i)
 
-		for k, v in ["field", "name", "nectar"]
-		{
-			if (!IsSet(LastPlanter%v%%i%) || (Planter%v%%i% != LastPlanter%v%%i%))
-			{
+		for k, v in ["field", "name", "nectar"] {
+			if (!IsSet(LastPlanter%v%%i%) || (Planter%v%%i% != LastPlanter%v%%i%)) {
 				TimersGui["vplanter" v i].Value := (Planter%v%%i% = "None") ? "" : "nm_image_assets\ptimers\" . ((v = "name") ? "planter" : v) . "s\" Planter%v%%i% ".png"
 				LastPlanter%v%%i% := Planter%v%%i%
 			}
@@ -236,8 +230,7 @@ Loop {
 		for k, v in ["Item", "Index", "Amount", "Time", "Count"]
 			Blender%v%%i% := IniRead("settings\nm_config.ini", "Blender", "Blender" v i)
 
-		if (!IsSet(LastBlenderItem%i%) || (BlenderItem%i% != LastBlenderItem%i%))
-		{
+		if (!IsSet(LastBlenderItem%i%) || (BlenderItem%i% != LastBlenderItem%i%)) {
 			SetImage(TimersGui["BlenderItem" i "Picture"].Hwnd, hBitmapsSB[BlenderItem%i%])
 			LastBlenderItem%i% := BlenderItem%i%
 		}
@@ -272,8 +265,7 @@ Loop {
 			Shrine%v%%i% := IniRead("settings\nm_config.ini", "Shrine", "Shrine" v i)
 		LastShrine := IniRead("settings\nm_config.ini", "Shrine", "LastShrine")
 
-		if (!IsSet(LastShrineItem%i%) || (ShrineItem%i% != LastShrineItem%i%))
-		{
+		if (!IsSet(LastShrineItem%i%) || (ShrineItem%i% != LastShrineItem%i%)) {
 			SetImage(TimersGui["ShrineItem" i "Picture"].Hwnd, hBitmapsSB[ShrineItem%i%])
 			LastShrineItem%i% := ShrineItem%i%
 		}
@@ -288,8 +280,7 @@ Loop {
 	}
 
 	MonsterRespawnTime := IniRead("settings\nm_config.ini", "Collect", "MonsterRespawnTime")
-	for k, v in ["king", "tunnel", "wolf"]
-	{
+	for k, v in ["king", "tunnel", "wolf"] {
 		Last%v% := IniRead("settings\nm_config.ini", "Collect", "Last" . ((v = "king") ? "KingBeetle" : (v = "tunnel") ? "TunnelBear" : "BugrunWerewolf"))
 		TimersGui["p" v "timer"].Text := DurationFromSeconds(p%v%timer := Last%v%-(nowUnix() - ((v = "king") ? 86400 : (v = "tunnel") ? 172800 : 3600) * (1 - (MonsterRespawnTime ? MonsterRespawnTime : 0) * 0.01)), (p%v%timer > 360000) ? "'N/A'" : (p%v%timer > 0) ? (((p%v%timer >= 3600) ? "h'h' m" : "") . ((p%v%timer >= 60) ? "m'm' s" : "") . "s's'") : "'Now'")
 	}
@@ -297,21 +288,18 @@ Loop {
 	ReconnectHour := IniRead("settings\nm_config.ini", "Settings", "ReconnectHour")
 	ReconnectMin := IniRead("settings\nm_config.ini", "Settings", "ReconnectMin")
 	ReconnectInterval := IniRead("settings\nm_config.ini", "Settings", "ReconnectInterval")
-	if (ReconnectHour != "" && ReconnectMin != "" && ReconnectInterval != "")
-	{
+	if (ReconnectHour != "" && ReconnectMin != "" && ReconnectInterval != "") {
 		UTCHour := Number(FormatTime(A_NowUTC, "hh"))
 		UTCMin := Number(FormatTime(A_NowUTC, "mm"))
 		pservertimers := []
-		Loop 24 // ReconnectInterval
-		{
+		Loop 24 // ReconnectInterval {
 			hour := Mod(ReconnectHour + ReconnectInterval * (A_Index - 1), 24)
 			pservertimers.Push(Mod(24 - ((UTCMin < ReconnectMin) ? 0 : 1) + hour - UTCHour, 24) * 3600 + Mod(59 + ReconnectMin - UTCMin, 60) * 60 + (60 - Mod(A_Sec, 60)))
 		}
 		TimersGui["pservertimer"].Text := DurationFromSeconds(pservertimer := Min(pservertimers*), (pservertimer > 86400) ? "'N/A'" : ((pservertimer >= 3600) ? "h'h' m" : "") . ((pservertimer >= 60) ? "m'm' s" : "") . "s's'")
 	}
 
-	if (Mod(A_Index, 60) = 1)
-	{
+	if (Mod(A_Index, 60) = 1) {
 		TimersGui["phoneyAverage"].Text := IniRead("settings\nm_config.ini", "Status", "HoneyAverage", 0)
 		TimersGui["psessionTotalHoney"].Text := IniRead("settings\nm_config.ini", "Status", "SessionTotalHoney", 0)
 	}
@@ -418,23 +406,19 @@ ba_AddPlanterButton(GuiCtrl, *) {
 }
 ba_AddPlanter(GuiCtrl?, *) {
 	global
-	Loop 3
-	{
+	Loop 3 {
 		PlanterName%A_Index% := IniRead("settings\nm_config.ini", "Planters", "PlanterName" A_Index)
 		PlanterField%A_Index% := IniRead("settings\nm_config.ini", "Planters", "PlanterField" A_Index)
-		if (PlanterField%A_Index% = addField)
-		{
+		if (PlanterField%A_Index% = addField) {
 			msgbox "This field is already used in Slot " A_Index ". You must clear that slot before adding this entry!", "Error!", 0x40000
 			return
 		}
-		else if (PlanterName%A_Index% = addPlanter)
-		{
+		else if (PlanterName%A_Index% = addPlanter) {
 			msgbox "This planter is already used in Slot " A_Index ". You must clear that slot before adding this entry!", "Error!", 0x40000
 			return
 		}
 	}
-	switch addfield
-	{
+	switch addfield {
 		case "Dandelion", "Bamboo", "Pine Tree":
 			addnectar := "Comforting"
 
@@ -660,8 +644,7 @@ ba_AddShrineItem(GuiCtrl?, *) {
 	}
 }
 
-UpdateStr(var, value)
-{
+UpdateStr(var, value) {
 	global
 	static enum := Map("PlanterName1", 68
 		, "PlanterName2", 69
@@ -683,8 +666,7 @@ UpdateStr(var, value)
 		PostMessage 0x5553, enum[var], 4
 }
 
-UpdateInt(var, value)
-{
+UpdateInt(var, value) {
 	global
 	static enum := Map("MPlanterHold1", 264
 		, "MPlanterHold2", 265
@@ -729,8 +711,7 @@ UpdateInt(var, value)
 		PostMessage 0x5552, enum[var], value
 }
 
-nm_setGlobalInt(wParam, lParam, *)
-{
+nm_setGlobalInt(wParam, lParam, *) {
 	global
 	Critical
 	; enumeration
