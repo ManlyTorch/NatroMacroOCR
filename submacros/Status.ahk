@@ -29,8 +29,7 @@ You should have received a copy of the license along with Natro Macro. If not, p
 SetWorkingDir A_ScriptDir "\.."
 CoordMode "Mouse", "Client"
 
-if (A_Args.Length = 0)
-{
+if (A_Args.Length = 0) {
 	MsgBox "This script needs to be run by Natro Macro! You are not supposed to run it manually."
 	ExitApp
 }
@@ -665,8 +664,7 @@ Loop {
 	Sleep 100
 }
 
-nm_status(status)
-{
+nm_status(status) {
 	if true {
 		return
 	}
@@ -679,14 +677,12 @@ nm_status(status)
 		try log := FileOpen("settings\debug_log.txt", "a-d"), log.WriteLine(StrReplace(status, "`n", " - ")), logsize := log.Length, log.Close()
 
 	; send to discord
-	if (discordCheck = 1)
-	{
+	if (discordCheck = 1) {
 		; set colour based on state string
 		static colorIndex := 0, colors := [16711680, 16744192, 16776960, 65280, 255, 4915330, 9699539]
 		if (WebhookEasterEgg = 1)
 			color := colors[colorIndex := Mod(colorIndex, 7) + 1]
-		else
-		{
+		else {
 			color := ((state = "Disconnected") || (state = "You Died") || (state = "Failed") || (state = "Error") || (state = "Aborting") || (state = "Missing") || (state = "Canceling") || InStr(objective, "Phantom") || InStr(objective, "No Balloon Convert")) ? 15085139 ; red - error
 			: (InStr(objective, "Tunnel Bear") || InStr(objective, "King Beetle") || InStr(objective, "Vicious Bee") || InStr(objective, "Snail") || InStr(objective, "Crab") || InStr(objective, "Mondo") || InStr(objective, "Commando")) ? 7036559 ; purple - boss / attacking
 			: (InStr(objective, "Planter") || (state = "Placing") || (state = "Collecting") || (state = "Holding")) ? 48355 ; blue - planters
@@ -727,8 +723,7 @@ nm_status(status)
 			|| ((HoneySSCheck = 1) && InStr(stateString, "Reporting: Daily Honey LB") && ((discordMode = 0) || (channel := (StrLen(ReportChannelID) < 17) ? MainChannelID : ReportChannelID)))
 			|| ((ssDebugging = 1) && ((state = "Placing") || (state = "Collecting") || (state = "Failed") || InStr(stateString, "Next Quest Step")))
 			|| ((state = "Gathering") && !InStr(objective, "Ended") && (HoneyUpdateSSCheck) && (pBM := CreateHoneyBitmap(1, 0)))
-			|| ((state = "Converting") && (objective = "Backpack") && (HoneyUpdateSSCheck) && (pBM := CreateHoneyBitmap()))))
-		{
+			|| ((state = "Converting") && (objective = "Backpack") && (HoneyUpdateSSCheck) && (pBM := CreateHoneyBitmap())))) {
 			if !IsSet(pBM)
 				hwnd := GetRobloxHWND(), GetRobloxClientPos(hwnd), pBM := Gdip_BitmapFromScreen((windowWidth > 0) ? (windowX "|" windowY "|" windowWidth "|" windowHeight) : 0)
 		}
@@ -737,8 +732,7 @@ nm_status(status)
 		discord.SendEmbed(message, color, content, pBM?, channel?), IsSet(pBM) && pBM > 0 && Gdip_DisposeImage(pBM)
 
 		; extra: honey update
-		if (ssCheck = 1)
-		{
+		if (ssCheck = 1) {
 			global HoneyUpdate
 			if (HoneyUpdateSSCheck && (((state = "Gathering") && !InStr(objective, "Ended")) || ((state = "Converting") && !InStr(objective, "Refreshed") && !InStr(objective, "Emptied"))))
 				HoneyUpdate := (WebhookEasterEgg = 1) ? colors[colorIndex := Mod(colorIndex, 7) + 1] : color
@@ -750,12 +744,10 @@ nm_status(status)
 		status_buffer.RemoveAt(1)
 
 	; extra: night detection announcement
-	if ((NightAnnouncementCheck = 1) && (PublicJoined = 0) && (stateString = "Detected: Night") && (StrLen(NightAnnouncementWebhook) > 0))
-	{
+	if ((NightAnnouncementCheck = 1) && (PublicJoined = 0) && (stateString = "Detected: Night") && (StrLen(NightAnnouncementWebhook) > 0)) {
 		payload_json :=
 		(
-		'
-		{
+		' {
 			' (NightAnnouncementPingID ? ('"content": "<@' NightAnnouncementPingID '>",') : '') '
 			"embeds": [{
 				"author": {
@@ -776,13 +768,11 @@ nm_status(status)
 	}
 }
 
-nm_honey()
-{
+nm_honey() {
 	static id := ""
 	if !HoneyUpdateSSCheck
 		return id := ""
-	if HoneyUpdate
-	{
+	if HoneyUpdate {
 		payload_json := '{"embeds": [{"description": "[' A_Hour ':' A_Min ':' A_Sec '] Current Honey/Pollen", "color": "' HoneyUpdate '", "image": {"url": "attachment://honey.png"}}], "attachments": []}'
 		discord.CreateFormData(&postdata, &contentType
 			, [Map("name","payload_json", "content-type","application/json", "content",payload_json)
@@ -796,8 +786,7 @@ nm_honey()
 		id := ""
 }
 
-CreateHoneyBitmap(honey := 1, backpack := 1)
-{
+CreateHoneyBitmap(honey := 1, backpack := 1) {
 	if (!honey && !backpack)
 		return -1
 	hwnd := GetRobloxHWND(), GetRobloxClientPos(hwnd), offsetY := GetYOffset(hwnd)
@@ -818,8 +807,7 @@ PostSubmacroMessage(submacro, args*){
 	DetectHiddenWindows 0
 }
 
-nm_command(command)
-{
+nm_command(command) {
 	global commandPrefix, MacroState, planters, timers, settings, blender, shrine, priorityListNumeric
 	static ssmode := "All"
 	, defaultPriorityList := ["Night", "Mondo", "Planter", "Bugrun", "Collect", "QuestRotate", "Boost", "GoGather"]
@@ -856,11 +844,9 @@ nm_command(command)
 			params.Push(A_LoopField)
 	params.Length := 10, params.Default := ""
 
-	switch (name := params[1]), 0
-	{
+	switch (name := params[1]), 0 {
 		case "help","":
-		switch params[2], 0
-		{
+		switch params[2], 0 {
 			case "s","set":
 			sections := Map("Boost", "**__Boost__**"
 				,"Collect", "**__Collect__**"
@@ -884,13 +870,10 @@ nm_command(command)
 			; split lists into max 4096 character embeds
 			enum := sections.__Enum(), enum.Call(,&section)
 			embeds := [], embed := Map("title", "List of Settings for ``?set``")
-			Loop 10
-			{
+			Loop 10 {
 				embed["color"] := 5066239, embed["description"] := section
-				Loop sections.Count
-				{
-					if (enum.Call(,&section) = 0)
-					{
+				Loop sections.Count {
+					if (enum.Call(,&section) = 0) {
 						embeds.Push(embed)
 						break 2
 					}
@@ -1112,11 +1095,9 @@ nm_command(command)
 
 
 		case "ss","screenshot":
-		switch params[2], 0
-		{
+		switch params[2], 0 {
 			case "mode":
-			if ((params[3] = "all") || (params[3] = "window") || (params[3] = "screen"))
-			{
+			if ((params[3] = "all") || (params[3] = "window") || (params[3] = "screen")) {
 				ssmode := RegExReplace(params[3], "(?:^|\.|\R)[- 0-9\*\(]*\K(.)([^\.\r\n]*)", "$U1$L2")
 				discord.SendEmbed("Set screenshot mode to " ssmode "!", 5066239, , , , id)
 			}
@@ -1124,8 +1105,7 @@ nm_command(command)
 				discord.SendEmbed("Invalid ``Mode``!\nMust be either ``All``, ``Window``, or ``Screen``", 16711731, , , , id)
 
 			default:
-			switch ssmode, 0
-			{
+			switch ssmode, 0 {
 				case "all":
 				pBM := Gdip_BitmapFromScreen()
 
@@ -1194,8 +1174,7 @@ nm_command(command)
 
 		case "stop","reload":
 		DetectHiddenWindows 1
-		if WinExist("natro_macro ahk_class AutoHotkey")
-		{
+		if WinExist("natro_macro ahk_class AutoHotkey") {
 			PostMessage 0x5550, 3
 			discord.SendEmbed("Stopping Macro...", 5066239, , , , id)
 		}
@@ -1205,11 +1184,9 @@ nm_command(command)
 		case "pause","unpause":
 		if (MacroState = 0)
 			discord.SendEmbed("Macro is not running!", 16711731, , , , id)
-		else
-		{
+		else {
 			DetectHiddenWindows 1
-			if WinExist("natro_macro ahk_class AutoHotkey")
-			{
+			if WinExist("natro_macro ahk_class AutoHotkey") {
 				PostMessage 0x5550, 2
 				discord.SendEmbed(((MacroState = 2) ? "Pausing" : "Unpausing") " Macro...", 5066239, , , , id)
 			}
@@ -1218,8 +1195,7 @@ nm_command(command)
 		}
 
 		case "start":
-		if (MacroState = 0)
-		{
+		if (MacroState = 0) {
 			DetectHiddenWindows 1
 			if WinExist("natro_macro ahk_class AutoHotkey"){
 				PostMessage 0x5550, 1
@@ -1233,8 +1209,7 @@ nm_command(command)
 
 		case "close":
 		DetectHiddenWindows 0
-		if (hwnd := WinExist(window := Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name)))))
-		{
+		if (hwnd := WinExist(window := Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name))))) {
 			windowPid := WinGetPID()
 			DetectHiddenWindows 1
 			if WinExist("natro_macro ahk_class AutoHotkey")
@@ -1242,8 +1217,7 @@ nm_command(command)
 			DetectHiddenWindows 0
 			if (windowPID = natroPID)
 				discord.SendEmbed("Cannot close Natro Macro window!", 16711731, , , , id)
-			else
-			{
+			else {
 				title := WinGetTitle("ahk_id " hwnd)
 				Loop 3
 					if WinExist("ahk_id" hwnd)
@@ -1256,11 +1230,9 @@ nm_command(command)
 
 		case "activate":
 		DetectHiddenWindows 0
-		if (hwnd := WinExist(window := Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name)))))
-		{
+		if (hwnd := WinExist(window := Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name))))) {
 			title := WinGetTitle("ahk_id " hwnd)
-			try
-			{
+			try {
 				WinActivate "ahk_id " hwnd
 				discord.SendEmbed('Activated Window: ``' StrReplace(StrReplace(title, "\", "\\"), '"', '\"') '``', 5066239, , , , id)
 			}
@@ -1272,11 +1244,9 @@ nm_command(command)
 
 		case "minimise","minimize":
 		DetectHiddenWindows 0
-		if (hwnd := WinExist(window := Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name)))))
-		{
+		if (hwnd := WinExist(window := Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name))))) {
 			title := WinGetTitle("ahk_id " hwnd)
-			try
-			{
+			try {
 				WinMinimize "ahk_id " hwnd
 				discord.SendEmbed('Minimized Window: ``' StrReplace(StrReplace(title, "\", "\\"), '"', '\"') '``', 5066239, , , , id)
 			}
@@ -1287,12 +1257,10 @@ nm_command(command)
 			discord.SendEmbed('Window ``' StrReplace(StrReplace(window, "\", "\\"), '"', '\"') '`` not found!', 16711731, , , , id)
 
 		case "rejoin":
-		if (!params[2] || ((params[2] ~= "i)^[0-9]+$") && (params[2] <= 600)))
-		{
+		if (!params[2] || ((params[2] ~= "i)^[0-9]+$") && (params[2] <= 600))) {
 			delay := params[2] ? params[2] : 0
 			DetectHiddenWindows 1
-			if WinExist("natro_macro ahk_class AutoHotkey")
-			{
+			if WinExist("natro_macro ahk_class AutoHotkey") {
 				PostMessage 0x5557, delay
 				discord.SendEmbed((delay > 0) ? ("Rejoining after " delay " seconds!") : "Rejoining...", 5066239, , , , id)
 			}
@@ -1307,14 +1275,12 @@ nm_command(command)
 
 		case "keep":
 		DetectHiddenWindows 1
-		if WinExist("natro_macro ahk_class AutoHotkey")
-		{
+		if WinExist("natro_macro ahk_class AutoHotkey") {
 			try
 				result := SendMessage(0x5558, 1, , , , , , , 2000)
 			catch
 				result := -1
-			switch result
-			{
+			switch result {
 				case 2:
 				discord.SendEmbed("No Roblox window found!", 16711731, , , , id)
 
@@ -1333,14 +1299,12 @@ nm_command(command)
 
 		case "replace":
 		DetectHiddenWindows 1
-		if WinExist("natro_macro ahk_class AutoHotkey")
-		{
+		if WinExist("natro_macro ahk_class AutoHotkey") {
 			try
 				result := SendMessage(0x5558, 2, , , , , , , 2000)
 			catch
 				result := -1
-			switch result
-			{
+			switch result {
 				case 2:
 				discord.SendEmbed("No Roblox window found!", 16711731, , , , id)
 
@@ -1364,14 +1328,11 @@ nm_command(command)
 			if (p := InStr(A_LoopField, "="))
 				vars[SubStr(A_LoopField, 1, p-1)] := SubStr(A_LoopField, p+1)
 
-		switch params[2], 0
-		{
+		switch params[2], 0 {
 			case "harvest","release":
-			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3))
-			{
+			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3)) {
 				n := params[3]
-				if (vars["PlanterName" n] && (vars["PlanterName" n] != "None"))
-				{
+				if (vars["PlanterName" n] && (vars["PlanterName" n] != "None")) {
 					UpdateInt("PlanterHarvestNow" n, 1, "Planters")
 					UpdateInt("PlanterHarvestTime" n, nowUnix()-1, "Planters")
 					discord.SendEmbed("Harvest planter in Slot " n "!", 5066239, , , , id)
@@ -1383,12 +1344,10 @@ nm_command(command)
 				discord.SendEmbed((StrLen(params[3]) = 0) ? "You must specify a Planter Slot to harvest!" : ("Planter Slot must be 1, 2, or 3!\nYou entered " params[3] "."), 16711731, , , , id)
 
 			case "smoking":
-			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3))
-			{
+			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3)) {
 				vars["PlanterMode"] := IniRead("settings\nm_config.ini", "Planters", "PlanterMode")
 				n := params[3]
-				if (vars["PlanterName" n] && (vars["PlanterName" n] != "None") && (vars["MPlanterHold" n] = 1) && (vars["PlanterMode"] = 1))
-				{
+				if (vars["PlanterName" n] && (vars["PlanterName" n] != "None") && (vars["MPlanterHold" n] = 1) && (vars["PlanterMode"] = 1)) {
 					UpdateInt("MPlanterSmoking" n, 1, "Planters")
 					discord.SendEmbed("Set held planter in Slot " n " to smoking!", 5066239, , , , id)
 				}
@@ -1399,26 +1358,21 @@ nm_command(command)
 				discord.SendEmbed((StrLen(params[3]) = 0) ? "You must specify a Planter Slot to set as smoking!" : ("Planter Slot must be 1, 2, or 3!\nYou entered " params[3] "."), 16711731, , , , id)
 
 			case "add":
-			if ((params[4] = 1) || (params[4] = 2) || (params[4] = 3))
-			{
+			if ((params[4] = 1) || (params[4] = 2) || (params[4] = 3)) {
 				n := params[4]
-				if (vars["PlanterName" n] && (vars["PlanterName" n] != "None"))
-				{
+				if (vars["PlanterName" n] && (vars["PlanterName" n] != "None")) {
 					times := []
 					Loop Parse params[3], ":"
 						if (A_LoopField != "")
 							times.InsertAt(1, A_LoopField)
 
 					t := nowUnix()
-					Loop 1
-					{
+					Loop 1 {
 						time_delta := 0
-						Loop (m := Min(times.Length, 3))
-						{
+						Loop (m := Min(times.Length, 3)) {
 							if ((times[A_Index] ~= "i)^[0-9]+$") && (times[A_Index] < 24*(3600/(60**(A_Index-1)))))
 								time_delta += times[A_Index]*(60**(A_Index-1))
-							else
-							{
+							else {
 								discord.SendEmbed("``" params[3] "`` is not a valid time!\nMake sure your time is in the form ``h:m:s`` and does not exceed 24 hours!", 16711731, , , , id)
 								break 2
 							}
@@ -1437,26 +1391,21 @@ nm_command(command)
 				discord.SendEmbed((StrLen(params[4]) = 0) ? "You must specify a Planter Slot to add time to!" : ("Planter Slot must be 1, 2, or 3!\nYou entered " params[4] "."), 16711731, , , , id)
 
 			case "sub","subtract":
-			if ((params[4] = 1) || (params[4] = 2) || (params[4] = 3))
-			{
+			if ((params[4] = 1) || (params[4] = 2) || (params[4] = 3)) {
 				n := params[4]
-				if (vars["PlanterName" n] && (vars["PlanterName" n] != "None"))
-				{
+				if (vars["PlanterName" n] && (vars["PlanterName" n] != "None")) {
 					times := []
 					Loop Parse params[3], ":"
 						if (A_LoopField != "")
 							times.InsertAt(1, A_LoopField)
 
 					t := nowUnix()
-					Loop 1
-					{
+					Loop 1 {
 						time_delta := 0
-						Loop (m := Min(times.Length, 3))
-						{
+						Loop (m := Min(times.Length, 3)) {
 							if ((times[A_Index] ~= "i)^[0-9]+$") && (times[A_Index] < 24*(3600/(60**(A_Index-1)))))
 								time_delta += times[A_Index]*(60**(A_Index-1))
-							else
-							{
+							else {
 								discord.SendEmbed("``" params[3] "`` is not a valid time!\nMake sure your time is in the form ``h:m:s`` and does not exceed 24 hours!", 16711731, , , , id)
 								break 2
 							}
@@ -1475,8 +1424,7 @@ nm_command(command)
 				discord.SendEmbed((StrLen(params[4]) = 0) ? "You must specify a Planter Slot to subtract time from!" : ("Planter Slot must be 1, 2, or 3!\nYou entered " params[4] "."), 16711731, , , , id)
 
 			case "clear":
-			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3))
-			{
+			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3)) {
 				n := params[3]
 				UpdateStr("PlanterName" n, "None", "Planters")
 				UpdateStr("PlanterField" n, "None", "Planters")
@@ -1492,11 +1440,9 @@ nm_command(command)
 				discord.SendEmbed((StrLen(params[3]) = 0) ? "You must specify a Planter Slot to clear!" : ("Planter Slot must be 1, 2, or 3!\nYou entered " params[3] "."), 16711731, , , , id)
 
 			case "screenshot","ss":
-			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3))
-			{
+			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3)) {
 				n := params[3]
-				if (vars["PlanterName" n] && (vars["PlanterName" n] != "None"))
-					{
+				if (vars["PlanterName" n] && (vars["PlanterName" n] != "None")) {
 						UpdateInt("PlanterSS" n, 1, "Planters")
 						discord.SendEmbed("Take screenshot of planter in Slot " n "!", 5066239, , , , id)
 					}
@@ -1510,8 +1456,7 @@ nm_command(command)
 			objParam := []
 			payload_json :=
 			(
-			'
-			{
+			' {
 				"allowed_mentions": {
 					"parse": []
 				},
@@ -1527,28 +1472,23 @@ nm_command(command)
 						"name": "' commandPrefix 'planter harvest [``n``]",
 						"value": "Harvests planter in Slot ``n`` and moves to the next Slot, even if the planter is not ready or is held/smoking",
 						"inline": true
-					},
-					{
+					}, {
 						"name": "' commandPrefix 'planter add [``h:m:s``] [``n``]",
 						"value": "Adds ``h:m:s`` to planter timer in Slot ``n``",
 						"inline": true
-					},
-					{
+					}, {
 						"name": "' commandPrefix 'planter sub [``h:m:s``] [``n``]",
 						"value": "Subtracts ``h:m:s`` from planter timer in Slot ``n``",
 						"inline": true
-					},
-					{
+					}, {
 						"name": "' commandPrefix 'planter clear [``n``]",
 						"value": "Clears planter in Slot ``n`` from the macro Planter Timers",
 						"inline": true
-					},
-					{
+					}, {
 						"name": "' commandPrefix 'planter smoking [``n``]",
 						"value": "Sets held planter in Slot ``n`` to smoking (Manual planters `'disable auto harvest`' option)",
 						"inline": true
-					},
-					{
+					}, {
 						"name": "' commandPrefix 'planter screenshot [``n``]",
 						"value": "Takes a screenshot of planter in Slot ``n``",
 						"inline": true
@@ -1559,10 +1499,8 @@ nm_command(command)
 
 			t := nowUnix()
 			vars["PlanterMode"] := IniRead("settings\nm_config.ini", "Planters", "PlanterMode")
-			Loop 3
-			{
-				if (vars["PlanterName" A_Index] && (vars["PlanterName" A_Index] != "None") && planters.Has(vars["PlanterName" A_Index]))
-				{
+			Loop 3 {
+				if (vars["PlanterName" A_Index] && (vars["PlanterName" A_Index] != "None") && planters.Has(vars["PlanterName" A_Index])) {
 					objParam.Push(Map("name",("files[" A_Index-1 "]"),"filename",(vars["PlanterName" A_Index] ".png"),"content-type","image/png","pBitmap",planters[vars["PlanterName" A_Index]].bitmap))
 					duration := DurationFromSeconds(ptimer := (vars["PlanterHarvestTime" A_Index] - t), (ptimer > 0) ? (((ptimer >= 3600) ? "h'h' m" : "") ((ptimer >= 60) ? "m'm' s" : "") "s's'") : ((vars["MPlanterSmoking" A_Index]) && (vars["PlanterMode"] = 1)) ? "'Smoking'" : ((vars["MPlanterHold" A_Index]) && (vars["PlanterMode"] = 1)) ? "'Holding'" : "'Ready'")
 					payload_json .=
@@ -1579,13 +1517,11 @@ nm_command(command)
 							"name": "Field Planted",
 							"value": "' vars["PlanterField" A_Index] ' (' Format("{1:Us}", SubStr(vars["PlanterNectar" A_Index], 1, 3)) ')",
 							"inline": true
-						},
-						{
+						}, {
 							"name": "Time Remaining",
 							"value": "' duration '",
 							"inline": true
-						},
-						{
+						}, {
 							"name": "Glitter Used",
 							"value": "' (vars["PlanterGlitter" A_Index] ? "Yes" : "No") '",
 							"inline": true
@@ -1610,16 +1546,12 @@ nm_command(command)
 			if (p := InStr(A_LoopField, "="))
 				vars[SubStr(A_LoopField, 1, p-1)] := SubStr(A_LoopField, p+1)
 
-		switch params[2], 0
-		{
+		switch params[2], 0 {
 			case "reset":
 			var := StrReplace(SubStr(command.content, InStr(command.content, "reset")+5), " ")
-			for v in ["Mobs", "Machines", "Beesmas"]
-			{
-				for i,j in timers.%v%.values
-				{
-					if (var ~= j.regex)
-					{
+			for v in ["Mobs", "Machines", "Beesmas"] {
+				for i,j in timers.%v%.values {
+					if (var ~= j.regex) {
 						varname := j.varname, displayname := j.name, section := v
 						if ((vars[varname "Check"] = 1) || (section = "mobs"))
 							cooldown := j.cooldown
@@ -1627,8 +1559,7 @@ nm_command(command)
 					}
 				}
 			}
-			if IsSet(cooldown)
-			{
+			if IsSet(cooldown) {
 				UpdateInt("Last" varname, nowUnix(), "Collect")
 				duration := DurationFromSeconds(time := (cooldown*((section = "mobs") ? (1-(vars["MonsterRespawnTime"]?vars["MonsterRespawnTime"]:0)*0.01) : 1)), ((time >= 86400) ? "d'd' h" : "") ((time >= 3600) ? "h'h' m" : "") ((time >= 60) ? "m'm' s" : "") "s's'")
 				discord.SendEmbed("Reset timer for " displayname "!\n" displayname " will now be " ((section = "mobs") ? "killed" : "collected") " in " duration ".", 5066239, , , , id)
@@ -1640,12 +1571,9 @@ nm_command(command)
 
 			case "ready":
 			var := StrReplace(SubStr(command.content, InStr(command.content, "ready")+5), " ")
-			for v in ["Mobs", "Machines", "Beesmas"]
-			{
-				for i,j in timers.%v%.values
-				{
-					if (var ~= j.regex)
-					{
+			for v in ["Mobs", "Machines", "Beesmas"] {
+				for i,j in timers.%v%.values {
+					if (var ~= j.regex) {
 						varname := j.varname, displayname := j.name, section := v
 						if ((vars[varname "Check"] = 1) || (section = "mobs"))
 							cooldown := j.cooldown
@@ -1653,8 +1581,7 @@ nm_command(command)
 					}
 				}
 			}
-			if IsSet(cooldown)
-			{
+			if IsSet(cooldown) {
 				UpdateInt("Last" varname, 1, "Collect")
 				discord.SendEmbed("Set " displayname " to be " ((section = "mobs") ? "killed" : "collected") " as soon as possible!", 5066239, , , , id)
 			}
@@ -1665,12 +1592,9 @@ nm_command(command)
 
 			case "add":
 			var := params[3] ? StrReplace(SubStr(command.content, InStr(command.content, params[3])+StrLen(params[3])), " ") : ""
-			for v in ["Mobs", "Machines", "Beesmas"]
-			{
-				for i,j in timers.%v%.values
-				{
-					if (var ~= j.regex)
-					{
+			for v in ["Mobs", "Machines", "Beesmas"] {
+				for i,j in timers.%v%.values {
+					if (var ~= j.regex) {
 						varname := j.varname, displayname := j.name, section := v
 						if ((vars[varname "Check"] = 1) || (section = "mobs"))
 							cooldown := j.cooldown
@@ -1678,23 +1602,19 @@ nm_command(command)
 					}
 				}
 			}
-			if IsSet(cooldown)
-			{
+			if IsSet(cooldown) {
 				times := []
 				Loop Parse params[3], ":"
 					if (A_LoopField != "")
 						times.InsertAt(1, A_LoopField)
 
 				t := nowUnix()
-				Loop 1
-				{
+				Loop 1 {
 					time_delta := 0
-					Loop (m := Min(times.Length, 3))
-					{
+					Loop (m := Min(times.Length, 3)) {
 						if ((times[A_Index] ~= "i)^[0-9]+$") && (times[A_Index] <= 24*(3600/(60**(A_Index-1)))))
 							time_delta += times[A_Index]*(60**(A_Index-1))
-						else
-						{
+						else {
 							discord.SendEmbed("``" params[3] "`` is not a valid time!\nMake sure your time is in the form ``h:m:s`` and does not exceed 24 hours!", 16711731, , , , id)
 							break 2
 						}
@@ -1713,12 +1633,9 @@ nm_command(command)
 
 			case "sub","subtract":
 			var := params[3] ? StrReplace(SubStr(command.content, InStr(command.content, params[3])+StrLen(params[3])), " ") : ""
-			for v in ["Mobs", "Machines", "Beesmas"]
-			{
-				for i,j in timers.%v%.values
-				{
-					if (var ~= j.regex)
-					{
+			for v in ["Mobs", "Machines", "Beesmas"] {
+				for i,j in timers.%v%.values {
+					if (var ~= j.regex) {
 						varname := j.varname, displayname := j.name, section := v
 						if ((vars[varname "Check"] = 1) || (section = "mobs"))
 							cooldown := j.cooldown
@@ -1726,23 +1643,19 @@ nm_command(command)
 					}
 				}
 			}
-			if IsSet(cooldown)
-			{
+			if IsSet(cooldown) {
 				times := []
 				Loop Parse params[3], ":"
 					if (A_LoopField != "")
 						times.InsertAt(1, A_LoopField)
 
 				t := nowUnix()
-				Loop 1
-				{
+				Loop 1 {
 					time_delta := 0
-					Loop (m := Min(times.Length, 3))
-					{
+					Loop (m := Min(times.Length, 3)) {
 						if ((times[A_Index] ~= "i)^[0-9]+$") && (times[A_Index] <= 24*(3600/(60**(A_Index-1)))))
 							time_delta += times[A_Index]*(60**(A_Index-1))
-						else
-						{
+						else {
 							discord.SendEmbed("``" params[3] "`` is not a valid time!\nMake sure your time is in the form ``h:m:s`` and does not exceed 24 hours!", 16711731, , , , id)
 							break 2
 						}
@@ -1763,8 +1676,7 @@ nm_command(command)
 			objParam := []
 			payload_json :=
 			(
-			'
-			{
+			' {
 				"allowed_mentions": {
 					"parse": []
 				},
@@ -1780,13 +1692,11 @@ nm_command(command)
 						"name": "' commandPrefix 'timer reset [``var``]",
 						"value": "Resets timer, e.g. sets Coco Crab to 1.5 days",
 						"inline": true
-					},
-					{
+					}, {
 						"name": "' commandPrefix 'timer add [``h:m:s``] [``var``]",
 						"value": "Adds ``h:m:s`` to ``var```'s timer",
 						"inline": true
-					},
-					{
+					}, {
 						"name": "' commandPrefix 'timer sub [``h:m:s``] [``var``]",
 						"value": "Subtracts ``h:m:s`` from ``var```'s timer",
 						"inline": true
@@ -1810,14 +1720,12 @@ nm_command(command)
 				"fields": [
 			'
 			)
-			for i,j in timers.mobs.values
-			{
+			for i,j in timers.mobs.values {
 				varname := j.varname
 				duration := DurationFromSeconds(time := (vars["Last" varname] + j.cooldown*(1-(vars["MonsterRespawnTime"]?vars["MonsterRespawnTime"]:0)*0.01) - t), (time > 0) ? (((time >= 86400) ? "d'd' h" : "") ((time >= 3600) ? "h'h' m" : "") ((time >= 60) ? "m'm' s" : "") "s's'") : "'Alive'")
 				payload_json .=
 				(
-				'
-				{
+				' {
 					"name": "' j.name '",
 					"value": "' duration '",
 					"inline": true
@@ -1826,14 +1734,12 @@ nm_command(command)
 			}
 			payload_json := RTrim(payload_json, ",") "]}"
 
-			for k,v in ["Machines","Beesmas"]
-			{
+			for k,v in ["Machines","Beesmas"] {
 				n := 0
 				for i,j in timers.%v%.values
 					varname := j.varname, n += (vars[varname "Check"] = 1) ? 1 : 0
 
-				if (n > 0)
-				{
+				if (n > 0) {
 					objParam.Push(Map("name",("files[" k "]"),"filename",(v ".png"),"content-type","image/png","pBitmap",timers.%v%.bitmap))
 					payload_json .=
 					(
@@ -1847,16 +1753,13 @@ nm_command(command)
 						"fields": [
 						'
 					)
-					for i,j in timers.%v%.values
-					{
+					for i,j in timers.%v%.values {
 						varname := j.varname
-						if (vars[varname "Check"] = 1)
-						{
+						if (vars[varname "Check"] = 1) {
 							duration := DurationFromSeconds(time := (vars["Last" varname] + j.cooldown - t), (time > 0) ? (((time >= 86400) ? "d'd' h" : "") ((time >= 3600) ? "h'h' m" : "") ((time >= 60) ? "m'm' s" : "") "s's'") : "'Ready'")
 							payload_json .=
 							(
-							'
-							{
+							' {
 								"name": "' j.name '",
 								"value": "' duration '",
 								"inline": true
@@ -1876,8 +1779,7 @@ nm_command(command)
 		}
 
 		case "prefix":
-		if ((newPrefix := SubStr(params[2], 1, 3)) && (StrLen(newPrefix) > 0))
-		{
+		if ((newPrefix := SubStr(params[2], 1, 3)) && (StrLen(newPrefix) > 0)) {
 			commandPrefix := newPrefix
 			IniWrite commandPrefix, "settings\nm_config.ini", "Status", "commandPrefix"
 			discord.SendEmbed("Set ``" newPrefix "`` as your command prefix!" ((StrLen(params[2]) > 3) ? "\nThe maximum prefix length is 3." : ""), 5066239, , , , id)
@@ -1886,11 +1788,9 @@ nm_command(command)
 			discord.SendEmbed("``" ((StrLen(params[2]) > 0) ? params[2] : "<blank>") "`` is not a valid prefix!" ((StrLen(params[2]) = 0) ? "\nYou cannot have an empty prefix!" : ""), 16711731, , , , id)
 
 		case "set":
-		switch params[2], 0
-		{
+		switch params[2], 0 {
 			case "bugrun":
-			switch params[3], 0
-			{
+			switch params[3], 0 {
 				case "on",1:
 				UpdateInt("BugrunLadybugsCheck", 1, "Collect")
 				UpdateInt("BugrunRhinoBeetlesCheck", 1, "Collect")
@@ -1914,8 +1814,7 @@ nm_command(command)
 			}
 			case "priority", "priorityList", "priorityListNumeric":
 			value:=((params[3] = "default") ? 12345678 : params[3]),v := Settings["PriorityListNumeric"]
-			if (value ~= v.regex)
-			{
+			if (value ~= v.regex) {
 				for i,j in listArr:=StrSplit(value) {
 					for k, v in listArr
 						if (k !== i && j == v) {
@@ -1932,15 +1831,11 @@ nm_command(command)
 			else
 				discord.SendEmbed("``" ((StrLen(value) > 0) ? value : "<blank>") "`` is not an acceptable value for ``PriorityListNumeric``!\n``" commandPrefix "help priority`` for help", 16711731, , , , id)
 			default:
-			Loop 1
-			{
-				for k,v in settings
-				{
-					if ((k = params[2]) && HasProp(v, "regex"))
-					{
+			Loop 1 {
+				for k,v in settings {
+					if ((k = params[2]) && HasProp(v, "regex")) {
 						value := Trim(SubStr(command.content, InStr(command.content, params[2])+StrLen(params[2])))
-						if (value ~= v.regex)
-						{
+						if (value ~= v.regex) {
 							(v.type = "str") ? UpdateStr(k, (value = "<blank>") ? "" : value, v.section) : UpdateInt(k, value, v.section)
 							discord.SendEmbed("Set ``" k "`` to ``" value "``!", 5066239, , , , id)
 						}
@@ -1970,23 +1865,19 @@ nm_command(command)
 			k := StrReplace(Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name))), " ")
 			str := ""
 			try ini := FileOpen("settings\nm_config.ini", "r"), str := ini.Read(), ini.Close()
-			Loop Parse str, "`n", "`r" A_Space A_Tab
-			{
-				switch (c := SubStr(A_LoopField, 1, 1))
-				{
+			Loop Parse str, "`n", "`r" A_Space A_Tab {
+				switch (c := SubStr(A_LoopField, 1, 1)) {
 					case "[",";":
 					continue
 
 					default:
-					if ((p := InStr(A_LoopField, "=")) && (k = SubStr(A_LoopField, 1, p-1)))
-					{
+					if ((p := InStr(A_LoopField, "=")) && (k = SubStr(A_LoopField, 1, p-1))) {
 						k := SubStr(A_LoopField, 1, p-1), v := SubStr(A_LoopField, p+1), s := 1
 						break
 					}
 				}
 			}
-			if IsSet(s)
-			{
+			if IsSet(s) {
 				postdata :=
 				(
 				'
@@ -2023,24 +1914,19 @@ nm_command(command)
 		discord.SendFile(Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name))), id)
 
 		case "download":
-		if (url := command.url)
-		{
+		if (url := command.url) {
 			path := StrReplace(RTrim(StrReplace(Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name))), "/", "\"), "\"), "\\", "\"), message := ""
-			if (StrLen(path) > 0)
-			{
-				if !FileExist(path)
-				{
+			if (StrLen(path) > 0) {
+				if !FileExist(path) {
 					try
 						DirCreate(path), message .= 'Created folder ``' StrReplace(StrReplace(path, "\", "\\"), '"', '\"') '``\n'
 					catch as e
 						message .= "DirCreate Error:\n" e.Message " " e.What "\n\n"
 				}
-				if InStr(FileExist(path), "D")
-				{
+				if InStr(FileExist(path), "D") {
 					SplitPath url, &filename
 					(pos := InStr(filename, "?")) && (filename := SubStr(filename, 1, pos-1))
-					try
-					{
+					try {
 						Download url, (path .= "\" filename)
 						discord.SendEmbed(message .= 'Downloaded ``' StrReplace(StrReplace(path, "\", "\\"), '"', '\"') '``', 5066239, , , , id)
 					}
@@ -2055,11 +1941,9 @@ nm_command(command)
 			discord.SendEmbed("No attachment found to download!", 16711731, , , , id)
 
 		case "click":
-		switch params[2], 0
-		{
+		switch params[2], 0 {
 			case "mode":
-			if ((params[3] = "screen") || (params[3] = "relative") || (params[3] = "window") || (params[3] = "client"))
-			{
+			if ((params[3] = "screen") || (params[3] = "relative") || (params[3] = "window") || (params[3] = "client")) {
 				CoordMode "Mouse", params[3]
 				discord.SendEmbed("Used ``````ahk\nCoordMode, Mouse, " RegExReplace(params[3], "(?:^|\.|\R)[- 0-9\*\(]*\K(.)([^\.\r\n]*)", "$U1$L2") "``````", 5066239, , , , id)
 			}
@@ -2068,28 +1952,20 @@ nm_command(command)
 
 			default:
 			options := Trim(SubStr(command.content, InStr(command.content, name)+StrLen(name)))
-			if (InStr(options, "WheelUp") || InStr(options, "WheelDown") || InStr(options, "WU") || InStr(options, "WD"))
-			{
-				for k,v in ["WheelUp","WheelDown","WU","WD"]
-				{
-					if (p := InStr(options, v))
-					{
-						Loop Parse SubStr(options, p + StrLen(v) + 1), A_Space
-						{
-							if (A_LoopField != "")
-							{
+			if (InStr(options, "WheelUp") || InStr(options, "WheelDown") || InStr(options, "WU") || InStr(options, "WD")) {
+				for k,v in ["WheelUp","WheelDown","WU","WD"] {
+					if (p := InStr(options, v)) {
+						Loop Parse SubStr(options, p + StrLen(v) + 1), A_Space {
+							if (A_LoopField != "") {
 								count := A_LoopField
 								break
 							}
 						}
 
-						if IsSet(count)
-						{
-							if (count ~= "i)^[0-9]+$")
-							{
+						if IsSet(count) {
+							if (count ~= "i)^[0-9]+$") {
 								options := SubStr(options, 1, p + StrLen(v))
-								Loop count
-								{
+								Loop count {
 									Click options
 									Sleep 50
 								}
@@ -2098,35 +1974,30 @@ nm_command(command)
 							else
 								discord.SendEmbed("Click options are not valid!\nWheel scroll count must be an integer!", 16711731, , , , id)
 						}
-						else
-						{
+						else {
 							Click options
 							discord.SendEmbed('Used ``````ahk\nClick \"' options '\"``````', 5066239, , , , id)
 						}
 					}
 				}
 			}
-			else
-			{
+			else {
 				Click options
 				discord.SendEmbed('Used ``````ahk\nClick' ((StrLen(options) > 0) ? (' \"' options '\"') : "") '``````', 5066239, , , , id)
 			}
 		}
 
 		case "shiftlock":
-		switch params[2], 0
-		{
+		switch params[2], 0 {
 			case "0","1","on","off":
 			state := (params[2] = "on") ? 1 : (params[2] = "off") ? 0 : params[2]
 			DetectHiddenWindows 1
-			if WinExist("natro_macro ahk_class AutoHotkey")
-			{
+			if WinExist("natro_macro ahk_class AutoHotkey") {
 				try
 					result := SendMessage(0x5551, state, , , , , , , 2000)
 				catch
 					result := -1
-				switch result
-				{
+				switch result {
 					case 2:
 					discord.SendEmbed("No Roblox window found!", 16711731, , , , id)
 
@@ -2155,11 +2026,9 @@ nm_command(command)
 			if (p := InStr(A_LoopField, "="))
 				vars[SubStr(A_LoopField, 1, p-1)] := SubStr(A_LoopField, p+1)
 
-		switch params[2], 0
-		{
+		switch params[2], 0 {
 			case "ready":
-			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3))
-			{
+			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3)) {
 				n := params[3]
 				Iniwrite 0, "settings\nm_config.ini", "Shrine", "LastShrine"
 				IniWrite n, "settings\nm_config.ini", "Shrine", "ShrineRot"
@@ -2169,8 +2038,7 @@ nm_command(command)
 				discord.SendEmbed((StrLen(params[3]) = 0) ? "You must specify a slot to make ready!" : ("Slot must be 1, 2, or 3!\nYou entered " params[3] "."), 16711731, , , , id)
 
 			case "clear":
-			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3))
-			{
+			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3)) {
 				n := params[3]
 				IniWrite "None", "settings\nm_config.ini", "Shrine", "ShrineItem" n
 				IniWrite "0", "settings\nm_config.ini", "Shrine", "ShrineAmount" n
@@ -2232,11 +2100,9 @@ nm_command(command)
 			if (p := InStr(A_LoopField, "="))
 			vars[SubStr(A_LoopField, 1, p-1)] := SubStr(A_LoopField, p+1)
 
-		switch params[2], 0
-		{
+		switch params[2], 0 {
 			case "ready":
-			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3))
-			{
+			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3)) {
 				n := params[3]
 				IniWrite 0, "settings\nm_config.ini", "Blender", "BlenderCount" n
 				Iniwrite 0, "settings\nm_config.ini", "Blender", "BlenderTime" n
@@ -2248,8 +2114,7 @@ nm_command(command)
 				discord.SendEmbed((StrLen(params[3]) = 0) ? "You must specify a slot to make ready!" : ("Slot must be 1, 2, or 3!\nYou entered " params[3] "."), 16711731, , , , id)
 
 			case "clear":
-			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3))
-			{
+			if ((params[3] = 1) || (params[3] = 2) || (params[3] = 3)) {
 				n := params[3]
 				IniWrite "None", "settings\nm_config.ini", "Blender", "BlenderItem" n
 				IniWrite 0, "settings\nm_config.ini", "Blender", "BlenderAmount" n
@@ -2274,8 +2139,7 @@ nm_command(command)
 			objParam := []
 			payload_json :=
 			(
-			'
-			{
+			' {
 			"allowed_mentions": {
 				"parse": []
 			},
@@ -2292,10 +2156,8 @@ nm_command(command)
 			'
 			)
 
-			Loop 3
-			{
-				if ((vars["BlenderIndex" A_Index] = "Infinite" || vars["BlenderIndex" A_Index] > 0) && vars["BlenderItem" A_Index] != "None" && blender.Has(vars["BlenderItem" A_Index]))
-				{
+			Loop 3 {
+				if ((vars["BlenderIndex" A_Index] = "Infinite" || vars["BlenderIndex" A_Index] > 0) && vars["BlenderItem" A_Index] != "None" && blender.Has(vars["BlenderItem" A_Index])) {
 					duration := DurationFromSeconds(btimer := (vars["BlenderTime" A_Index] - nowUnix()), (btimer > 0) ? (((btimer >= 3600) ? "h'h' m" : "") ((btimer >= 60) ? "m'm' s" : "") "s's'") : "'Ready'")
 
 					objParam.Push(Map("name",("files[" A_Index-1 "]"),"filename",(vars["BlenderItem" A_Index] ".png"),"content-type","image/png","pBitmap",Blender[vars["BlenderItem" A_Index]].bitmap))
@@ -2313,13 +2175,11 @@ nm_command(command)
 							"name": "Item Amount",
 							"value": "' vars["BlenderAmount" A_Index] '",
 							"inline": true
-						},
-						{
+						}, {
 							"name": "Times to loop",
 								"value": "' vars["BlenderIndex" A_Index] '",
 							"inline": true
-						},
-						{
+						}, {
 							"name": "Time Left",
 							"value": "' duration '",
 							"inline": true
@@ -2344,11 +2204,9 @@ nm_command(command)
 			if (p := InStr(A_LoopField, "="))
 				vars[SubStr(A_LoopField, 1, p-1)] := SubStr(A_LoopField, p+1)
 
-		switch params[2], 0
-		{
+		switch params[2], 0 {
 			case "enable","disable":
-			if vars.Has(var := params[3] "MemoryMatchCheck")
-			{
+			if vars.Has(var := params[3] "MemoryMatchCheck") {
 				if (vars[var] = (params[2] = "enable"))
 					discord.SendEmbed(StrTitle(params[3]) " Memory Match is already " StrLower(params[2]) "d!", 16711731, , , , id)
 				else
@@ -2358,18 +2216,13 @@ nm_command(command)
 				discord.SendEmbed((StrLen(params[3]) = 0) ? ("You must specify a game to " StrLower(params[2]) "!") : ("[``game``] must be one of the following: ``normal``, ``mega``, ``night``, ``extreme``, ``winter``!\nYou entered " params[3] "."), 16711731, , , , id)
 
 			case "ignore":
-			Loop 1
-			{
-				for item, data in MemoryMatch
-				{
-					if (item = params[3])
-					{
+			Loop 1 {
+				for item, data in MemoryMatch {
+					if (item = params[3]) {
 						var := item "MatchIgnore"
-						switch game := StrTitle(params[4])
-						{
+						switch game := StrTitle(params[4]) {
 							case "Normal","Mega","Night","Extreme","Winter":
-							if (data.games & (bit := MemoryMatchGames[game].bit))
-							{
+							if (data.games & (bit := MemoryMatchGames[game].bit)) {
 								if (vars[var] & bit)
 									UpdateInt(var, vars[var] & ~bit, "Collect"), discord.SendEmbed("Set " data.name " to be **matched** in " game " Memory Match!", 5066239, , , , id)
 								else
@@ -2428,10 +2281,8 @@ nm_command(command)
 			'
 			)
 
-			for game in ["Normal", "Mega", "Night", "Extreme", "Winter"]
-			{
-				if (vars[game "MemoryMatchCheck"] = 1)
-				{
+			for game in ["Normal", "Mega", "Night", "Extreme", "Winter"] {
+				if (vars[game "MemoryMatchCheck"] = 1) {
 					bit := MemoryMatchGames[game].bit, ignore := "None"
 					for item, data in MemoryMatch
 						if (vars[item "MatchIgnore"] & bit)
@@ -2564,23 +2415,19 @@ getUserRoles(user_id) {
 	return member.roles
 }
 
-nm_TrimLog(size)
-{
+nm_TrimLog(size) {
 	global logsize
-	try
-	{
+	try {
 		log := FileOpen("settings\debug_log.txt", "r-d"), log.Seek(-((log.Length < size) ? (f := log.Length) : size), 2), txt := log.Read(), log.Close()
 		log := FileOpen("settings\debug_log.txt", "w-d"), log.Write(SubStr(txt, f ? 1 : InStr(txt, "`n")+1)), logsize := log.Length, log.Close()
 	}
 }
 
-nm_setStatus(wParam, lParam, *)
-{
+nm_setStatus(wParam, lParam, *) {
 	return status_buffer.Push(StrGet(lParam))
 }
 
-nm_sendPostData(wParam, lParam, *) ; currently only ReportChannelID
-{
+nm_sendPostData(wParam, lParam, *) { ; currently only ReportChannelID
 	Critical
 	global ReportChannelID, MainChannelID
 	discord.SendMessageAPI(StrGet(NumGet(lParam + 2*A_PtrSize, "UPtr")), "application/json", (StrLen(ReportChannelID) > 16) ? ReportChannelID : MainChannelID)
@@ -2589,8 +2436,7 @@ nm_sendPostData(wParam, lParam, *) ; currently only ReportChannelID
 
 nowUnix() => DateDiff(A_NowUTC, "19700101000000", "Seconds")
 
-UpdateStr(var, value, section)
-{
+UpdateStr(var, value, section) {
 	global
 	static sections := Map("Boost",1,"Collect",2,"Gather",3,"Planters",4,"Quests",5,"Settings",6,"Status",7,"Blender",8,"Shrine",9)
 	try %var% := value
@@ -2602,8 +2448,7 @@ UpdateStr(var, value, section)
 		PostMessage 0x5553, settings[var].enum, sections[section]
 }
 
-UpdateInt(var, value, section)
-{
+UpdateInt(var, value, section) {
 	global
 	try %var% := value
 	IniWrite value, "settings\nm_config.ini", section, var
@@ -2614,8 +2459,7 @@ UpdateInt(var, value, section)
 		PostMessage 0x5552, settings[var].enum, value
 }
 
-nm_setGlobalInt(wParam, lParam, *)
-{
+nm_setGlobalInt(wParam, lParam, *) {
 	global
 	Critical
 	local var
@@ -2626,8 +2470,7 @@ nm_setGlobalInt(wParam, lParam, *)
 	return 0
 }
 
-nm_setGlobalStr(wParam, lParam, *)
-{
+nm_setGlobalStr(wParam, lParam, *) {
 	global
 	Critical
 	local var
@@ -2651,8 +2494,7 @@ UpdateStrActions(var){
 	}
 }
 
-nm_sendHeartbeat(*)
-{
+nm_sendHeartbeat(*) {
 	Critical
 	DetectHiddenWindows 1
 	if WinExist("Heartbeat.ahk ahk_class AutoHotkey") {
@@ -2680,8 +2522,7 @@ nm_sendItemPicture(wParam, lParam,*) {
 	}
 }
 
-ExitFunc(*)
-{
+ExitFunc(*) {
 	Critical
 	global status_buffer
 	arr := []

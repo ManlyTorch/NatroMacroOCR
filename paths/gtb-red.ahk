@@ -1,5 +1,4 @@
-﻿if (MoveMethod = "walk")
-{
+﻿if (MoveMethod = "walk") {
 	nm_gotoramp()
 	nm_Walk(67.5, BackKey, LeftKey)
 	send "{" RotRight " 4}"
@@ -18,8 +17,7 @@
 	nm_Walk(11.25, FwdKey)
 	nm_Walk(13.5, LeftKey)
 }
-else
-{
+else {
 	nm_gotoramp()
 	Send "{space down}{" RightKey " down}"
 	Sleep 100

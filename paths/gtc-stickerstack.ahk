@@ -1,5 +1,4 @@
-if (MoveMethod = "cannon")
-{
+if (MoveMethod = "cannon") {
 	nm_gotoramp()
 	nm_gotocannon()
 	send "{e down}"
@@ -23,8 +22,7 @@ if (MoveMethod = "cannon")
 	nm_Walk(9, LeftKey)
 	HyperSleep(2000)
 }
-else
-{
+else {
 	nm_gotoramp()
 	nm_Walk(67.5, BackKey, LeftKey)
 	send "{" RotRight " 4}"
