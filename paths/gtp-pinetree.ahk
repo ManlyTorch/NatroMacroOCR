@@ -1,5 +1,4 @@
-﻿If (MoveMethod = "walk")
-{
+﻿If (MoveMethod = "walk") {
     nm_gotoramp()
     nm_Walk(67.5, BackKey, LeftKey)
     send "{" RotRight " 4}"

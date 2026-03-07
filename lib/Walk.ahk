@@ -33,8 +33,7 @@ bitmaps["pBMBearMother"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABAAA
 
 offsetY := 0
 
-Walk(n, hasteCap:=0)
-{
+Walk(n, hasteCap:=0) {
 	;hasteCap values > 0 will cause all haste values lower than it to be treated as no haste but haste values above it will be treated as the cap value.
 	;In otherwords, no haste compensation up to the cap and then 100% compensation after that.
 	static freq := 0, init := DllCall("QueryPerformanceFrequency", "Int64*", &freq) ; obtain frequency on first execution
@@ -46,8 +45,7 @@ Walk(n, hasteCap:=0)
 		d += ((v + 0) + (v := DetectMovespeed(&s, &f, hasteCap)))/2 * (f - s)
 }
 
-DetectMovespeed(&s, &f, hasteCap:=0)
-{
+DetectMovespeed(&s, &f, hasteCap:=0) {
 	DllCall("QueryPerformanceCounter", "Int64*", &s := 0)
 	
 	global hasty_guard, gifted_hasty, base_movespeed, buff_characters, bitmaps, offsetY
@@ -67,15 +65,13 @@ DetectMovespeed(&s, &f, hasteCap:=0)
 	; find haste buffs (haste, coconut haste)
 	x := 0
 	haste := 0 ; initially haste is number of hastes found (since haste = coconut haste icon)
-	Loop 3 ; melody, haste, coconut haste
-	{
+	Loop 3 { ; melody, haste, coconut haste
 		if (Gdip_ImageSearch(pBMArea, bitmaps["pBMHaste"], &list, x, 14, , , , , 6) != 1)
 			break ; no possibility of haste
 		
 		x := SubStr(list, 1, InStr(list, ",")-1), y := SubStr(list, InStr(list, ",")+1)
 		
-		if (Gdip_ImageSearch(pBMArea, bitmaps["pBMMelody"], , x+2, , x+Max(16, 2*y-24), y, 12) = 0)
-		{
+		if (Gdip_ImageSearch(pBMArea, bitmaps["pBMMelody"], , x+2, , x+Max(16, 2*y-24), y, 12) = 0) {
 			haste++ ; not melody, so haste
 			if (haste = 1)
 				x1 := x, y1 := y ; normal haste is always leftmost image
@@ -86,12 +82,9 @@ DetectMovespeed(&s, &f, hasteCap:=0)
 	
 	; analyse haste stacks (haste: 0=none, 1=haste, 2=haste+coconut)
 	coconut_haste := (haste = 2) ? 1 : 0
-	if haste
-	{
-		Loop 9 ; look for each digit
-		{
-			if (Gdip_ImageSearch(pBMArea, buff_characters[10-A_Index], , x1+2*y1-44, Max(0, y1-18), x1+2*y1-14, y1-1) = 1)
-			{
+	if haste {
+		Loop 9 { ; look for each digit
+			if (Gdip_ImageSearch(pBMArea, buff_characters[10-A_Index], , x1+2*y1-44, Max(0, y1-18), x1+2*y1-14, y1-1) = 1) {
 				haste := (A_Index = 9) ? 10 : 10 - A_Index ; haste now becomes stack number
 				break
 			}
@@ -105,10 +98,8 @@ DetectMovespeed(&s, &f, hasteCap:=0)
 	oil := (Gdip_ImageSearch(pBMArea, bitmaps["pBMOil"], , , 25, , 27, 4, , 2) = 1)
 	smoothie := (Gdip_ImageSearch(pBMArea, bitmaps["pBMSmoothie"], , , 25, , 27, 4, , 2) = 1)
 	bear := 0
-	for v in ["Brown","Black","Panda","Polar","Gummy","Science","Mother"]
-	{
-		if (Gdip_ImageSearch(pBMArea, bitmaps["pBMBear" v], , , 25, , 27, 8, , 2) = 1)
-		{
+	for v in ["Brown","Black","Panda","Polar","Gummy","Science","Mother"] {
+		if (Gdip_ImageSearch(pBMArea, bitmaps["pBMBear" v], , , 25, , 27, 8, , 2) = 1) {
 			bear := 1
 			break
 		}

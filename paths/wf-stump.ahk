@@ -24,8 +24,7 @@ if (HiveBees < 12) { ;walk
 	nm_Walk(40.5, FwdKey)
 	nm_Walk(34.5, RightKey)
 	nm_Walk(27, FwdKey)
-	}
-else { ;use yellow cannon
+} else { ;use yellow cannon
     send "{space down}"
     Hypersleep(50)
     send "{space up}"
@@ -36,10 +35,9 @@ else { ;use yellow cannon
     send "{e up}"
     Hypersleep(3000)
     nm_Walk(34, FwdKey)
-    }
+}
 
-switch HiveSlot
-	{
+switch HiveSlot {
 	case 3:
 	nm_Walk(2.7, BackKey) ;center on hive pad 3
 
@@ -47,7 +45,7 @@ switch HiveSlot
 	nm_Walk(1.5, BackKey) ;walk backwards to avoid thicker hives
 	nm_Walk(35, RightKey) ;walk to ramp
 	nm_Walk(2.7, BackKey) ;center with hive pads
-	}
+}
 
 ; [2024-01-15/rpertusio] Avoid using corner (Hive 1 and ramp) where character gets stuck after 2024-01-12 BSS update
 ; [2024-01-15/rpertusio] Now can walk without yellow cannon if < 12 bees

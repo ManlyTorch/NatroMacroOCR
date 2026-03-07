@@ -25,8 +25,7 @@ LastRobloxWindow := LastStatusHeartbeat := LastMainHeartbeat := LastBackgroundHe
 MacroState := 0
 path := '"' A_AhkPath '" "' A_ScriptDir '\natro_macro.ahk"'
 
-Loop
-{
+Loop {
 	time := nowUnix()
 	DetectHiddenWindows 0
 	if (WinExist("Roblox ahk_exe RobloxPlayerBeta.exe") || WinExist("Roblox ahk_exe ApplicationFrameHost.exe"))
@@ -48,8 +47,7 @@ Loop
 		|| ((MacroState = 1) && (((time - LastMainHeartbeat > 120) && (reason := "Macro Unresponsive Timeout!"))
 		|| ((time - LastStatusHeartbeat > 120) && (reason := "Status Script Timeout!"))))) {
 		Prev_MacroState := MacroState, MacroState := 0
-		Loop
-		{
+		Loop {
 			while WinExist("natro_macro ahk_class AutoHotkey")
 				ProcessClose WinGetPID()
 			for p in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_Process WHERE Name LIKE '%Roblox%' OR CommandLine LIKE '%ROBLOXCORPORATION%'")
@@ -59,8 +57,7 @@ Loop
 
 			run path ' "' ForceStart '" "' A_ScriptHwnd '"'
 
-			if (WinWait("Natro ahk_class AutoHotkeyGUI", , 300) != 0)
-			{
+			if (WinWait("Natro ahk_class AutoHotkeyGUI", , 300) != 0) {
 				Sleep 2000
 				Send_WM_COPYDATA("Error: " reason "`nSuccessfully restarted macro!", "natro_macro ahk_class AutoHotkey")
 				Sleep 1000
@@ -69,8 +66,7 @@ Loop
 			}
 		}
 	}
-	else
-	{
+	else {
 		if MacroState != 2 {
 			LastBackgroundHeartbeat += 5
 			LastRobloxWindow += 5
@@ -79,8 +75,7 @@ Loop
 	Sleep 5000
 }
 
-Send_WM_COPYDATA(StringToSend, TargetScriptTitle, wParam:=0)
-{
+Send_WM_COPYDATA(StringToSend, TargetScriptTitle, wParam:=0) {
     CopyDataStruct := Buffer(3*A_PtrSize)
     SizeInBytes := (StrLen(StringToSend) + 1) * 2
     NumPut("Ptr", SizeInBytes
@@ -95,16 +90,14 @@ Send_WM_COPYDATA(StringToSend, TargetScriptTitle, wParam:=0)
 		return s
 }
 
-nm_SetHeartbeat(wParam, *)
-{
+nm_SetHeartbeat(wParam, *) {
 	global
 	Critical
 	static arr := ["Main", "Background", "Status"]
 	script := arr[wParam], Last%script%Heartbeat := nowUnix()
 }
 
-nm_SetGlobalInt(wParam, lParam, *)
-{
+nm_SetGlobalInt(wParam, lParam, *) {
 	global
 	Critical
 	local var

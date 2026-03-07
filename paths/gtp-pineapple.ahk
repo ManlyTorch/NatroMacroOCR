@@ -1,5 +1,4 @@
-﻿If (HiveBees >= 25) && (MoveMethod = "cannon")
-{
+﻿If (HiveBees >= 25) && (MoveMethod = "cannon") {
     nm_gotoramp()
     nm_gotocannon()
     send "{e down}"

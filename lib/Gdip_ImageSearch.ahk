@@ -103,8 +103,7 @@ Gdip_ImageSearch(pBitmapHaystack,pBitmapNeedle,&OutputList:=""
     ; and modify the current one, setting the desired color as transparent.
     ; Also, since a copy is created, we must remember to dispose the new bitmap later.
     ; This whole thing has to be done before locking the bits.
-    If ( IsNumber(Trans) && ( Trans >= 0 ) && ( Trans <= 0xFFFFFF) )
-    {
+    If ( IsNumber(Trans) && ( Trans >= 0 ) && ( Trans <= 0xFFFFFF) ) {
         pOriginalBmpNeedle := pBitmapNeedle
         pBitmapNeedle := Gdip_CloneBitmapArea(pOriginalBmpNeedle,0,0,nWidth,nHeight)
         Gdip_SetBitmapTransColor(pBitmapNeedle,Trans)
@@ -117,8 +116,7 @@ Gdip_ImageSearch(pBitmapHaystack,pBitmapNeedle,&OutputList:=""
 
     If Gdip_LockBits(pBitmapNeedle,0,0,nWidth,nHeight,&nStride,&nScan,&nBitmapData)
     OR !(nWidth := NumGet(nBitmapData,0,"UInt"))
-    OR !(nHeight := NumGet(nBitmapData,4,"UInt"))
-    {
+    OR !(nHeight := NumGet(nBitmapData,4,"UInt")) {
         If IsSet( DumpCurrentNeedle )
             Gdip_DisposeImage(pBitmapNeedle)
         Gdip_UnlockBits(pBitmapHaystack,hBitmapData)
@@ -278,8 +276,7 @@ Gdip_SetBitmapTransColor(pBitmap,TransColor) {
 
 Gdip_MultiLockedBitsSearch(hStride,hScan,hWidth,hHeight,nStride,nScan,nWidth,nHeight
 ,&OutputList:="",OuterX1:=0,OuterY1:=0,OuterX2:=0,OuterY2:=0,Variation:=0
-,SearchDirection:=1,Instances:=0,LineDelim:="`n",CoordDelim:=",")
-{
+,SearchDirection:=1,Instances:=0,LineDelim:="`n",CoordDelim:=",") {
     OutputList := ""
     OutputCount := !Instances
     InnerX1 := OuterX1 , InnerY1 := OuterY1
@@ -314,8 +311,7 @@ Gdip_MultiLockedBitsSearch(hStride,hScan,hWidth,hHeight,nStride,nScan,nWidth,nHe
     i_P := i%P%, i_N := i%N%
 
     While (!(OutputCount == Instances) && (0 == Gdip_LockedBitsSearch(hStride,hScan,hWidth,hHeight,nStride
-    ,nScan,nWidth,nHeight,&FoundX,&FoundY,OuterX1,OuterY1,OuterX2,OuterY2,Variation,SearchDirection)))
-    {
+    ,nScan,nWidth,nHeight,&FoundX,&FoundY,OuterX1,OuterY1,OuterX2,OuterY2,Variation,SearchDirection))) {
         OutputCount++
         OutputList .= LineDelim FoundX CoordDelim FoundY
         Outer%P%%i_P% := Found%P%+step%P%
@@ -323,8 +319,7 @@ Gdip_MultiLockedBitsSearch(hStride,hScan,hWidth,hHeight,nStride,nScan,nWidth,nHe
         Inner%P%1 := Found%P%
         Inner%P%2 := Found%P%+1
         While (!(OutputCount == Instances) && (0 == Gdip_LockedBitsSearch(hStride,hScan,hWidth,hHeight,nStride
-        ,nScan,nWidth,nHeight,&FoundX,&FoundY,InnerX1,InnerY1,InnerX2,InnerY2,Variation,SearchDirection)))
-        {
+        ,nScan,nWidth,nHeight,&FoundX,&FoundY,InnerX1,InnerY1,InnerX2,InnerY2,Variation,SearchDirection))) {
             OutputCount++
             OutputList .= LineDelim FoundX CoordDelim FoundY
             Inner%N%%i_N% := Found%N%+step%N%
@@ -403,8 +398,7 @@ Gdip_MultiLockedBitsSearch(hStride,hScan,hWidth,hHeight,nStride,nScan,nWidth,nHe
 ;==================================================================================
 
 Gdip_LockedBitsSearch(hStride,hScan,hWidth,hHeight,nStride,nScan,nWidth,nHeight
-,&x:="",&y:="",sx1:=0,sy1:=0,sx2:=0,sy2:=0,Variation:=0,sd:=1)
-{
+,&x:="",&y:="",sx1:=0,sy1:=0,sx2:=0,sy2:=0,Variation:=0,sd:=1) {
     static _ImageSearch, Ptr, PtrA
 
     ; Initialize all MCode stuff, if necessary

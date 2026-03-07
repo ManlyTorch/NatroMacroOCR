@@ -4,12 +4,10 @@
 *********************************************/
 
 
-class discord
-{
+class discord {
 	static baseURL := "https://discord.com/api/v10/"
 
-	static SendEmbed(message, color:=3223350, content:="", pBitmap:=0, channel:="", replyID:=0)
-	{
+	static SendEmbed(message, color:=3223350, content:="", pBitmap:=0, channel:="", replyID:=0) {
 		payload_json :=
 		(
 		'
@@ -33,8 +31,7 @@ class discord
 		return this.SendMessageAPI(postdata, contentType, channel)
 	}
 
-	static SendFile(filepath, replyID:=0)
-	{
+	static SendFile(filepath, replyID:=0) {
 		static MimeTypes := Map("PNG", "image/png"
 			, "JPEG", "image/jpeg"
 			, "JPG", "image/jpeg"
@@ -44,33 +41,27 @@ class discord
 			, "TXT", "text/plain"
 			, "INI", "text/plain")
 
-		if (attr := FileExist(filepath))
-		{
+		if (attr := FileExist(filepath)) {
 			SplitPath filepath := RTrim(filepath, "\/"), &file:=""
-			if (file && InStr(attr, "D"))
-			{
+			if (file && InStr(attr, "D")) {
 				; attempt to zip folder to temp
-				try
-				{
+				try {
 					RunWait 'powershell.exe -WindowStyle Hidden -Command Compress-Archive -Path "' filepath '\*" -DestinationPath "$env:TEMP\' file '.zip" -CompressionLevel Fastest -Force', , "Hide"
 					if !FileExist(filepath := A_Temp "\" file ".zip")
 						throw
 				}
-				catch
-				{
+				catch {
 					this.SendEmbed('The folder ``' StrReplace(StrReplace(filepath, "\", "\\"), '"', '\"') '`` could not be zipped!`nThis function is only supported on Windows 10 or higher.', 16711731, , , , replyID)
 					return -3
 				}
 			}
 			size := FileGetSize(filepath)
-			if (size > 10485760)
-			{
+			if (size > 10485760) {
 				this.SendEmbed('``' StrReplace(StrReplace(filepath, "\", "\\"), '"', '\"') '`` is above the Discord file size limit of 10MiB!', 16711731, , , , replyID)
 				return -1
 			}
 		}
-		else
-		{
+		else {
 			this.SendEmbed('``' StrReplace(StrReplace(filepath, "\", "\\"), '"', '\"') '`` does not exist or could not be read!', 16711731, , , , replyID)
 			return -2
 		}
@@ -88,8 +79,7 @@ class discord
 			try FileDelete filepath
 	}
 
-	static SendImage(pBitmap, imgname:="image.png", replyID:=0)
-	{
+	static SendImage(pBitmap, imgname:="image.png", replyID:=0) {
 		params := []
 		(replyID > 0) && params.Push(Map("name","payload_json","content-type","application/json","content",'{"allowed_mentions": {"parse": []}, "message_reference": {"message_id": "' replyID '", "fail_if_not_exists": false}}'))
 		params.Push(Map("name","files[0]","filename",imgname,"content-type","image/png","pBitmap",pBitmap))
@@ -97,12 +87,10 @@ class discord
 		this.SendMessageAPI(postdata, contentType)
 	}
 
-	static SendMessageAPI(postdata, contentType:="application/json", channel:="", url:="")
-	{
+	static SendMessageAPI(postdata, contentType:="application/json", channel:="", url:="") {
 		global webhook, bottoken, discordMode, MainChannelCheck, MainChannelID
 
-		if (!channel && (discordMode = 1))
-		{
+		if (!channel && (discordMode = 1)) {
 			if (MainChannelCheck = 1)
 				channel := MainChannelID
 			else
@@ -112,13 +100,11 @@ class discord
 		if !url
 			url := (discordMode = 0) ? (webhook "?wait=true") : (this.BaseURL "/channels/" channel "/messages")
 
-		try
-		{
+		try {
 			wr := ComObject("WinHttp.WinHttpRequest.5.1")
 			wr.Option[9] := 2720
 			wr.Open("POST", url, 1)
-			if (discordMode = 1)
-			{
+			if (discordMode = 1) {
 				wr.SetRequestHeader("User-Agent", "DiscordBot (AHK, " A_AhkVersion ")")
 				wr.SetRequestHeader("Authorization", "Bot " bottoken)
 			}
@@ -130,22 +116,19 @@ class discord
 		}
 	}
 
-	static GetCommands(channel)
-	{
+	static GetCommands(channel) {
 		global discordMode, commandPrefix
 
 		if (discordMode = 0)
 			return -1
 
-		Loop (n := (messages := this.GetRecentMessages(channel)).Length)
-		{
+		Loop (n := (messages := this.GetRecentMessages(channel)).Length) {
 			i := n - A_Index + 1
 			(SubStr(content := Trim(messages[i]["content"]), 1, StrLen(commandPrefix)) = commandPrefix) && command_buffer.Push({content:content, id:messages[i]["id"], url:messages[i]["attachments"].Has(1) ? messages[i]["attachments"][1]["url"] : "", user_id: messages[i]["author"]["id"]})
 		}
 	}
 
-	static GetChannel(channelid)
-	{
+	static GetChannel(channelid) {
 		global discordMode
 		if (discordMode == 0)
 			return -1
@@ -160,8 +143,7 @@ class discord
 		return wr.ResponseText
 	}
 
-	static GetMember(guild_id, user_id)
-	{
+	static GetMember(guild_id, user_id) {
 		global discordMode
 		if (discordMode == 0)
 			return -1
@@ -177,8 +159,7 @@ class discord
 	}
 
 
-	static GetRecentMessages(channel)
-	{
+	static GetRecentMessages(channel) {
 		global discordMode
 		static lastmsg := Map()
 
@@ -196,23 +177,20 @@ class discord
 		return messages
 	}
 
-	static GetMessageAPI(params:="", channel:="")
-	{
+	static GetMessageAPI(params:="", channel:="") {
 		global bottoken, discordMode, MainChannelCheck, MainChannelID
 
 		if (discordMode = 0)
 			return -1
 
-		if !channel
-		{
+		if !channel {
 			if (MainChannelCheck = 1)
 				channel := MainChannelID
 			else
 				return -2
 		}
 
-		try
-		{
+		try {
 			wr := ComObject("WinHttp.WinHttpRequest.5.1")
 			wr.Option[9] := 2720
 			wr.Open("GET", this.BaseURL "/channels/" channel "/messages" params, 1)
@@ -225,10 +203,8 @@ class discord
 		}
 	}
 
-	static EditMessageAPI(id, postdata, contentType:="application/json", channel:="")
-	{
-		if (!channel && (discordMode = 1))
-		{
+	static EditMessageAPI(id, postdata, contentType:="application/json", channel:="") {
+		if (!channel && (discordMode = 1)) {
 			if (MainChannelCheck = 1)
 				channel := MainChannelID
 			else
@@ -237,13 +213,11 @@ class discord
 
 		url := (discordMode = 0) ? (webhook "/messages/" id) : (this.BaseURL "/channels/" channel "/messages/" id)
 
-		try
-		{
+		try {
 			wr := ComObject("WinHttp.WinHttpRequest.5.1")
 			wr.Option[9] := 2720
 			wr.Open("PATCH", url, 1)
-			if (discordMode = 1)
-			{
+			if (discordMode = 1) {
 				wr.SetRequestHeader("User-Agent", "DiscordBot (AHK, " A_AhkVersion ")")
 				wr.SetRequestHeader("Authorization", "Bot " bottoken)
 			}
@@ -255,8 +229,7 @@ class discord
 		}
 	}
 
-	static CreateFormData(&retData, &contentType, fields)
-	{
+	static CreateFormData(&retData, &contentType, fields) {
 		static chars := "0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z"
 
 		chars := Sort(chars, "D| Random")
@@ -264,8 +237,7 @@ class discord
 		hData := DllCall("GlobalAlloc", "UInt", 0x2, "UPtr", 0, "Ptr")
 		DllCall("ole32\CreateStreamOnHGlobal", "Ptr", hData, "Int", 0, "PtrP", &pStream:=0, "UInt")
 
-		for field in fields
-		{
+		for field in fields {
 			str :=
 			(
 			'
@@ -280,10 +252,8 @@ class discord
 			utf8 := Buffer(length := StrPut(str, "UTF-8") - 1), StrPut(str, utf8, length, "UTF-8")
 			DllCall("shlwapi\IStream_Write", "Ptr", pStream, "Ptr", utf8.Ptr, "UInt", length, "UInt")
 
-			if field.Has("pBitmap")
-			{
-				try
-				{
+			if field.Has("pBitmap") {
+				try {
 					pFileStream := Gdip_SaveBitmapToStream(field["pBitmap"])
 					DllCall("shlwapi\IStream_Size", "Ptr", pFileStream, "UInt64P", &size:=0, "UInt")
 					DllCall("shlwapi\IStream_Reset", "Ptr", pFileStream, "UInt")
@@ -292,8 +262,7 @@ class discord
 				}
 			}
 
-			if field.Has("file")
-			{
+			if field.Has("file") {
 				DllCall("shlwapi\SHCreateStreamOnFileEx", "WStr", field["file"], "Int", 0, "UInt", 0x80, "Int", 0, "Ptr", 0, "PtrP", &pFileStream:=0)
 				DllCall("shlwapi\IStream_Size", "Ptr", pFileStream, "UInt64P", &size:=0, "UInt")
 				DllCall("shlwapi\IStream_Copy", "Ptr", pFileStream, "Ptr", pStream, "UInt", size, "UInt")
