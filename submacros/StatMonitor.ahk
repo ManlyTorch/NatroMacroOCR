@@ -70,6 +70,7 @@ for k,v in Map("Windows.Globalization.Language","{9B0252AC-0C27-44F8-B792-9793FB
 		break
 	}
 }
+
 if (ocr_enabled = 1) {
 	list := getAvailableLang()
 	for lang in ["ko","en-"] { ; priority list 
@@ -118,8 +119,15 @@ honey_12h[180] := start_honey
 ; BUFF MONITORING
 ; buff_values format: buff:{time_coefficient:value}
 (buff_values := Map()).CaseSense := 0
+(future_buff_values := Map()).CaseSense := 0
 for v in ["haste","melody","redboost","blueboost","whiteboost","focus","bombcombo","balloonaura","clock","jbshare","babylove","inspire","bear","pollenmark","honeymark","festivemark","popstar","comforting","motivating","satisfying","refreshing","invigorating","blessing","bloat","guiding","mondo","reindeerfetch","tideblessing", "snowflake", "puppylove", "fieldcorruption", "cloudbuff"]
 	buff_values[v] := Map()
+
+loop files, A_ScriptDir "/../nm_image_assets/statmonitor/*.png" {
+    SplitPath(A_LoopFileFullPath,,,,&fieldName)
+	buff_values[fieldName] := Map()
+	future_buff_values[fieldName] := Map()
+}
 
 ; INFO FROM MAIN SCRIPT
 ; status_changes format: (A_Min*60+A_Sec+1):status_number (0 = other, 1 = gathering, 2 = converting)
@@ -137,12 +145,14 @@ OnMessage(0x5555, IncrementStat, 255)
 OnMessage(0x5556, SetAbility, 255)
 OnMessage(0x5557, SetBackpack, 255)
 OnMessage(0x5558, forceReport, 255)
+OnMessage(0x5559, fieldBoosted, 255)
 
 
 
 ; ▰▰▰▰▰▰▰▰
 ; STARTUP REPORT
 ; ▰▰▰▰▰▰▰▰
+
 
 
 ; OBTAIN DATA
@@ -315,7 +325,23 @@ defaultConfig.Push("BuffOrder", "You can change the order of buffs here`n"
 		"snowflake", "",
 		"puppylove", "",
 		"fieldcorruption", "",
-		"cloudbuff", ""
+		"cloudbuff", "",
+		"PineTree", "",
+		"Bamboo", "",
+		"BlueFlower", "",
+		"; Stump", "",
+		"; Rose", "",
+		"; Strawberry", "",
+		"; Mushroom", "",
+		"; Pepper", "",
+		"; Cactus", "",
+		"; Pumpkin", "",
+		"; Pineapple", "",
+		"; Spider", "",
+		"; Clover", "",
+		"; Dandelion", "",
+		"; Sunflower", "",
+		"; Coconut", "",
 	)
 ))
 
@@ -358,6 +384,7 @@ for k,v in regions {
 		pBrush := Gdip_BrushCreateSolid(regionBackground), Gdip_FillRoundedRectangle(G, pBrush, v[1], v[2], v[3], v[4], 20), Gdip_DeleteBrush(pBrush)
 	}
 }
+
 for k,v in stat_regions {
 	if load_Image(k "Background", %k "Alpha"%, "RightBar", v) {
 		backgroundColor := %k "Background"% or rightTabRegionBackground
@@ -407,6 +434,22 @@ buff_Data := Map(
 	, "puppylove",			[110, 0xffdc143c]
 	, "fieldcorruption",	[110, 0xff7352ba]
 	, "cloudbuff",			[110, 0xfffefefe]
+	, "PineTree",			[110, 0xff0000ff]
+	, "Bamboo",				[110, 0xff0000ff]
+	, "BlueFlower",		[110, 0xff0000ff]
+	, "Stump",				[110, 0xff0000ff]
+	, "Rose",				[110, 0xffff0000]
+	, "Strawberry",			[110, 0xffff0000]
+	, "Mushroom",			[110, 0xffff0000]
+	, "Pepper",				[110, 0xffff0000]
+	, "Cactus",				[110, 0xffffffff]
+	, "Pumpkin",			[110, 0xffffffff]
+	, "Pineapple",			[110, 0xffffffff]
+	, "Spider",				[110, 0xffffffff]
+	, "Clover",				[110, 0xffffffff]
+	, "Dandelion",			[110, 0xffffffff]
+	, "Sunflower",			[110, 0xffffffff]
+	, "Coconut",			[110, 0xffffffff]
 )
 
 buffXPos := regions["buffsRegion"][1]+320
@@ -467,6 +510,7 @@ Loop 61 {
 		y := regions["honey"][2]+130+(regions["honey"][4]-280)*(A_Index-1)//4, Gdip_DrawLine(G, pPen, regions["honey"][1]+260, y, regions["honey"][1]+regions["honey"][3]-100, y)
 	}
 }
+
 for k,v in graph_regions {
 	if renderDisabled(k) {
 		continue
@@ -544,6 +588,7 @@ Gdip_DeleteGraphics(G)
 ; TESTING
 ; ▰▰▰▰
 
+; generate template.
 if A_Args.Length == 2 and A_Args[2] == "ForceTemplate" {
 	start_time := A_Now
 	status_changes[A_Min*60+A_Sec] := 0
@@ -1095,7 +1140,7 @@ UpdateStatusList() {
 *******************************************************/
 ArrayHasEntry(ary, entry) {
 	for item in ary {
-		if InStr(item, entry) {
+		if InStr(StrReplace(item, "; ", ""), entry) {
 			return true
 		}
 	}
@@ -1307,7 +1352,7 @@ nm_ReadIni(path) {
 			if InStr(line, "}") {
 				isArray := false
 				for idx, entry in %curArrayName% {
-					if not ArrayHasEntry(curArray, entry) {
+					if not ArrayHasEntry(curArray, StrReplace(entry, "; ", "")) {
 						curArray.Push("; " entry)
 					}
 				}
@@ -1439,6 +1484,31 @@ forceReport(*) {
 	SendHourlyReport(,true)
 }
 
+/****************************************************************
+* @description: Registers the boosted field in the hourly report.
+* @param: wParam is the field idx
+* @returns: ()
+* @author ManlyTorch
+****************************************************************/
+fieldBoosted(wParam, lParam, *) {
+	fieldBoosts := ["Pine Tree", "Bamboo", "Blue Flower", "Stump", "Rose", "Strawberry", "Mushroom", "Pepper", "Cactus", "Pumpkin", "Pineapple", "Spider", "Clover", "Dandelion", "Sunflower", "Coconut"]
+	field := StrReplace(fieldBoosts[wParam], " ", "")
+
+	time_value := (60*A_Min+A_Sec)//6
+	i := (time_value = 0) ? 600 : time_value
+
+	remainder := Max(0, i + 150 - 600)
+	endI := Max(i + 150, 600)
+
+	if remainder > 0 { ; update the future buff map.
+		future_buff_values[field][1] := 1
+		future_buff_values[field][remainder+1] := 0
+	}
+
+	buff_values[field][i] := 1
+	buff_values[field][endI] := endI == 600 ? 1 : 0
+}
+
 ; ▰▰▰▰▰▰▰▰
 ; DRAW FUNCTIONS
 ; ▰▰▰▰▰▰▰▰
@@ -1476,9 +1546,11 @@ DrawBuffMultiGraph(G_Graph, buff, buffArgs, color, max_buff, textOffset:=0) {
 
 	points := []
 	
-	buff_values[buff].__Enum().Call(&x), points.Push([4+buffXWidth*x/600, 4+h])
-	for x,y in buff_values[buff]
+	buff_values[buff].__Enum().Call(&x)
+	points.Push([4+buffXWidth*x/600, 4+h])
+	for x,y in buff_values[buff] {
 		points.Push([4+buffXWidth*(max_x := x)/600, 4+h-(y/max_buff)*(h)])
+	}
 	points.Push([4+buffXWidth*max_x/600, 4+h])
 
 	if (points.Length > 2) {
@@ -1505,8 +1577,9 @@ DrawBuffGraph(G_Graph, buff, color, buffArgs) {
 	enum := buff_values[buff].__Enum()
 	enum.Call(&x2)
 	for time, value in buff_values[buff] {
-		if (enum.Call(&x2) = 0)
+		if (enum.Call(&x2) = 0) {
 			x2 := 600
+		}
 		(value) && Gdip_FillRectangle(G_Graph, pBrush, 4+buffXWidth*time//600, 4, (x2-time)*6, h)
 	}
 	Gdip_DeleteBrush(pBrush)
@@ -2127,7 +2200,10 @@ SendHourlyReport(generateTemplate:=false, keepStats:=false) {
 			
     		compressedReport := Gdip_ResizeBitmap(pBMReport, newW, newH)
 			bitmapMBSize := Gdip_GetBitmapSize(compressedReport) / mb
-			scale += .2
+
+			if bitmapMBSize > 8 {
+				scale += .2
+			}
 		}
 
 		Gdip_DisposeImage(pBMReport)
@@ -2223,8 +2299,7 @@ SendHourlyReport(generateTemplate:=false, keepStats:=false) {
 		wr.SetRequestHeader("Content-Type", contentType)
 		wr.SetTimeouts(0, 60000, 120000, 30000)
 		wr.Send(retData)
-	}
-	catch as e {
+	} catch as e {
 		message := "**[" A_Hour ":" A_Min ":" A_Sec "]**`n"
 		. "**Failed to send Hourly Report!**`n"
 		. "Gdip SaveBitmap Error: " result "`n`n"
@@ -2255,26 +2330,39 @@ SendHourlyReport(generateTemplate:=false, keepStats:=false) {
 
 	if not keepStats {
 		; save old stats for comparison
-		for k,v in stats_old
+		for k,v in stats_old {
 			v[2] := stats[k][2]
+		}
 		; reset honey values map
 		honey_values.Clear()
 		honey_values[0] := current_honey
 		; reset backpack values map
-		for k,v in backpack_values
-			if (A_Index = backpack_values.Count)
+		for k,v in backpack_values {
+			if (A_Index = backpack_values.Count) {
 				current_backpack := v
+			}
+		}
 		backpack_values.Clear()
 		backpack_values[0] := current_backpack
 		; reset status changes array
-		for k,v in status_changes
-			if (A_Index = status_changes.Count)
+		for k,v in status_changes {
+			if (A_Index = status_changes.Count) {
 				current_status := v
+			}
+		}
 		status_changes.Clear()
 		status_changes[0] := current_status
 		; reset buff values array
-		for k,v in buff_values
+		for k,v in buff_values {
 			v.Clear()
+		}
+		for field, buffMap in future_buff_values {
+			for idx, val in buffMap { ; write the field boost to the next hourly report
+				buff_values[field][idx] := val
+			}
+
+			buffMap.Clear()
+		}
 	}
 }
 

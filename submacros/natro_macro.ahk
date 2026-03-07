@@ -148,8 +148,7 @@ if (A_ScreenDPI != 96)
 ; CREATE SETTINGS FOLDERS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 nm_CreateFolder(folder) {
-	if !FileExist(folder)
-	{
+	if !FileExist(folder) {
 		try
 			DirCreate folder
 		catch
@@ -189,8 +188,7 @@ SC_1:="sc002" ; 1
 SC_Slash  := "sc035" ; /
 
 ; import patterns and syntax check
-nm_importPatterns()
-{
+nm_importPatterns() {
 	global patterns := Map()
 	patterns.CaseSense := 0
 	global patternlist := []
@@ -210,8 +208,7 @@ nm_importPatterns()
 		hashDefaults()
 
 	import := ""
-	Loop Files A_WorkingDir "\patterns\*.ahk"
-	{
+	Loop Files A_WorkingDir "\patterns\*.ahk" {
 		bypassWarning := 0
 		file := FileOpen(A_LoopFilePath, "r"), pattern := file.Read(), file.Close()
 		if RegexMatch(pattern, "im)patterns\[")
@@ -222,8 +219,7 @@ nm_importPatterns()
 			Check for an updated version of the pattern
 			or ask the creator to update it"
 			), "Error", 0x40010 " T60"
-		if !InStr(imported, imported_pattern := '("' (pattern_name := StrReplace(A_LoopFileName, "." A_LoopFileExt)) '")`r`n' pattern '`r`n`r`n') 
-		{
+		if !InStr(imported, imported_pattern := '("' (pattern_name := StrReplace(A_LoopFileName, "." A_LoopFileExt)) '")`r`n' pattern '`r`n`r`n') {
 			patternhash := HashFile(A_LoopFilePath, 6)
 			for hash in installedPatternHashes {
 				if patternhash = hash {
@@ -282,8 +278,7 @@ nm_importPatterns()
 			)
 
 			exec := ComObject("WScript.Shell").Exec('"' exe_path64 '" /script /Validate /ErrorStdOut *'), exec.StdIn.Write(script), exec.StdIn.Close()
-			if (stdout := exec.StdOut.ReadAll())
-			{
+			if (stdout := exec.StdOut.ReadAll()) {
 				MsgBox
 				(
 				"Unable to import '" pattern_name "' pattern!
@@ -324,8 +319,7 @@ nm_importPatterns()
 nm_importPatterns()
 
 ; import paths
-nm_importPaths()
-{
+nm_importPaths() {
 	static path_names := Map(
 		"gtb", ["blue", "mountain", "red"], ; go to (field) booster
 		"gtc", ["clock", "antpass", "robopass", "honeydis", "treatdis", "blueberrydis", "strawberrydis", "coconutdis", "gluedis", "royaljellydis", "blender", "windshrine", ; go to collect (machine)
@@ -343,11 +337,9 @@ nm_importPaths()
 	global paths := Map()
 	paths.CaseSense := 0
 
-	for k, list in path_names
-	{
+	for k, list in path_names {
 		(paths[k] := Map()).CaseSense := 0
-		for v in list
-		{
+		for v in list {
 			try {
 				file := FileOpen(A_WorkingDir "\paths\" k "-" v ".ahk", "r"), paths[k][v] := file.Read(), file.Close()
 				if regexMatch(paths[k][v], "im)paths\[")
@@ -374,8 +366,7 @@ nm_importPaths()
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; IMPORT GLOBALS FROM CONFIG
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-nm_importConfig()
-{
+nm_importConfig() {
 	global
 	local config := Map() ; store default values, these are loaded initially
 
@@ -934,8 +925,7 @@ nm_importConfig()
 		nm_ReadIni(inipath)
 
 	local ini := ""
-	for k,v in config ; overwrite any existing .ini with updated one with all new keys and old values
-	{
+	for k,v in config { ; overwrite any existing .ini with updated one with all new keys and old values
 		ini .= "[" k "]`r`n"
 		for i in v
 			ini .= i "=" %i% "`r`n"
@@ -947,16 +937,13 @@ nm_importConfig()
 }
 nm_importConfig()
 
-nm_ReadIni(path)
-{
+nm_ReadIni(path) {
 	global
 	local ini, str, c, p, k, v
 
 	ini := FileOpen(path, "r"), str := ini.Read(), ini.Close()
-	Loop Parse str, "`n", "`r" A_Space A_Tab
-	{
-		switch (c := SubStr(A_LoopField, 1, 1))
-		{
+	Loop Parse str, "`n", "`r" A_Space A_Tab {
+		switch (c := SubStr(A_LoopField, 1, 1)) {
 			; ignore comments and section names
 			case "[",";":
 			continue
@@ -1589,8 +1576,7 @@ slotMove := [
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; FIELD DEFAULT OVERRIDES
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-nm_importFieldDefaults()
-{
+nm_importFieldDefaults() {
 	global FieldDefault := Map()
 	FieldDefault.CaseSense := 0
 
@@ -1869,8 +1855,7 @@ nm_importFieldDefaults()
 	}
 
 	ini := ""
-	for k,v in FieldDefault ; overwrite any existing .ini with updated one with all new keys and old values
-	{
+	for k,v in FieldDefault { ; overwrite any existing .ini with updated one with all new keys and old values
 		ini .= "[" k "]`r`n"
 		for i,j in v
 			ini .= i "=" j "`r`n"
@@ -1880,15 +1865,12 @@ nm_importFieldDefaults()
 }
 nm_importFieldDefaults()
 
-nm_LoadFieldDefaults()
-{
+nm_LoadFieldDefaults() {
 	global FieldDefault
 
 	ini := FileOpen(A_WorkingDir "\settings\field_config.ini", "r"), str := ini.Read(), ini.Close()
-	Loop Parse str, "`n", "`r" A_Space A_Tab
-	{
-		switch (c := SubStr(A_LoopField, 1, 1))
-		{
+	Loop Parse str, "`n", "`r" A_Space A_Tab {
+		switch (c := SubStr(A_LoopField, 1, 1)) {
 			; ignore comments and section names
 			case "[":
 			s := SubStr(A_LoopField, 2, -1)
@@ -1904,23 +1886,20 @@ nm_LoadFieldDefaults()
 }
 
 ; auxiliary map/array functions
-ObjFullyClone(obj)
-{
+ObjFullyClone(obj) {
 	nobj := obj.Clone()
 	for k,v in nobj
 		if IsObject(v)
 			nobj[k] := ObjFullyClone(v)
 	return nobj
 }
-ObjHasValue(obj, value)
-{
+ObjHasValue(obj, value) {
 	for k,v in obj
 		if (v = value)
 			return 1
 	return 0
 }
-ObjMinIndex(obj)
-{
+ObjMinIndex(obj) {
 	for k,v in obj
 		return k
 	return 0
@@ -1929,8 +1908,7 @@ ObjMinIndex(obj)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; MANUAL PLANTERS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-nm_importManualPlanters()
-{
+nm_importManualPlanters() {
 	global
 	local ManualPlanters := Map()
 
@@ -2058,8 +2036,7 @@ nm_importManualPlanters()
 		nm_ReadIni(inipath)
 
 	local ini := ""
-	for k,v in ManualPlanters ; overwrite any existing .ini with updated one with all new keys and old values
-	{
+	for k,v in ManualPlanters { ; overwrite any existing .ini with updated one with all new keys and old values
 		ini .= "[" k "]`r`n"
 		for i in v
 			ini .= i "=" %i% "`r`n"
@@ -2133,10 +2110,8 @@ ForceStart := 0
 RemoteStart := 0
 
 ;ensure Gui will be visible
-if (GuiX && GuiY)
-{
-	Loop (MonitorCount := MonitorGetCount())
-	{
+if (GuiX && GuiY) {
+	Loop (MonitorCount := MonitorGetCount()) {
 		MonitorGetWorkArea A_Index, &MonLeft, &MonTop, &MonRight, &MonBottom
 		if(GuiX>MonLeft && GuiX<MonRight && GuiY>MonTop && GuiY<MonBottom)
 			break
@@ -2229,8 +2204,7 @@ DllCall(DllCall("GetProcAddress"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; DEFAULT ROBLOX TYPE/PATH DETECTION
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-nm_GetRobloxUWPPath()
-{
+nm_GetRobloxUWPPath() {
 	try {
 		loop Reg, "HKCU\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages", "K" {
 			if InStr(StrLower(A_LoopRegName),"robloxcorporation") {
@@ -2254,8 +2228,7 @@ RobloxTypes := {
 	NotFound: "Not found"
 }
 
-nm_DetectRobloxType()
-{
+nm_DetectRobloxType() {
 	robloxpath := defaultapp := ""
 
 	try robloxpath := nm_GetRobloxWebPath()
@@ -2284,8 +2257,7 @@ JoinArray(arr, sep := "`n") {
         out .= (i > 1 ? sep : "") val
     return out
 }
-nm_LocateRobloxSettingsXML(robloxtype)
-{
+nm_LocateRobloxSettingsXML(robloxtype) {
 	static localappdata := EnvGet("LOCALAPPDATA")
 	try switch robloxtype {
 		case RobloxTypes.Custom, RobloxTypes.Web, RobloxTypes.Bootstrapper:
@@ -2300,8 +2272,7 @@ nm_LocateRobloxSettingsXML(robloxtype)
 	}
 }
 ;//todo: add checkProblem() conditions from debug log
-nm_MsgBoxIncorrectRobloxSettings()
-{
+nm_MsgBoxIncorrectRobloxSettings() {
 	global IgnoreIncorrectRobloxSettings
 	static RecommendedRobloxSettings := Map(
 		"Correct", Map(
@@ -2386,21 +2357,18 @@ nm_MsgBoxIncorrectRobloxSettings()
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; AUTO-UPDATE
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-nm_AutoUpdateHandler(req)
-{
+nm_AutoUpdateHandler(req) {
 	global
 	local release, releases
 
 	if (req.readyState != 4)
 		return
 
-	if (req.status = 200)
-	{
+	if (req.status = 200) {
 		; determine release channel
 
 		releases := JSON.parse(req.responseText)
-		for , release in releases
-		{
+		for , release in releases {
 			if (
 				release["prerelease"] = true && ReleaseChannel = "Beta"
 				|| release["prerelease"] = false
@@ -2416,8 +2384,7 @@ nm_AutoUpdateHandler(req)
 			latest_release := releases[1] ; should never happen unless we publish 30+ betas
 
 		LatestVer := Trim(latest_release["tag_name"], "v")
-		if (VerCompare(VersionID, LatestVer) < 0)
-		{
+		if (VerCompare(VersionID, LatestVer) < 0) {
 			MainGui["ImageUpdateLink"].Visible := 1
 			VersionWidth += 16
 			MainGui["VersionText"].Move(494 - VersionWidth), MainGui["VersionText"].Redraw()
@@ -2430,8 +2397,7 @@ nm_AutoUpdateHandler(req)
 		}
 	}
 }
-nm_AutoUpdateGUI(*)
-{
+nm_AutoUpdateGUI(*) {
 	global
 	local size, downloads, posW, hBM, UpdateText, GuiCtrl
 	GuiClose(*){
@@ -2477,8 +2443,7 @@ nm_AutoUpdateGUI(*)
 	WinWaitClose "ahk_id " UpdateGui.Hwnd, , 125
 	GuiClose()
 }
-nm_DismissLabel()
-{
+nm_DismissLabel() {
 	static countdown := unset
 	global UpdateGUI
 	if !IsSet(countdown)
@@ -2496,26 +2461,22 @@ nm_DismissLabel()
 	else
 		countdown := unset
 }
-nm_DismissButton(*)
-{
+nm_DismissButton(*) {
 	global UpdateGui
 	UpdateGui.Destroy(), UpdateGui := ""
 }
-nm_NeverButton(*)
-{
+nm_NeverButton(*) {
 	global UpdateGui
 	if (MsgBox(
 	(
 	"Are you sure you want to disable prompts for v" LatestVer "?
 	You can still update manually, or by clicking the red symbol in the bottom right corner of the GUI."
-	), "Disable Automatic Update", 0x1044 " Owner" UpdateGui.Hwnd) = "Yes")
-	{
+	), "Disable Automatic Update", 0x1044 " Owner" UpdateGui.Hwnd) = "Yes") {
 		IniWrite (IgnoreUpdateVersion := LatestVer), "settings\nm_config.ini", "Settings", "IgnoreUpdateVersion"
 		UpdateGui.Destroy(), UpdateGui := ""
 	}
 }
-nm_UpdateButton(*)
-{
+nm_UpdateButton(*) {
 	global latest_release, VersionID, UpdateGui
 	url := latest_release["assets"][1]["browser_download_url"]
 	olddir := A_WorkingDir
@@ -2526,10 +2487,8 @@ nm_UpdateButton(*)
 	changedpaths := ""
 	UpdateGui.Destroy(), UpdateGui := ""
 
-	if (CopyPaths = 1)
-	{
-		try
-		{
+	if (CopyPaths = 1) {
+		try {
 			wr := ComObject("WinHttp.WinHttpRequest.5.1")
 			wr.Open("GET", "https://api.github.com/repos/NatroTeam/NatroMacro/tags?per_page=100", 1)
 			wr.SetRequestHeader("accept", "application/vnd.github+json")
@@ -2553,8 +2512,7 @@ nm_UpdateButton(*)
 					changedpaths .= '"' SubStr(v["filename"], 7) '" '
 			changedpaths := RTrim(changedpaths)
 		}
-		catch
-		{
+		catch {
 			MsgBox "Unable to fetch changed paths from GitHub!`nIf you still want to update, disable 'Copy Paths' (and copy them manually) or try again later.", "Error", 0x1010 " T30"
 			return
 		}
@@ -2563,8 +2521,7 @@ nm_UpdateButton(*)
 	Run '"' A_WorkingDir '\submacros\update.bat" "' url '" "' olddir '" "' CopySettings '" "' CopyPatterns '" "' CopyPaths '" "' DeleteOld '" "' changedpaths '"'
 	ExitApp
 }
-nm_MajorUpdateHelp(*)
-{
+nm_MajorUpdateHelp(*) {
 	MsgBox "v" VersionID " to v" LatestVer " is a major version update.`n`n"
 	. "This means that backward compatibility of Paths and Patterns cannot be guaranteed, so they cannot be automatically copied.`n"
 	. "However, in Natro Macro, your Settings are guaranteed to be transferable to any new version, so that option remains enabled.`n`n"
@@ -3260,8 +3217,7 @@ MainGui.Add("Button", "x380 y78 w18 h18 vShrineRight Hidden", ">").OnEvent("Clic
 MainGui.Add("Button", "x313 y108 w80 h16 +Center vShrineAddSlot Hidden").OnEvent("Click", ba_AddShrineItem)
 
 ;hotbar
-Loop 6
-{
+Loop 6 {
 	i := A_Index + 1
 	MainGui.Add("Text", "x15 y" (95 + 20 * A_Index) " w10 +BackgroundTrans", i ":")
 	(GuiCtrl := MainGui.Add("DropDownList", "x25 y" (92 + 20 * A_Index) " w80 vHotbarWhile" i " Disabled", hotbarwhilelist)).Text := HotbarWhile%i%, GuiCtrl.OnEvent("Change", nm_HotbarWhile)
@@ -3628,8 +3584,7 @@ nm_LockTabs(lock:=1){
 	global bitmaps
 
 	;controls outside tabs
-	if (lock = 1)
-	{
+	if (lock = 1) {
 		MainGui["CurrentFieldUp"].Enabled := 0
 		MainGui["CurrentFieldDown"].Enabled := 0
 		try MainGui["SecretButton"].Enabled := 0
@@ -3642,8 +3597,7 @@ nm_LockTabs(lock:=1){
 
 		c := "Lock"
 	}
-	else
-	{
+	else {
 		MainGui["CurrentFieldUp"].Enabled := 1
 		MainGui["CurrentFieldDown"].Enabled := 1
 		try MainGui["SecretButton"].Enabled := 1
@@ -3933,8 +3887,7 @@ nm_TabCollectUnLock(){
 	MainGui["CoconutDisCheck"].Enabled := 1
 	MainGui["RoyalJellyDisCheck"].Enabled := 1
 	MainGui["GlueDisCheck"].Enabled := 1
-	if (beesmasActive = 1)
-	{
+	if (beesmasActive = 1) {
 		MainGui["BeesmasGatherInterruptCheck"].Enabled := 1
 		MainGui["StockingsCheck"].Enabled := 1
 		MainGui["WreathCheck"].Enabled := 1
@@ -3971,8 +3924,7 @@ nm_TabCollectUnLock(){
 	MainGui["BugrunScorpionsLoot"].Enabled := 1
 	MainGui["BugrunWerewolfLoot"].Enabled := 1
 	MainGui["StingerCheck"].Enabled := 1
-	if (StingerCheck = 1)
-	{
+	if (StingerCheck = 1) {
 		MainGui["StingerDailyBonusCheck"].Enabled := 1
 		MainGui["StingerCloverCheck"].Enabled := 1
 		MainGui["StingerSpiderCheck"].Enabled := 1
@@ -4439,8 +4391,7 @@ nm_RunDiscord(path){
 }
 
 ;(used to update GUI with info fetched from GitHub)
-AsyncHttpRequest(method, url, func?, headers?)
-{
+AsyncHttpRequest(method, url, func?, headers?) {
 	req := ComObject("Msxml2.XMLHTTP")
 	req.open(method, url, true)
 	if IsSet(headers)
@@ -4545,14 +4496,12 @@ SetCursor(name:=0){
 }
 
 ;text control positioning functions
-CenterText(Text1, Text2, Font, w:=260)
-{
+CenterText(Text1, Text2, Font, w:=260) {
 	w1 := TextExtent(Text1.Text, Font), w2 := TextExtent(Text2.Text, Font)
 	Text1.Move(x1 := (w - w1 - w2)//2, , w1), Text2.Move(x1 + w1, , w2)
 	Text1.Redraw(), Text2.Redraw()
 }
-TextExtent(text, textCtrl)
-{
+TextExtent(text, textCtrl) {
 	hDC := DllCall("GetDC", "Ptr", textCtrl.Hwnd, "Ptr")
 	hFold := DllCall("SelectObject", "Ptr", hDC, "Ptr", SendMessage(0x31, , , textCtrl), "Ptr")
 	nSize := Buffer(8)
@@ -4822,8 +4771,7 @@ nm_FieldRotateDirection(GuiCtrl, *){
 	static val := ["None", "Left", "Right"], l := val.Length
 	local i, index
 
-	switch GuiCtrl.Name, 0
-	{
+	switch GuiCtrl.Name, 0 {
 		case "FRD1Left", "FRD1Right":
 		index := 1
 		case "FRD2Left", "FRD2Right":
@@ -4848,8 +4796,7 @@ nm_FieldReturnType(GuiCtrl, *){
 	static val := ["Walk", "Reset"], l := val.Length
 	local i, index
 
-	switch GuiCtrl.Name, 0
-	{
+	switch GuiCtrl.Name, 0 {
 		case "FRT1Left", "FRT1Right":
 		index := 1
 		case "FRT2Left", "FRT2Right":
@@ -4868,8 +4815,7 @@ nm_FieldSprinklerLoc(GuiCtrl, *){
 	static val := ["Center", "Upper Left", "Upper", "Upper Right", "Right", "Lower Right", "Lower", "Lower Left", "Left"], l := val.Length
 	local i, index
 
-	switch GuiCtrl.Name, 0
-	{
+	switch GuiCtrl.Name, 0 {
 		case "FSL1Left", "FSL1Right":
 		index := 1
 		case "FSL2Left", "FSL2Right":
@@ -4878,8 +4824,7 @@ nm_FieldSprinklerLoc(GuiCtrl, *){
 		index := 3
 	}
 
-	switch FieldSprinklerLoc%index%, 0
-	{
+	switch FieldSprinklerLoc%index%, 0 {
 		case "Center":
 		i := 1
 		case "Upper Left":
@@ -4907,11 +4852,9 @@ nm_SaveFieldDefault(GuiCtrl, *){
 	global
 	local i,k,v
 	i := SubStr(GuiCtrl.Name, -1)
-	if (FieldName%i% != "None")
-	{
+	if (FieldName%i% != "None") {
 		if (MsgBox("Update " FieldName%i% " default settings with the currently selected settings? These will become the default settings when you change to this field.`n`n"
-			. "The macro will use the updated settings when gathering for Quests/Planters.", "Change Field Defaults", 0x40044 " Owner" MainGui.Hwnd) = "Yes")
-		{
+			. "The macro will use the updated settings when gathering for Quests/Planters.", "Change Field Defaults", 0x40044 " Owner" MainGui.Hwnd) = "Yes") {
 			FieldDefault[FieldName%i%]["pattern"]:=FieldPattern%i%
 			FieldDefault[FieldName%i%]["size"]:=FieldPatternSize%i%
 			FieldDefault[FieldName%i%]["width"]:=FieldPatternReps%i%
@@ -5011,8 +4954,7 @@ nm_WebhookEasterEgg(){
 	FieldName1 := MainGui["FieldName1"].Text
 	FieldName2 := MainGui["FieldName2"].Text
 	FieldName3 := MainGui["FieldName3"].Text
-	if ((FieldName1 = FieldName2) && (FieldName2 = FieldName3))
-	{
+	if ((FieldName1 = FieldName2) && (FieldName2 = FieldName3)) {
 		If(MsgBox("You found an easter egg!`nEnable Rainbow Webhook?", , 0x1024 " Owner" MainGui.Hwnd) = "Yes")
 			WebhookEasterEgg := 1
 		else
@@ -5055,14 +4997,11 @@ nm_CollectKillButton(GuiCtrl, *){
 	MainGui["CollectSubTab"].Enabled := p
 	MainGui["KillSubTab"].Enabled := !p
 
-	for i,c in [0,1] ; hide first, then show
-	{
-		if (((i = 1) && (p = 1)) || ((i = 2) && (p = 0))) ; hide/show all collect controls
-		{
+	for i,c in [0,1] { ; hide first, then show
+		if (((i = 1) && (p = 1)) || ((i = 2) && (p = 0))) { ; hide/show all collect controls
 			for k,v in CollectControls
 				MainGui[v].Visible := c
-			if ((MondoAction = "Buff") || (MondoAction = "Kill"))
-			{
+			if ((MondoAction = "Buff") || (MondoAction = "Kill")) {
 				MainGui["MondoPointText"].Visible := c
 				for k,v in Mondo%MondoAction%Controls
 					MainGui[v].Visible := c
@@ -5072,8 +5011,7 @@ nm_CollectKillButton(GuiCtrl, *){
 				MainGui[v].Visible := c
 		}
 
-		if (((i = 1) && (p = 0)) || ((i = 2) && (p = 1))) ; hide/show all kill controls
-		{
+		if (((i = 1) && (p = 0)) || ((i = 2) && (p = 1))) { ; hide/show all kill controls
 			for k,v in KillControls
 				MainGui[v].Visible := c
 		}
@@ -5085,8 +5023,7 @@ nm_MondoAction(GuiCtrl?, *){
 	for v in MondoActionList
 		if IsSet(v)
 			l := A_Index
-	switch MondoAction, 0
-	{
+	switch MondoAction, 0 {
 		case MondoActionList[1]:
 		i := 1
 		case MondoActionList[2]:
@@ -5220,8 +5157,7 @@ ba_AddBlenderItem(*){
 	}
 	BlenderAdd := 0
 }
-nm_BeesmasHandler(req)
-{
+nm_BeesmasHandler(req) {
 	if (req.readyState != 4)
 		return
 
@@ -5369,14 +5305,12 @@ nm_MonsterRespawnTime(GuiCtrl, *){
 	p := EditGetCurrentCol(GuiCtrl)
 	NewMonsterRespawnTime := GuiCtrl.Value
 
-	if (IsInteger(NewMonsterRespawnTime) && (NewMonsterRespawnTime > 40)) ; integer and more than 40
-	{
+	if (IsInteger(NewMonsterRespawnTime) && (NewMonsterRespawnTime > 40)) { ; integer and more than 40
 		GuiCtrl.Value := MonsterRespawnTime
 		SendMessage 0xB1, p-2, p-2, GuiCtrl
 		nm_ShowErrorBalloonTip(GuiCtrl, "Unacceptable Number", "You cannot enter a number above 40!")
 	}
-	else
-	{
+	else {
 		MonsterRespawnTime := NewMonsterRespawnTime
 		IniWrite MonsterRespawnTime, "settings\nm_config.ini", "Collect", "MonsterRespawnTime"
 	}
@@ -5437,38 +5371,32 @@ nm_CocoCrabCheck(*){
 	if (CocoCrabCheck = 1)
 		MsgBox "Being able to kill Coco Crab with the macro depends heavily on your hive level, attack, number of bees, and server lag!", "Coconut Crab", 0x1030 " Owner" MainGui.Hwnd
 }
-nm_setSnailHealth(GuiCtrl, *)
-{
+nm_setSnailHealth(GuiCtrl, *) {
 	global InputSnailHealth
 	p := EditGetCurrentCol(GuiCtrl)
 	inputHP := MainGui["SnailHealthEdit"].Value
 
-	if (IsInteger(inputHP) && (inputHP > 30000000)) ; invalid HP
-	{
+	if (IsInteger(inputHP) && (inputHP > 30000000)) { ; invalid HP
 		MainGui["SnailHealthEdit"].Value := Round(30000000*InputSnailHealth/100)
 		SendMessage 0xB1, p-2, p-2, GuiCtrl
 		nm_ShowErrorBalloonTip(GuiCtrl, "Unacceptable Number", "You cannot enter a number above 30M!")
 	}
-	else
-	{
+	else {
 		InputSnailHealth := Round(((inputHP || 0) / 30000000) * 100, 2)
 		MainGui["SnailHealthText"].Opt("+c" Format("0x{1:02x}{2:02x}{3:02x}", Round(Min(3*(100-InputSnailHealth), 150)), Round(Min(3*InputSnailHealth, 150)), 0) " +Redraw")
 		MainGui["SnailHealthText"].Text := InputSnailHealth "%"
 		IniWrite InputSnailHealth, "settings\nm_config.ini", "Collect", "InputSnailHealth"
 	}
 }
-nm_setChickHealth(GuiCtrl, *)
-{
+nm_setChickHealth(GuiCtrl, *) {
 	global InputChickHealth, CommandoChickHealth
 
 	inputHP := MainGui["ChickHealthEdit"].Value
 	ChickLevel := MainGui["ChickLevel"].Value
 	MaxHealth := CommandoChickHealth.Has(ChickLevel) ? CommandoChickHealth[ChickLevel] : 10000000
 
-	if (GuiCtrl.Name = "ChickHealthEdit")
-	{
-		if (IsInteger(inputHP) && (inputHP > MaxHealth))
-		{
+	if (GuiCtrl.Name = "ChickHealthEdit") {
+		if (IsInteger(inputHP) && (inputHP > MaxHealth)) {
 			p := EditGetCurrentCol(GuiCtrl)
 			GuiCtrl.Value := MaxHealth
 			SendMessage 0xB1, p-2, p-2, GuiCtrl
@@ -5507,8 +5435,7 @@ nm_FieldBooster(GuiCtrl?, *){
 	static val := ["None", "Blue", "Red", "Mountain"]
 	local i, l, index, n, j, arr := []
 
-	switch IsSet(GuiCtrl) ? GuiCtrl.Name : "", 0
-	{
+	switch IsSet(GuiCtrl) ? GuiCtrl.Name : "", 0 {
 		case "FB2Left", "FB2Right":
 		index := 2
 		case "FB3Left", "FB3Right":
@@ -5517,8 +5444,7 @@ nm_FieldBooster(GuiCtrl?, *){
 		index := 1
 	}
 
-	for k,v in val
-	{
+	for k,v in val {
 		if (k > 1)
 			Loop (index - 1)
 				if (v = FieldBooster%A_Index%)
@@ -5527,8 +5453,7 @@ nm_FieldBooster(GuiCtrl?, *){
 	}
 	l := arr.Length
 
-	switch FieldBooster%index%, 0
-	{
+	switch FieldBooster%index%, 0 {
 		case arr[1]:
 		i := 1
 		case arr[2]:
@@ -5588,8 +5513,7 @@ nm_HotbarWhile(GuiCtrl?, *){
 		i := A_Index + 1
 		if (!IsSet(GuiCtrl) || (GuiCtrl.Name = "HotbarWhile" i)) {
 			HotbarWhile%i% := MainGui["HotbarWhile" i].Text
-			switch HotbarWhile%i%, 0
-			{
+			switch HotbarWhile%i%, 0 {
 				case "microconverter":
 				MainGui["HBText" i].Text := PFieldBoosted ? "@ Boosted" : "@ Full Pack"
 				MainGui["HotbarTime" i].Visible := 0
@@ -5623,10 +5547,8 @@ nm_HotbarWhile(GuiCtrl?, *){
 				MainGui["HBText" i].Visible := 1
 
 				case "snowflake":
-				if (beesmasActive = 0)
-				{
-					if IsSet(GuiCtrl)
-					{
+				if (beesmasActive = 0) {
+					if IsSet(GuiCtrl) {
 						MsgBox "This option is only available during Beesmas!", "Snowflake", 0x1030
 						HotbarWhile%i% := "Never"
 						MainGui["HotbarWhile" i].Text := "Never"
@@ -5637,8 +5559,7 @@ nm_HotbarWhile(GuiCtrl?, *){
 						MainGui["HBText" i].Visible := 0
 					}
 				}
-				else
-				{
+				else {
 					HotbarMax%i% := MainGui["HotbarMax" i].Value
 					HotbarTime%i% := MainGui["HotbarTime" i].Value
 					MainGui["HBConditionText" i].Text := "Until: " HotbarMax%i% "%"
@@ -5682,8 +5603,7 @@ nm_HotbarEditTime(GuiCtrl, *){
 	MainGui.Opt("+OwnDialogs")
 	i := SubStr(GuiCtrl.Name, -1)
 	time := InputBox("Enter the number of seconds (1-99999) to wait between each use of Hotbar " i ":", "Hotbar Slot Time", "T30").Value
-	if (time ~= "i)^\d{1,5}$")
-	{
+	if (time ~= "i)^\d{1,5}$") {
 		MainGui["HotbarTime" i].Value := HotbarTime%i% := time
 		MainGui["HBTimeText" i].Text := hmsFromSeconds(HotbarTime%i%)
 		IniWrite HotbarTime%i%, "settings\nm_config.ini", "Boost", "HotbarTime" i
@@ -5807,8 +5727,7 @@ nm_StickerStackItem(GuiCtrl, *){
 	global StickerStackItem
 	static val := ["Tickets", "Sticker", "Sticker+Tickets"], l := val.Length
 
-	if (StickerStackItem = "Tickets")
-	{
+	if (StickerStackItem = "Tickets") {
 		if (msgbox("Consider trading all of your valuable stickers to alternative account, to ensure that you do not lose any valuable stickers. Are you sure you want to use Stickers?", "Sticker Stack", 0x1034 " T60 Owner" MainGui.Hwnd) = "Yes")
 			i := 1
 		else
@@ -5846,8 +5765,7 @@ nm_StickerStackTimer(*){
 nm_StickerStackModeText(*){
 	global StickerStackMode, StickerStackTimer
 	if (StickerStackMode = 1) {
-		if IsInteger(time := InputBox("Enter the number of seconds (900-86400) to wait between each use of the Sticker Stack:", "Sticker Stack Timer", "T60").Value)
-		{
+		if IsInteger(time := InputBox("Enter the number of seconds (900-86400) to wait between each use of the Sticker Stack:", "Sticker Stack Timer", "T60").Value) {
 			if ((time >= 900) && (time <= 86400)) {
 				MainGui["StickerStackTimer"].Value := StickerStackTimer := time
 				MainGui["StickerStackModeText"].Text := hmsFromSeconds(StickerStackTimer)
@@ -5917,8 +5835,7 @@ nm_StickerPrinterEgg(GuiCtrl, *){
 	global StickerPrinterEgg
 	static val := ["Basic", "Silver", "Gold", "Diamond", "Mythic"], l := val.Length
 
-	switch StickerPrinterEgg, 0
-	{
+	switch StickerPrinterEgg, 0 {
 		case "Basic":
 		i := 1
 		case "Silver":
@@ -6188,8 +6105,7 @@ nm_autoFieldBoostCheck(*){
 		If no DEACTIVATION LIMITS are set then this option will continue to use the selected items until they are completely gone.
 
 		Please make ABSOLUTELY SURE that the settings you have selected are correct!
-		)", "WARNING!!", 1) = "Ok")
-		{
+		)", "WARNING!!", 1) = "Ok") {
 			AFBGui["AutoFieldBoostActive"].Value := AutoFieldBoostActive := 1
 			IniWrite AFBdiceUsed:=0, "settings\nm_config.ini", "Boost", "AFBdiceUsed"
 			IniWrite AFBglitterUsed:=0, "settings\nm_config.ini", "Boost", "AFBglitterUsed"
@@ -6333,21 +6249,17 @@ ba_planterSwitch(*){
 	PlanterMode := MainGui["PlanterMode"].Value
 	MainGui["PlanterMode"].Enabled := 0
 
-	for i,c in [0,1] ; hide first, then show
-	{
-		if (((i = 1) && (PlanterMode != 2)) || ((i = 2) && (PlanterMode = 2))) ; hide/show all planters+ controls
-		{
+	for i,c in [0,1] { ; hide first, then show
+		if (((i = 1) && (PlanterMode != 2)) || ((i = 2) && (PlanterMode = 2))) { ; hide/show all planters+ controls
 			for k,v in PlantersPlusControls
 				MainGui[v].Visible := c
 			MainGui[HarvestFullGrown ? "FullText" : AutomaticHarvestInterval ? "AutoText" : "HarvestInterval"].Visible := c
 		}
 
-		if (((i = 1) && (PlanterMode != 1)) || ((i = 2) && (PlanterMode = 1))) ; hide/show all manual planters controls
-		{
+		if (((i = 1) && (PlanterMode != 1)) || ((i = 2) && (PlanterMode = 1))) { ; hide/show all manual planters controls
 			for k,v in ManualPlantersControls
 				MainGui[v].Visible := c
-			Loop 3
-			{
+			Loop 3 {
 				i := A_Index
 				for k,v in ManualPlantersOptions
 					Loop 3
@@ -6365,8 +6277,7 @@ ba_planterSwitch(*){
 	}
 
 	; handle PlanterTimers window
-	if (PlanterMode = 0)
-	{
+	if (PlanterMode = 0) {
 		DetectHiddenWindows 1
 		if WinExist("PlanterTimers.ahk ahk_class AutoHotkey")
 			WinClose
@@ -6386,8 +6297,7 @@ ba_showPlanterTimers(*){
 	DetectHiddenWindows 0
 }
 ;Manual Planters
-mp_UpdatePage(GuiCtrl?, *)
-{
+mp_UpdatePage(GuiCtrl?, *) {
 	Static ManualPlantersOptions := ["Planter","Field","Glitter","AutoFull"], LastPageIndex := 1
 
 	Global MPageIndex += IsSet(GuiCtrl) ? ((GuiCtrl.Name = "MPageLeft") ? -1 : 1) : 0
@@ -6599,8 +6509,7 @@ mp_MPuffMode(*){
 		More information on how to use this feature is available in the 'Disable auto harvest' ? Help button.
 
 		Do you wish to proceed with disabling auto harvest?
-		)", "WARNING!", 1) = "Ok")
-		{
+		)", "WARNING!", 1) = "Ok") {
 			MainGui["MPuffModeA"].Value := 1
 		} else {
 			MainGui["MPuffModeA"].Value := 0
@@ -6623,8 +6532,7 @@ mp_MPlanterGatherSwitch_(*){
 		More information on how to use this feature is available in the 'Gather in planter field' ? Help button.
 
 		Do you wish to proceed with gathering in planter field?
-		)", "WARNING!", 1) = "Ok")
-		{
+		)", "WARNING!", 1) = "Ok") {
 			MainGui["MPlanterGatherA"].Value := 1
 		} else {
 			MainGui["MPlanterGatherA"].Value := 0
@@ -6671,8 +6579,7 @@ nm_MHarvestInterval(GuiCtrl, *){
 	global MHarvestInterval
 	static val := ["30 mins", "1 hour", "2 hours", "3 hours", "4 hours", "5 hours", "6 hours"], l := val.Length
 
-	switch MHarvestInterval, 0
-	{
+	switch MHarvestInterval, 0 {
 		case "30 mins":
 		i := 1
 		case "1 hour":
@@ -6703,8 +6610,7 @@ nm_NectarPreset(GuiCtrl, *){
 	MainGui["NPreset"].Text := NPreset := val[(GuiCtrl.Name = "NPRight") ? (Mod(i, l) + 1) : (Mod(l + i - 2, l) + 1)]
 	IniWrite NPreset, "settings\nm_config.ini", "Planters", "NPreset"
 
-	switch NPreset, 0
-	{
+	switch NPreset, 0 {
 		case "Blue":
 		MainGui["n1Priority"].Text := n1Priority := "Comforting"
 		MainGui["n2Priority"].Text := n2Priority := "Motivating"
@@ -6817,8 +6723,7 @@ nm_NectarPriority(GuiCtrl?, *){
 	static val := ["None", "Comforting", "Refreshing", "Satisfying", "Motivating", "Invigorating"]
 	local i, l, index, n, j, arr := []
 
-	switch IsSet(GuiCtrl) ? GuiCtrl.Name : ""
-	{
+	switch IsSet(GuiCtrl) ? GuiCtrl.Name : "" {
 		case "NP2Left", "NP2Right":
 		index := 2
 		case "NP3Left", "NP3Right":
@@ -6831,8 +6736,7 @@ nm_NectarPriority(GuiCtrl?, *){
 		index := 1
 	}
 
-	for k,v in val
-	{
+	for k,v in val {
 		if (k > 1)
 			Loop (index - 1)
 				if (v = N%A_Index%priority)
@@ -6841,8 +6745,7 @@ nm_NectarPriority(GuiCtrl?, *){
 	}
 	l := arr.Length
 
-	switch N%index%priority, 0
-	{
+	switch N%index%priority, 0 {
 		case arr[1]:
 		i := 1
 		case arr[2]:
@@ -6910,10 +6813,8 @@ nm_NectarMinPercent(GuiCtrl, *){
 ba_harvestInterval(*){
 	global HarvestInterval
 	HarvestInterval := MainGui["HarvestInterval"].Value
-	if HarvestInterval is number
-	{
-		if HarvestInterval>0
-		{
+	if HarvestInterval is number {
+		if HarvestInterval>0 {
 			HarvestInterval:=HarvestInterval
 			ba_saveConfig_()
 		} else {
@@ -6967,8 +6868,7 @@ ba_gotoPlanterFieldSwitch_(*){
 		Enabling this option will make you gather in a field that contains a planter as selected by Planters+ instead.
 
 		I understand that this option will result in gathering Nectar much faster but will also result in less pollen/honey collection overall.
-		)", "WARNING!!", 1) = "Ok")
-		{
+		)", "WARNING!!", 1) = "Ok") {
 			MainGui["GotoPlanterField"].Value := 1
 		} else {
 			MainGui["GotoPlanterField"].Value := 0
@@ -6988,8 +6888,7 @@ ba_gatherFieldSippingSwitch_(*){
 		This option will force planters to always be placed in your current gathering field if you need the nectar type that field provides.
 		This is done regardless of the allowed field selections.
 		This will allow your bees to sip from the planter and greatly increase the amount of nectar gained.
-		)", "INFORMATION", 1) = "Ok")
-		{
+		)", "INFORMATION", 1) = "Ok") {
 			MainGui["GatherFieldSipping"].Value := 1
 		} else {
 			MainGui["GatherFieldSipping"].Value := 0
@@ -7265,8 +7164,7 @@ nm_WebhookGUI(*){
 	nm_WebhookGUI()
 	return
 
-	nm_WebhookGUI()
-	{
+	nm_WebhookGUI() {
 		global
 		local k,v,x,y,w,h,str
 		static ss_list := ["critical","amulet","machine","balloon","vicious","death","planter","honey", "honeyUpdate"]
@@ -7308,8 +7206,7 @@ nm_WebhookGUI(*){
 
 
 		; channel ids
-		if (discordMode = 1)
-		{
+		if (discordMode = 1) {
 			if MainChannelCheck
 				Gdip_FillRoundedRectanglePath(G, pBrush := Gdip_BrushCreateSolid(0xff4bb543), 24, 130, 20, 20, 4), Gdip_DeleteBrush(pBrush), Gdip_DrawImage(G, bitmaps["check"], 25, 131)
 			else
@@ -7338,8 +7235,7 @@ nm_WebhookGUI(*){
 			Gdip_DrawImage(G, bitmaps["paste"], w-58, 158, 32, 40)
 			DiscordGui["PasteReportID"].Move(w-55, 158, 26, 40), DiscordGui["PasteReportID"].Visible := discordCheck
 		}
-		else
-		{
+		else {
 			DiscordGui["MainChannelCheck"].Move(0, 0, 0, 0)
 			DiscordGui["ReportChannelCheck"].Move(0, 0, 0, 0)
 			DiscordGui["PasteMainID"].Move(0, 0, 0, 0)
@@ -7357,8 +7253,7 @@ nm_WebhookGUI(*){
 		Gdip_FillRoundedRectanglePath(G, pBrush := Gdip_BrushCreateSolid(ssCheck ? 0xff4bb543 : 0xffff3333), x, h-286-discordMode*77, 40, 24, 12), Gdip_DeleteBrush(pBrush)
 		Gdip_FillEllipse(G, pBrush := Gdip_BrushCreateSolid(0xffffffff), x + (ssCheck ? 19 : 3), h-283-discordMode*77, 18, 18), Gdip_DeleteBrush(pBrush)
 		DiscordGui["SSCheck"].Move(x, h-286-discordMode*77, 40, 24), DiscordGui["SSCheck"].Visible := discordCheck
-		for k,v in ss_list
-		{
+		for k,v in ss_list {
 			if (%v%SSCheck = 1)
 				Gdip_FillRoundedRectanglePath(G, pBrush := Gdip_BrushCreateSolid(0xff4bb543), 24, h-283-discordMode*77 + k * 26, 20, 20, 4), Gdip_DeleteBrush(pBrush), Gdip_DrawImage(G, bitmaps["check"], 25, h-282-discordMode*77 + k * 26)
 			else
@@ -7390,8 +7285,7 @@ nm_WebhookGUI(*){
 		Gdip_DrawOrientedString(G, discordUID, "Calibri", 16, 1, w//2+14, h-246, w//2-74, 40, 0, pBrush := Gdip_BrushCreateSolid(0xffffffff), 0, 1), Gdip_DeleteBrush(pBrush)
 		Gdip_DrawImage(G, bitmaps["paste"], w-58, h-256, 32, 40)
 		DiscordGui["PasteUserID"].Move(w-55, h-256, 26, 40), DiscordGui["PasteUserID"].Visible := (discordCheck && criticalCheck)
-		for k,v in ping_list
-		{
+		for k,v in ping_list {
 			if (%v%PingCheck = 1)
 				Gdip_FillRoundedRectanglePath(G, pBrush := Gdip_BrushCreateSolid(0xff4bb543), w//2+18, h-231 + k * 26, 20, 20, 4), Gdip_DeleteBrush(pBrush), Gdip_DrawImage(G, bitmaps["check"], w//2+19, h-230 + k * 26)
 			else
@@ -7403,8 +7297,7 @@ nm_WebhookGUI(*){
 		; grey out disabled options
 		if (discordCheck = 0)
 			Gdip_FillRectangle(G, pBrush := Gdip_BrushCreateSolid(0x80131416), 16, 70, w-32, h-90), Gdip_DeleteBrush(pBrush)
-		else
-		{
+		else {
 			if (ssCheck = 0)
 				Gdip_FillRectangle(G, pBrush := Gdip_BrushCreateSolid(0x80131416), 16, h-260-discordMode*77, w//2-24, 235), Gdip_DeleteBrush(pBrush)
 			if (criticalCheck = 0)
@@ -7417,8 +7310,7 @@ nm_WebhookGUI(*){
 		OnExit(ExitFunc)
 	}
 
-	WM_LBUTTONDOWN(*)
-	{
+	WM_LBUTTONDOWN(*) {
 		global
 		local hCtrl, k, pBrush, pPen, ctrl_x, ctrl_y, ctrl_w, ctrl_h, s, str
 		MouseGetPos , , , &hCtrl, 2
@@ -7426,8 +7318,7 @@ nm_WebhookGUI(*){
 			return
 
 		name := DiscordGui[hCtrl].Name
-		switch name, 0
-		{
+		switch name, 0 {
 			case "Title":
 			PostMessage 0xA1, 2
 
@@ -7519,8 +7410,7 @@ nm_WebhookGUI(*){
 		}
 	}
 
-	WM_MOUSEMOVE(*)
-	{
+	WM_MOUSEMOVE(*) {
 		global
 		local hCtrl, pBrush, pPen, k, hover_x, hover_y, hover_w, hover_h
 		MouseGetPos , , , &hCtrl, 2
@@ -7529,13 +7419,11 @@ nm_WebhookGUI(*){
 			return 0
 
 		name := DiscordGui[hCtrl].Name
-		switch name, 0
-		{
+		switch name, 0 {
 			case "ChangeMode", "Close", "DiscordCheck", "SSCheck", "CriticalCheck", "CopyDiscord", "PasteDiscord", "PasteMainID", "PasteReportID", "PasteUserID", "PasteUserID2":
 			hover_ctrl := hCtrl
 			ReplaceSystemCursors("IDC_HAND")
-			while (hCtrl = hover_ctrl)
-			{
+			while (hCtrl = hover_ctrl) {
 				Sleep 20
 				MouseGetPos , , , &hCtrl, 2
 			}
@@ -7550,8 +7438,7 @@ nm_WebhookGUI(*){
 			ReplaceSystemCursors("IDC_HAND")
 			UpdateLayeredWindow(hMain, hdc)
 
-			while (hCtrl = hover_ctrl)
-			{
+			while (hCtrl = hover_ctrl) {
 				Sleep 20
 				MouseGetPos , , , &hCtrl, 2
 			}
@@ -7567,8 +7454,7 @@ nm_WebhookGUI(*){
 		}
 	}
 
-	UpdateInt(var)
-	{
+	UpdateInt(var) {
 		global
 		local v := %var%
 		IniWrite v, "settings\nm_config.ini", "Status", var
@@ -7578,8 +7464,7 @@ nm_WebhookGUI(*){
 			PostMessage 0x5552, enum[var], v
 	}
 
-	UpdateStr(var)
-	{
+	UpdateStr(var) {
 		global
 		IniWrite %var%, "settings\nm_config.ini", "Status", var
 		if WinExist("natro_macro.ahk ahk_class AutoHotkey")
@@ -7588,8 +7473,7 @@ nm_WebhookGUI(*){
 			PostMessage 0x5553, str_enum[var], 7
 	}
 
-	ReplaceSystemCursors(IDC := "")
-	{
+	ReplaceSystemCursors(IDC := "") {
 		static IMAGE_CURSOR := 2, SPI_SETCURSORS := 0x57
 			, SysCursors := Map(  "IDC_APPSTARTING", 32650
 								, "IDC_ARROW"      , 32512
@@ -7607,19 +7491,16 @@ nm_WebhookGUI(*){
 								, "IDC_WAIT"       , 32514 )
 		if !IDC
 			DllCall("SystemParametersInfo", "UInt", SPI_SETCURSORS, "UInt", 0, "UInt", 0, "UInt", 0)
-		else
-		{
+		else {
 			hCursor := DllCall("LoadCursor", "Ptr", 0, "UInt", SysCursors[IDC], "Ptr")
-			for k, v in SysCursors
-			{
+			for k, v in SysCursors {
 				hCopy := DllCall("CopyImage", "Ptr", hCursor, "UInt", IMAGE_CURSOR, "Int", 0, "Int", 0, "UInt", 0, "Ptr")
 				DllCall("SetSystemCursor", "Ptr", hCopy, "UInt", v)
 			}
 		}
 	}
 
-	ExitFunc(*)
-	{
+	ExitFunc(*) {
 		DiscordGui.Destroy()
 		try Gdip_Shutdown(pToken)
 		ReplaceSystemCursors()
@@ -7658,14 +7539,12 @@ nm_HiveBees(GuiCtrl, *){
 	p := EditGetCurrentCol(GuiCtrl)
 	NewHiveBees := GuiCtrl.Value
 
-	if (IsInteger(NewHiveBees) && (NewHiveBees > 50)) ; contains char other than digit, or more than 50
-	{
+	if (IsInteger(NewHiveBees) && (NewHiveBees > 50)) { ; contains char other than digit, or more than 50
 		GuiCtrl.Value := HiveBees
 		SendMessage 0xB1, p-2, p-2, GuiCtrl
 		nm_ShowErrorBalloonTip(GuiCtrl, "Unacceptable Number", "You cannot enter a number above 50!")
 	}
-	else
-	{
+	else {
 		HiveBees := NewHiveBees
 		IniWrite HiveBees, "settings\nm_config.ini", "Settings", "HiveBees"
 	}
@@ -7739,8 +7618,7 @@ nm_ResetConfig(*){
 	This will set all settings (Gather, Planters, Boost, Quests, etc.) to the default AND reset all timers (Collect/Kill, Planters, etc.), as if you freshly started the macro.
 
 	If you want to proceed, click 'Yes'. Backup your 'settings' folder if you're unsure.
-	)", "Reset Settings", 0x40034 " Owner" MainGui.Hwnd) = "Yes")
-	{
+	)", "Reset Settings", 0x40034 " Owner" MainGui.Hwnd) = "Yes") {
 		DirDelete A_WorkingDir "\settings"
 		return stop()
 	}
@@ -7757,8 +7635,7 @@ nm_ResetFieldDefaultGUI(*){
 	FieldDefaultGui.OnEvent("Close", GuiClose)
 	FieldDefaultGui.SetFont("s9 cDefault Norm", "Tahoma")
 	i := 0
-	for k,v in StandardFieldDefault
-	{
+	for k,v in StandardFieldDefault {
 		i++
 		x := 10+((i-1)//6)*110, y := 6+Mod(i-1, 6)*22
 		FieldDefaultGui.Add("Button", "x" x " y" y " w100 h20 vResetFieldDefault" i, k).OnEvent("Click", nm_ResetFieldDefault)
@@ -7773,10 +7650,8 @@ nm_ResetFieldDefaultGUI(*){
 nm_ResetFieldDefault(GuiCtrl, *){
 	global FieldDefault, StandardFieldDefault
 	n := SubStr(GuiCtrl.Name, 18) ; ResetFieldDefault
-	for k,v in StandardFieldDefault
-	{
-		if (A_Index = n)
-		{
+	for k,v in StandardFieldDefault {
+		if (A_Index = n) {
 			if (MsgBox(
 			(
 			"Reset " k " default settings to these standard settings?
@@ -7797,8 +7672,7 @@ nm_ResetFieldDefault(GuiCtrl, *){
 
 			Sprinkler Location: " v["sprinkler"] "
 			Sprinkler Distance: " v["distance"]
-			), "Reset Field Defaults", 0x40034 " Owner" MainGui.Hwnd) = "Yes")
-			{
+			), "Reset Field Defaults", 0x40034 " Owner" MainGui.Hwnd) = "Yes") {
 				FieldDefault[k]["pattern"]:=v["pattern"]
 				FieldDefault[k]["size"]:=v["size"]
 				FieldDefault[k]["width"]:=v["width"]
@@ -7824,16 +7698,12 @@ nm_ResetFieldDefault(GuiCtrl, *){
 }
 nm_ResetAllFieldDefaults(*){
 	global FieldDefault, StandardFieldDefault
-	if (MsgBox("Are you sure you want to reset all field default settings to their standard settings?", "Reset Field Defaults", 0x40034 " Owner" MainGui.Hwnd) = "Yes")
-	{
-		if (MsgBox("ARE YOU SUPER DUPER SURE?", "Reset Field Defaults", 0x40034 " Owner" MainGui.Hwnd) = "Yes")
-		{
+	if (MsgBox("Are you sure you want to reset all field default settings to their standard settings?", "Reset Field Defaults", 0x40034 " Owner" MainGui.Hwnd) = "Yes") {
+		if (MsgBox("ARE YOU SUPER DUPER SURE?", "Reset Field Defaults", 0x40034 " Owner" MainGui.Hwnd) = "Yes") {
 			ini := ""
-			for k,v in StandardFieldDefault
-			{
+			for k,v in StandardFieldDefault {
 				ini .= "[" k "]`r`n"
-				for i,j in v
-				{
+				for i,j in v {
 					FieldDefault[k][i] := j
 					ini .= i "=" j "`r`n"
 				}
@@ -7907,8 +7777,7 @@ nm_ReconnectMethod(GuiCtrl, *){
 	global ReconnectMethod
 	static val := ["Deeplink", "Browser"], l := val.Length
 
-	if (ReconnectMethod = "Deeplink")
-	{
+	if (ReconnectMethod = "Deeplink") {
 		if (MsgBox("
 		(
 		Setting Join Method to 'Browser' is not recommended!
@@ -7934,8 +7803,7 @@ nm_ClaimMethod(GuiCtrl, *){
 	global ClaimMethod
 	static val := ["Detect", "To Slot"], l := val.Length
 
-	if (ClaimMethod = "To Slot")
-	{
+	if (ClaimMethod = "To Slot") {
 		if (MsgBox("
 		(
 		Using 'Detect' might have the possiblity to incorrectly detect hive slots if the red arrows are being blocked by something. The most common example is a tool, such as Tide Popper.
@@ -7959,14 +7827,12 @@ nm_setReconnectInterval(GuiCtrl, *){
 	p := EditGetCurrentCol(GuiCtrl)
 	NewReconnectInterval := GuiCtrl.Value
 
-	if (IsNumber(NewReconnectInterval) && ((NewReconnectInterval = 0) || ((Mod(24, NewReconnectInterval) != 0) && NewReconnectInterval))) ; not a factor of 24 or 0
-	{
+	if (IsNumber(NewReconnectInterval) && ((NewReconnectInterval = 0) || ((Mod(24, NewReconnectInterval) != 0) && NewReconnectInterval))) { ; not a factor of 24 or 0
 		GuiCtrl.Value := ReconnectInterval
 		SendMessage 0xB1, p-2, p-2, GuiCtrl
 		nm_ShowErrorBalloonTip(GuiCtrl, "Unacceptable Number", "Reconnect Interval must be a factor of 24!`r`nThese are: 1, 2, 3, 4, 6, 8, 12, 24.")
 	}
-	else
-	{
+	else {
 		ReconnectInterval := NewReconnectInterval
 		IniWrite ReconnectInterval, "settings\nm_config.ini", "Settings", "ReconnectInterval"
 	}
@@ -7976,14 +7842,12 @@ nm_setReconnectHour(GuiCtrl, *){
 	p := EditGetCurrentCol(GuiCtrl)
 	NewReconnectHour := GuiCtrl.Value
 
-	if (IsNumber(NewReconnectHour) && (NewReconnectHour > 23)) ; not between 00 and 24
-	{
+	if (IsNumber(NewReconnectHour) && (NewReconnectHour > 23)) { ; not between 00 and 24
 		GuiCtrl.Value := ReconnectHour
 		SendMessage 0xB1, p-2, p-2, GuiCtrl
 		nm_ShowErrorBalloonTip(GuiCtrl, "Unacceptable Number", "Reconnect Hour must be between 00 and 23!")
 	}
-	else
-	{
+	else {
 		ReconnectHour := NewReconnectHour
 		IniWrite ReconnectHour, "settings\nm_config.ini", "Settings", "ReconnectHour"
 	}
@@ -7993,14 +7857,12 @@ nm_setReconnectMin(GuiCtrl, *){
 	p := EditGetCurrentCol(GuiCtrl)
 	NewReconnectMin := GuiCtrl.Value
 
-	if (IsNumber(NewReconnectMin) && (NewReconnectMin > 59)) ; not between 00 and 59
-	{
+	if (IsNumber(NewReconnectMin) && (NewReconnectMin > 59)) { ; not between 00 and 59
 		GuiCtrl.Value := ReconnectMin
 		SendMessage 0xB1, p-2, p-2, GuiCtrl
 		nm_ShowErrorBalloonTip(GuiCtrl, "Unacceptable Number", "Reconnect Minute must be between 00 and 59!")
 	}
-	else
-	{
+	else {
 		ReconnectMin := NewReconnectMin
 		IniWrite ReconnectMin, "settings\nm_config.ini", "Settings", "ReconnectMin"
 	}
@@ -8124,13 +7986,11 @@ nm_moveSpeed(GuiCtrl, *){
 	NewMoveSpeed := GuiCtrl.Value
 	StrReplace(NewMoveSpeed, ".", , , &n)
 
-	if (NewMoveSpeed ~= "[^\d\.]" || (n > 1)) ; contains char other than digit or dpt, or more than 1 dpt
-	{
+	if (NewMoveSpeed ~= "[^\d\.]" || (n > 1)) { ; contains char other than digit or dpt, or more than 1 dpt
 		GuiCtrl.Value := MoveSpeedNum
 		SendMessage 0xB1, p-2, p-2, GuiCtrl
 	}
-	else
-	{
+	else {
 		MoveSpeedNum := NewMoveSpeed
 		IniWrite MoveSpeedNum, "settings\nm_config.ini", "Settings", "MoveSpeedNum"
 	}
@@ -8161,8 +8021,7 @@ nm_SprinklerType(GuiCtrl, *){
 	global SprinklerType
 	static val := ["None", "Basic", "Silver", "Golden", "Diamond", "Supreme"], l := val.Length
 
-	switch SprinklerType, 0
-	{
+	switch SprinklerType, 0 {
 		case "None":
 		i := 1
 		case "Basic":
@@ -8217,10 +8076,8 @@ nm_ReleaseChannel(GuiCtrl, *){
 
 ; MISC TAB
 ; ------------------------
-nm_BitterberryFeeder(*)
-{
-	if !GetRobloxHWND()
-	{
+nm_BitterberryFeeder(*) {
+	if !GetRobloxHWND() {
 		MsgBox "You must have Bee Swarm Simulator open to use this!", "Bitterberry Auto-Feeder", 0x40030 " T20"
 		return
 	}
@@ -8233,10 +8090,8 @@ nm_BitterberryFeeder(*)
 	exec := ComObject("WScript.shell").Exec('"' A_AhkPath '" /force "' A_ScriptDir "\BitterBerry.ahk" '"')
 	return (BitterBerryPID := exec.ProcessID)
 }
-nm_BasicEggHatcher(*)
-{
-	if !GetRobloxHWND()
-	{
+nm_BasicEggHatcher(*) {
+	if !GetRobloxHWND() {
 		MsgBox "You must have Bee Swarm Simulator open to use this!", "Basic Bee Replacement Program", 0x40030 " T20"
 		return
 	}
@@ -8250,8 +8105,7 @@ nm_BasicEggHatcher(*)
 	; if somebody has ahk open to vs code as default it'd open it in vs code
 	; so define A_AhkPath
 }
-nm_GenerateBeeList(*)
-{
+nm_GenerateBeeList(*) {
 	global bitmaps
 	static bees := ["basic"
 		,"bomber","brave","bumble","cool","hasty","looker","rad","rascal","stubborn"
@@ -8260,8 +8114,7 @@ nm_GenerateBeeList(*)
 		,"buoyant","fuzzy","precise","spicy","tadpole","vector"
 		,"bear","cobalt","crimson","digital","festive","gummy","photon","puppy","tabby","vicious","windy"]
 
-	if !GetRobloxHWND()
-	{
+	if !GetRobloxHWND() {
 		MsgBox "You must have Bee Swarm Simulator open to use this!", "Export Bee List", 0x40030 " T20"
 		return
 	}
@@ -8282,11 +8135,9 @@ nm_GenerateBeeList(*)
 	pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY+offsetY+150 "|306|" windowHeight-offsetY-150)
 	local pBMWhite, pBMRed, pBMBlue
 	lb := 450
-	for k,v in Map("white",0xffc4c8cb, "red",0xffc7403c, "blue",0xff4d87ca)
-	{
+	for k,v in Map("white",0xffc4c8cb, "red",0xffc7403c, "blue",0xff4d87ca) {
 		pBM%k% := Gdip_CreateBitmap(6, 2), G := Gdip_GraphicsFromImage(pBM%k%), Gdip_GraphicsClear(G, v), Gdip_DeleteGraphics(G)
-		if (Gdip_ImageSearch(pBMScreen, pBM%k%, &lpos, , , 10, , 2, , 2) = 1)
-		{
+		if (Gdip_ImageSearch(pBMScreen, pBM%k%, &lpos, , , 10, , 2, , 2) = 1) {
 			l := SubStr(lpos, InStr(lpos, ",")+1)
 			lb := Max(l+2, lb)
 		}
@@ -8296,26 +8147,20 @@ nm_GenerateBeeList(*)
 	; loop through bees and fill object
 	pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY+offsetY+150 "|306|" lb)
 	ub := 0
-	for k,v in bees
-	{
-		Loop 3
-		{
+	for k,v in bees {
+		Loop 3 {
 			; find upper coordinate of current bee
 			uc := lb
-			for i,j in ["white","red","blue"]
-			{
-				if (Gdip_ImageSearch(pBMScreen, pBM%j%, &upos, , ub, 10, , 2) = 1)
-				{
+			for i,j in ["white","red","blue"] {
+				if (Gdip_ImageSearch(pBMScreen, pBM%j%, &upos, , ub, 10, , 2) = 1) {
 					u := SubStr(upos, InStr(upos, ",")+1)
 					uc := Min(u, uc)
 				}
 			}
 
 			; if bee is too low, scroll up, else, set upper bound for next
-			if (lb-uc < 120)
-			{
-				Loop (lb//150 - 2)
-				{
+			if (lb-uc < 120) {
+				Loop (lb//150 - 2) {
 					MouseMove windowX+30, windowY+offsetY+200, 5
 					Sleep 50
 					SendInput "{WheelDown}"
@@ -8325,26 +8170,20 @@ nm_GenerateBeeList(*)
 				DllCall("GetSystemTimeAsFileTime","Int64P",&s:=0)
 				pBM := Gdip_CloneBitmapArea(pBMScreen, 6, Gdip_GetImageHeight(pBMScreen)-206, 294, 200)
 				Gdip_LockBits(pBM, 0, 0, 294, 200, &stride, &scan0, &bmData)
-				Loop 294
-				{
+				Loop 294 {
 					x := A_Index - 1
-					if ((x+6 < windowWidth//2 - 261) || ((x+6 > windowWidth//2 - 190) && (x+6 < windowWidth//2 - 186)) || ((x+6 > windowWidth//2 - 115) && (x+6 < windowWidth//2 - 111)))
-					{
-						Loop 200
-						{
+					if ((x+6 < windowWidth//2 - 261) || ((x+6 > windowWidth//2 - 190) && (x+6 < windowWidth//2 - 186)) || ((x+6 > windowWidth//2 - 115) && (x+6 < windowWidth//2 - 111))) {
+						Loop 200 {
 							y := A_Index - 1
-							switch Gdip_GetLockBitPixel(scan0, x, y, stride)
-							{
+							switch Gdip_GetLockBitPixel(scan0, x, y, stride) {
 								case 0xff4d87ca, 0xffc4c8cb, 0xffc7403c, 0xff74a9e6, 0xffe1e4e7, 0xffe46764:
 								default:
 								Gdip_SetLockBitPixel(0x00000000, scan0, x, y, stride)
 							}
 						}
 					}
-					else
-					{
-						Loop 200
-						{
+					else {
+						Loop 200 {
 							y := A_Index - 1
 							Gdip_SetLockBitPixel(0x00000000, scan0, x, y, stride)
 						}
@@ -8360,8 +8199,7 @@ nm_GenerateBeeList(*)
 				ub := Max(0, ub - (((Gdip_ImageSearch(pBMScreen, pBM, &pos) = 1)) ? Min(lb - 206 - SubStr(pos, InStr(pos, ",")+1), 150 * (lb//150 - 2)) : (150 * (lb//150 - 2))))
 				Gdip_DisposeImage(pBM)
 			}
-			else
-			{
+			else {
 				ub := uc + 120
 				break
 			}
@@ -8369,8 +8207,7 @@ nm_GenerateBeeList(*)
 
 		; detect number of current bee
 		(digits := Map()).Default := ""
-		Loop 10
-		{
+		Loop 10 {
 			n := 10-A_Index
 			Gdip_ImageSearch(pBMScreen, bitmaps["beedigit" n], &pos, 0, uc+100, 100, uc+120, , , 5, 2, , "`n")
 			Loop Parse pos, "`n"
@@ -8420,8 +8257,7 @@ nm_SSACalculatorButton(*) => Run("https://docs.google.com/spreadsheets/d/1nupF_6
 nm_BondCalculatorButton(*) => Run("https://docs.google.com/spreadsheets/d/1TFTAahwsB4WRmRkX4YiM8mPQyk53CDmfAKOSOYv-Bow/")
 nm_BeequipChancesButton(*) => Run("https://docs.google.com/spreadsheets/d/10_7oay1yHgykAccrhqYp5gr-P_0jpEKMbTJS9ty4JA8/")
 
-nm_AutoClickerButton(*)
-{
+nm_AutoClickerButton(*) {
 	global
 	local GuiCtrl,GuiCtrlDuration, GuiCtrlDelay
 	GuiClose(*){
@@ -8539,11 +8375,9 @@ nm_saveHotkey(GuiCtrl, *){
 	k := GuiCtrl.Name, %k% := GuiCtrl.Value
 
 	v := StrReplace(k, "Edit")
-	if !(%k% ~= "^[!^+]+$")
-	{
+	if !(%k% ~= "^[!^+]+$") {
 		; do not allow necessary keys
-		switch Format("sc{:03X}", GetKeySC(%k%)), 0
-		{
+		switch Format("sc{:03X}", GetKeySC(%k%)), 0 {
 			case FwdKey,LeftKey,BackKey,RightKey,RotLeft,RotRight,RotUp,RotDown,ZoomIn,ZoomOut,SC_E,SC_R,SC_L,SC_Esc,SC_Enter,SC_LShift,SC_Space:
 			GuiCtrl.Value := %v%
 			MsgBox "That hotkey cannot be used!`nThe key is already used elsewhere in the macro.", "Unacceptable Hotkey!", 0x1030
@@ -8557,8 +8391,7 @@ nm_saveHotkey(GuiCtrl, *){
 
 		if ((StrLen(%k%) = 0) || (%k% = StartHotkey) || (%k% = PauseHotkey) || (%k% = StopHotkey) || (%k% = AutoClickerHotkey) || (%k% = TimersHotkey) || (%k% = DebugHotkey)) ; do not allow empty or already used hotkey (not necessary in most cases)
 			GuiCtrl.Value := %v%
-		else ; update the hotkey
-		{
+		else { ; update the hotkey
 			l := StrReplace(v, "Hotkey")
 			try Hotkey %v%, (l = "Pause") ? nm_Pause : (l = "Debug") ? nm_copyDebugLog : %l%, "Off"
 			IniWrite (%v% := %k%), "settings\nm_config.ini", "Settings", v
@@ -8605,8 +8438,7 @@ nm_AutoStartManager(*){
 
 	if !(task := RegRead("HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "NatroMacro", ""))
 		validScript := 0, autostart := 0, delay := "None", status := 1
-	else
-	{
+	else {
 		; modified from Args() By SKAN,  http://goo.gl/JfMNpN,  CD:23/Aug/2014 | MD:24/Aug/2014
 		A := [], pArgs := DllCall("Shell32\CommandLineToArgvW", "Str",task, "PtrP",&nArgs:=0, "Ptr")
 		Loop nArgs
@@ -8657,12 +8489,10 @@ nm_AutoStartManager(*){
 
 	ASMGui.Show("w" w-10 " h" h-10)
 }
-ChangeDelay(*)
-{
+ChangeDelay(*) {
 	ASMGui["DelayText"].Text := hmsFromSeconds(ASMGui["DelayDuration"].Value)
 }
-AddButton(*)
-{
+AddButton(*) {
 	global
 	local task, autostart, secs
 
@@ -8688,17 +8518,14 @@ AddButton(*)
 	ASMGui["ASVal"].SetFont((autostart = 1) ? "cGreen" : "cRed"), ASMGui["ASVal"].Text := (autostart = 1) ? "Enabled" : "Disabled"
 	CenterText(ASMGui["ASLabel"], ASMGui["ASVal"], ASMGui["StatusText"])
 }
-RemoveButton(*)
-{
+RemoveButton(*) {
 	global
 
 	try RegDelete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "NatroMacro"
-	catch
-	{
+	catch {
 		; show msgbox
 	}
-	else
-	{
+	else {
 		ASMGui["Delay"].Text := "Delay Duration: None"
 		ASMGui["StatusVal"].SetFont("cRed", "Tahoma"), ASMGui["StatusVal"].Text := "Inactive"
 		CenterText(ASMGui["StatusLabel"], ASMGui["StatusVal"], ASMGui["StatusLabel"])
@@ -8743,14 +8570,12 @@ nm_saveNightAnnouncementName(GuiCtrl, *){
 	p := EditGetCurrentCol(GuiCtrl)
 	NewNightAnnouncementName := GuiCtrl.Value
 
-	if InStr(NewNightAnnouncementName, "\")
-	{
+	if InStr(NewNightAnnouncementName, "\") {
 		GuiCtrl.Value := NightAnnouncementName
 		SendMessage 0xB1, p-2, p-2, GuiCtrl
 		nm_ShowErrorBalloonTip(GuiCtrl, "Unacceptable Character", "The name cannot include the following characters:`n'\'")
 	}
-	else
-	{
+	else {
 		NightAnnouncementName := NewNightAnnouncementName
 		IniWrite NightAnnouncementName, "settings\nm_config.ini", "Status", "NightAnnouncementName"
 		PostSubmacroMessage("Status", 0x5553, 48, 7)
@@ -8764,14 +8589,12 @@ nm_saveNightAnnouncementPingID(GuiCtrl, *){
 	p := EditGetCurrentCol(GuiCtrl)
 	NewNightAnnouncementPingID := GuiCtrl.Value
 
-	if (NewNightAnnouncementPingID ~= "i)^&?[0-9]*$")
-	{
+	if (NewNightAnnouncementPingID ~= "i)^&?[0-9]*$") {
 		NightAnnouncementPingID := NewNightAnnouncementPingID
 		IniWrite NightAnnouncementPingID, "settings\nm_config.ini", "Status", "NightAnnouncementPingID"
 		PostSubmacroMessage("Status", 0x5553, 49, 7)
 	}
-	else
-	{
+	else {
 		GuiCtrl.Value := NightAnnouncementPingID
 		SendMessage 0xB1, p-2, p-2, GuiCtrl
 		nm_ShowErrorBalloonTip(GuiCtrl, "Invalid Discord Ping ID!", "Make sure it is a valid User ID or Role ID (starting with &).")
@@ -8783,14 +8606,12 @@ nm_saveNightAnnouncementWebhook(GuiCtrl, *){
 	str := GuiCtrl.Value
 	RegexMatch(str, "i)https:\/\/(canary\.|ptb\.)?(discord|discordapp)\.com\/api\/webhooks\/([\d]+)\/([a-z0-9_-]+)", &NewNightAnnouncementWebhook)
 
-	if ((StrLen(str) = 0) || IsObject(NewNightAnnouncementWebhook))
-	{
+	if ((StrLen(str) = 0) || IsObject(NewNightAnnouncementWebhook)) {
 		NightAnnouncementWebhook := IsObject(NewNightAnnouncementWebhook) ? NewNightAnnouncementWebhook[0] : ""
 		IniWrite NightAnnouncementWebhook, "settings\nm_config.ini", "Status", "NightAnnouncementWebhook"
 		PostSubmacroMessage("Status", 0x5553, 50, 7)
 	}
-	else
-	{
+	else {
 		GuiCtrl.Value := NightAnnouncementWebhook
 		SendMessage 0xB1, p-2, p-2, GuiCtrl
 		nm_ShowErrorBalloonTip(GuiCtrl, "Invalid Discord Webhook Link!", "Make sure your link is copied directly from Discord.")
@@ -8830,8 +8651,7 @@ blc_mutations(*) {
 
 ; CREDITS TAB
 ; ------------------------
-nm_ContributorsHandler(req)
-{
+nm_ContributorsHandler(req) {
 	if (req.readyState != 4)
 		return
 
@@ -8848,8 +8668,7 @@ nm_ContributorsImage(page:=1, contributors:=""){
 	local pBM1, pBM2, pBM3, pBM4, pBM5, pBM6, pBM7, pBM8, pBM9, pBM10
 	, pBM11, pBM12, pBM13, pBM14, pBM15, pBM16, pBM17, pBM18, pBM19, pBM20 ; 20 pages max
 
-	if !IsSet(hBM1)
-	{
+	if !IsSet(hBM1) {
 		; display name, color (ARGB), discord ID or web link
 		devs := [
 			["bastianauryn",0xffa202c0,"779430642043191307"]
@@ -8903,8 +8722,7 @@ nm_ContributorsImage(page:=1, contributors:=""){
 		Gdip_TextToGraphics(G, "Developers", "s12 x" x + 2 " y" y " r4 Bold cff000000", "Tahoma")
 
 		y += 16
-		for v in devs
-		{
+		for v in devs {
 			pos := Gdip_TextToGraphics(G, v[1], "s11", "Tahoma", , , 1)
 			if (x + (w := Number(SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1))) > 239)
 				x := 5, y += 13
@@ -8925,8 +8743,7 @@ nm_ContributorsImage(page:=1, contributors:=""){
 		Gdip_TextToGraphics(G, "Testers", "s12 x" x + 2 " y" y " r4 Bold cff000000", "Tahoma")
 
 		y += 16
-		for v in testers
-		{
+		for v in testers {
 			pos := Gdip_TextToGraphics(G, v[1], "s11", "Tahoma", , , 1)
 			if (x + (w := Number(SubStr(pos, InStr(pos, "|", , , 2)+1, InStr(pos, "|", , , 3)-InStr(pos, "|", , , 2)-1))) > 239)
 				x := 5, y += 13
@@ -8949,10 +8766,8 @@ nm_ContributorsImage(page:=1, contributors:=""){
 			MouseGetPos &mouse_x, &mouse_y
 			try WinGetClientPos &ctrl_x, &ctrl_y, , , "ahk_id " GuiCtrl.Hwnd
 			x := mouse_x - ctrl_x, y := mouse_y - ctrl_y
-			for v in users
-			{
-				if ((x >= v[4][1]) && (x <= v[4][3]) && (y >= v[4][2]) && (y <= v[4][4]))
-				{
+			for v in users {
+				if ((x >= v[4][1]) && (x <= v[4][3]) && (y >= v[4][2]) && (y <= v[4][4])) {
 					if v[3] {
 						if InStr(v[3], "http")
 							Run(v[3])
@@ -8966,12 +8781,9 @@ nm_ContributorsImage(page:=1, contributors:=""){
 		DllCall("DeleteObject", "ptr", hBM)
 
 		i := 0
-		for k,v in contributors
-		{
-			if (Mod(k, 24) = 1)
-			{
-				if (k > 1)
-				{
+		for k,v in contributors {
+			if (Mod(k, 24) = 1) {
+				if (k > 1) {
 					Gdip_DeleteGraphics(G)
 					hBM%i% := Gdip_CreateHBITMAPFromBitmap(pBM%i%)
 					Gdip_DisposeImage(pBM%i%)
@@ -9003,8 +8815,7 @@ nm_ContributorsImage(page:=1, contributors:=""){
 
 		MainGui["ContributorsImage"].Value := "HBITMAP:*" hBM1
 	}
-	else
-	{
+	else {
 		;GDI_SetImageX() by SKAN
 		hdcSrc  := DllCall("CreateCompatibleDC", "UInt",0)
 		hdcDst  := DllCall("GetDC", "UInt",MainGui["ContributorsImage"].Hwnd)
@@ -9043,10 +8854,8 @@ nm_showAdvancedSettings(*){
 	if (BuffDetectReset = 1)
 		return
 	DllCall("GetSystemTimeAsFileTime", "int64p", &t2:=0)
-	if (t2 - t1 < 50000000)
-	{
-		if (++i >= 7)
-		{
+	if (t2 - t1 < 50000000) {
+		if (++i >= 7) {
 			TabCtrl.Add(["Advanced"])
 			nm_AdvancedGUI(1), i := 0
 		}
@@ -9102,8 +8911,7 @@ nm_AdvancedGUI(init:=0){
 	MainGui.Add("CheckBox", "x413 y174 vTestMsgBox", "MsgBox")
 	MainGui.Add("Button", "x325 y197 w100 h24", "Start Test").OnEvent("Click", nm_testButton)
 	MainGui.Add("Button", "x15 y200 w220 h22 vMainLoopPriorityButton", "Main Loop Priority List").OnEvent("Click", nm_priorityListGui)
-	if (init = 1)
-	{
+	if (init = 1) {
 		TabCtrl.Choose("Advanced")
 		IniWrite (BuffDetectReset := 1), "settings\nm_config.ini", "Settings", "BuffDetectReset"
 		MsgBox "
@@ -9128,13 +8936,10 @@ nm_selectTestPath(GuiCtrl, *){
 	global Test1Path, Test2Path
 	i := SubStr(GuiCtrl.Name, -1), nl := 0
 	path := FileSelect(, A_WorkingDir "\paths", "Select Path/Pattern", "AHK Files (*.ahk)")
-	if (SubStr(path, -4) = ".ahk")
-	{
+	if (SubStr(path, -4) = ".ahk") {
 		Test%i%Path := path
-		Loop Parse (str := StrReplace(path, A_WorkingDir "\")), "\"
-		{
-			if (TextExtent(line := ((p := InStr(str, "\", , , A_Index)-1) > 0) ? SubStr(str, 1, p) : str, MainGui["Test" i "Text"]) > 174)
-			{
+		Loop Parse (str := StrReplace(path, A_WorkingDir "\")), "\" {
+			if (TextExtent(line := ((p := InStr(str, "\", , , A_Index)-1) > 0) ? SubStr(str, 1, p) : str, MainGui["Test" i "Text"]) > 174) {
 				str := SubStr(str, 1, InStr(str, "\", , , A_Index-1)-1) "`n" SubStr(str, InStr(str, "\", , , A_Index-1)), nl := 1
 				break
 			}
@@ -9155,26 +8960,21 @@ nm_testButton(*){
 	TestReset := MainGui["TestReset"].Value
 	TestMsgBox := MainGui["TestMsgBox"].Value
 
-	if !GetRobloxHWND()
-	{
+	if !GetRobloxHWND() {
 		MsgBox "You must have Bee Swarm Simulator open to use this!", "Test Paths/Patterns", 0x40030 " T20 Owner" MainGui.Hwnd
 		return 0
 	}
 
-	if ((Test1Check = 0) && (Test2Check = 0))
-	{
+	if ((Test1Check = 0) && (Test2Check = 0)) {
 		MsgBox "No paths were selected for testing!", "Test Paths/Patterns", 0x40030 " T20 Owner" MainGui.Hwnd
 		return 0
 	}
 
-	Loop 2
-	{
-		if (Test%A_Index%Check = 1)
-		{
+	Loop 2 {
+		if (Test%A_Index%Check = 1) {
 			if (IsSet(Test%A_Index%Path) && (SubStr(Test%A_Index%Path, -4) = ".ahk"))
 				file := FileOpen(Test%A_Index%Path, "r"), Test%A_Index% := file.Read(), file.Close()
-			else
-			{
+			else {
 				MsgBox "Test Path " A_Index " is enabled but not valid!", "Test Paths/Patterns", 0x40030 " T20 Owner" MainGui.Hwnd
 				return 0
 			}
@@ -9184,8 +8984,7 @@ nm_testButton(*){
 	movement :=
 	(
 	'
-	Loop' ((TestInfinite = 0) ? (" " TestCount) : "") '
-	{
+	Loop' ((TestInfinite = 0) ? (" " TestCount) : "") ' {
 		ActivateRoblox()
 		GetRobloxClientPos()
 		SendEvent "{Click " windowX+350 " " windowY+offsetY+100 " 0}"
@@ -9378,8 +9177,7 @@ nm_priorityListGui(*) {
 				updateInt("priorityListNumeric", out)
 		}
 	}
-	ReplaceSystemCursors(IDC := "")
-	{
+	ReplaceSystemCursors(IDC := "") {
 		static IMAGE_CURSOR := 2, SPI_SETCURSORS := 0x57
 			, SysCursors := Map(  "IDC_APPSTARTING", 32650
 								, "IDC_ARROW"      , 32512
@@ -9397,18 +9195,15 @@ nm_priorityListGui(*) {
 								, "IDC_WAIT"       , 32514 )
 		if !IDC
 			DllCall("SystemParametersInfo", "UInt", SPI_SETCURSORS, "UInt", 0, "UInt", 0, "UInt", 0)
-		else
-		{
+		else {
 			hCursor := DllCall("LoadCursor", "Ptr", 0, "UInt", SysCursors[IDC], "Ptr")
-			for k, v in SysCursors
-			{
+			for k, v in SysCursors {
 				hCopy := DllCall("CopyImage", "Ptr", hCursor, "UInt", IMAGE_CURSOR, "Int", 0, "Int", 0, "UInt", 0, "Ptr")
 				DllCall("SetSystemCursor", "Ptr", hCopy, "UInt", v)
 			}
 		}
 	}
-	UpdateInt(name, value)
-	{
+	UpdateInt(name, value) {
 		IniWrite value, "settings\nm_config.ini", "settings", name
 		if WinExist("natro_macro.ahk ahk_class AutoHotkey")
 			PostMessage 0x5552, 366, value
@@ -9416,8 +9211,7 @@ nm_priorityListGui(*) {
 			PostMessage 0x5552, 366, value
 	}
 
-	ExitFunc(*)
-	{
+	ExitFunc(*) {
 		PriorityGui.Destroy()
 		try Gdip_Shutdown(pToken)
 		ReplaceSystemCursors()
@@ -9833,13 +9627,11 @@ nm_updateAction(action){
 		CurrentAction:=action
 	}
 }
-nm_PlanterDetection()
-{
+nm_PlanterDetection() {
 	static pBMProgressStart, pBMProgressEnd, pBMRemain
 
 	;defines the bitmaps via hex color
-	if !(IsSet(pBMProgressStart) && IsSet(pBMProgressEnd) && IsSet(pBMRemain))
-	{
+	if !(IsSet(pBMProgressStart) && IsSet(pBMProgressEnd) && IsSet(pBMRemain)) {
 		pBMProgressStart := Gdip_CreateBitmap(1,8)
 		pGraphics := Gdip_GraphicsFromImage(pBMProgressStart), Gdip_GraphicsClear(pGraphics, 0xff86d570), Gdip_DeleteGraphics(pGraphics)
 		pBMProgressEnd := Gdip_CreateBitmap(1,2)
@@ -9860,8 +9652,7 @@ nm_PlanterDetection()
 
 	Gdip_DisposeImage(pBMScreen)
 
-	if !((sPlanterStart = 0) || (sPlanterEnd = 0) || (sPBarEnd = 0))
-	{
+	if !((sPlanterStart = 0) || (sPlanterEnd = 0) || (sPBarEnd = 0)) {
 		cx2 := SubStr(PEnd, 1, InStr(PEnd, ",")-1)+1, dx2 := SubStr(PBarEnd, 1, InStr(PBarEnd, ",")-1)+1
 		PlanterBarRemain := Round((dx2-cx2)/(dx2-x)*100, 2)
 		PlanterBarProgress := (cx2-x)/(dx2-x)
@@ -9870,21 +9661,16 @@ nm_PlanterDetection()
 	else
 		return 0
 }
-nm_PlanterTimeUpdate(FieldName, SetStatus := 1)
-{
+nm_PlanterTimeUpdate(FieldName, SetStatus := 1) {
 	global
 	local i, field, k, v, r:=0, PlanterGrowTime, PlanterBarProgress, CurrentPlanterBarProgress, NewPlanterBarProgress, VerifiedPlanterBarProgress
 
-	Loop 3
-	{
+	Loop 3 {
 		i := A_Index
-		if ((((PlanterMode = 2) && HarvestFullGrown) || ((PlanterMode = 1) && (PlanterHarvestFull%i% = "Full"))) && (PlanterField%i% = FieldName))
-		{
+		if ((((PlanterMode = 2) && HarvestFullGrown) || ((PlanterMode = 1) && (PlanterHarvestFull%i% = "Full"))) && (PlanterField%i% = FieldName)) {
 			field := StrReplace(FieldName, " ")
-			for k,v in %field%Planters
-			{
-				if (v[1] = PlanterName%i%)
-				{
+			for k,v in %field%Planters {
+				if (v[1] = PlanterName%i%) {
 					PlanterGrowTime := v[4]
 					break
 				}
@@ -9896,21 +9682,17 @@ nm_PlanterTimeUpdate(FieldName, SetStatus := 1)
 			; get prior PlanterBarProgress bounds for comparison
 			CurrentPlanterBarProgress := 1 - ((PlanterHarvestTime%i% - nowUnix()) / 3600 / PlanterGrowTime)  ; PlanterBarProgress0
 
-			Loop 20
-			{
-				if (((PlanterBarProgress := nm_PlanterDetection()) > 0) && PlanterBarProgress <= 1)
-				{
+			Loop 20 {
+				if (((PlanterBarProgress := nm_PlanterDetection()) > 0) && PlanterBarProgress <= 1) {
 					; if new estimate within +/-10%, update
-					if (Abs(PlanterBarProgress - CurrentPlanterBarProgress) <= 0.10)
-					{
+					if (Abs(PlanterBarProgress - CurrentPlanterBarProgress) <= 0.10) {
 						PlanterHarvestTime%i% := nowUnix() + Round((1 - PlanterBarProgress) * PlanterGrowTime * 3600)
 						IniWrite PlanterHarvestTime%i%, "settings\nm_config.ini", "Planters", "PlanterHarvestTime" i
 						(SetStatus) && nm_setStatus("Detected", PlanterName%i% "`nField: " FieldName " - Est. Progress: " Round(PlanterBarProgress*100) "%")
 						;NewPlanterBarProgress := PlanterBarProgress  ; variable only needed here for testing status update
 						break
 					}
-					else ; if new estimate not within +/-10%, screenshot again
-					{
+					else { ; if new estimate not within +/-10%, screenshot again
 						NewPlanterBarProgress := PlanterBarProgress  ; PlanterBarProgress1
 
 						sleep 2000
@@ -9922,8 +9704,7 @@ nm_PlanterTimeUpdate(FieldName, SetStatus := 1)
 						sleep 100
 
 						; if second screenshot within +/-10% of first, update
-						if ((PlanterBarProgress > 0) && (PlanterBarProgress <= 1) && (Abs(PlanterBarProgress - NewPlanterBarProgress) <= 0.10))
-						{
+						if ((PlanterBarProgress > 0) && (PlanterBarProgress <= 1) && (Abs(PlanterBarProgress - NewPlanterBarProgress) <= 0.10)) {
 							VerifiedPlanterBarProgress := PlanterBarProgress  ; PlanterBarProgress2, variable only needed for testing status update
 							PlanterBarProgress := (NewPlanterBarProgress + PlanterBarProgress) / 2
 
@@ -9937,8 +9718,7 @@ nm_PlanterTimeUpdate(FieldName, SetStatus := 1)
 
 				Sleep 100
 				sendinput "{" ZoomOut "}"
-				if (A_Index = 10)
-				{
+				if (A_Index = 10) {
 					sendinput "{" RotLeft " 2}"
 					r := 1
 				}
@@ -9950,12 +9730,10 @@ nm_PlanterTimeUpdate(FieldName, SetStatus := 1)
 }
 ;syspalk if you're reading this hi
 ;(+) Keep this in for the final
-nm_HealthDetection(w:=0)
-{
+nm_HealthDetection(w:=0) {
 	static pBMHealth, pBMDamage
 	HealthBars := []
-	if !(IsSet(pBMHealth) && IsSet(pBMDamage))
-	{
+	if !(IsSet(pBMHealth) && IsSet(pBMDamage)) {
 		pBMHealth := Gdip_CreateBitmap(1,4)
 		pGraphics := Gdip_GraphicsFromImage(pBMHealth), Gdip_GraphicsClear(pGraphics, 0xff1fe744), Gdip_DeleteGraphics(pGraphics)
 		pBMDamage := Gdip_CreateBitmap(1,4)
@@ -9969,15 +9747,12 @@ nm_HealthDetection(w:=0)
 		pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY "|" windowWidth "|" windowHeight)	
 	G := Gdip_GraphicsFromImage(pBMScreen)
 	pBrush := Gdip_BrushCreateSolid(0xff000000)
-	while ((Gdip_ImageSearch(pBMScreen, pBMHealth, &HPStart, , , , , , , 5) > 0) || (Gdip_ImageSearch(pBMScreen, pBMDamage, &HPStart, , , , , , , 5) > 0))
-	{
+	while ((Gdip_ImageSearch(pBMScreen, pBMHealth, &HPStart, , , , , , , 5) > 0) || (Gdip_ImageSearch(pBMScreen, pBMDamage, &HPStart, , , , , , , 5) > 0)) {
 		x := SubStr(HPStart, 1, InStr(HPStart, ",")-1), y := SubStr(HPStart, InStr(HPStart, ",")+1)
 		x1 := x, y1 := y
-		Loop (windowWidth - x)
-		{
+		Loop (windowWidth - x) {
 			i := x + A_Index - 1
-			switch Gdip_GetPixel(pBMScreen, i, y)
-			{
+			switch Gdip_GetPixel(pBMScreen, i, y) {
 				case 4280280900:
 				x1++
 
@@ -9988,10 +9763,8 @@ nm_HealthDetection(w:=0)
 				Break
 			}
 		}
-		Loop (windowHeight - y)
-		{
-			switch Gdip_GetPixel(pBMScreen, x, y1)
-			{
+		Loop (windowHeight - y) {
+			switch Gdip_GetPixel(pBMScreen, x, y1) {
 				case 4280280900, 4285207322:
 				y1++
 
@@ -10002,8 +9775,7 @@ nm_HealthDetection(w:=0)
 		HealthBarPercent := (x1 > x) ? ((IsSet(x2) && (x2 > x)) ? Round((x1-x)/(x2-x)*100, 2) : 100.00) : 0.00
 		Gdip_FillRectangle(G, pBrush, x, y, i-x, y1-y)
 		HealthBars.Push(HealthBarPercent)
-		if (A_Index > 100)
-		{
+		if (A_Index > 100) {
 			Break
 		}
 	}
@@ -10011,29 +9783,23 @@ nm_HealthDetection(w:=0)
 	Return HealthBars
 }
 ;;Time interval in minutes
-nm_KillTimeEstimation(bossName, bossTimer)
-{
+nm_KillTimeEstimation(bossName, bossTimer) {
 	global InputSnailHealth, SnailTime, InputChickHealth, ChickTime, intialHealthCheck
 	static bosses := Map()
 	confidenceArray := []
 	confidenceTotal := 0
-	if (!IsSet(intialHealthCheck) || (intialHealthCheck = 0) || !bosses.Has(bossName "Health"))
-	{
+	if (!IsSet(intialHealthCheck) || (intialHealthCheck = 0) || !bosses.Has(bossName "Health")) {
 		bosses[bossName "Health"] := (Input%bossName%Health > 0) ? Input%bossName%Health : 100
 		intialHealthCheck := 1
 	}
 	bosses[bossName "TimeInterval"] := bossTimer
-	loop 5
-	{
+	loop 5 {
 		HealthBars := nm_HealthDetection()
-		for i, v in HealthBars
-		{
-			if (v = 100.00) ;Not enough damage was dealt or there is a planter detected
-			{
+		for i, v in HealthBars {
+			if (v = 100.00) { ;Not enough damage was dealt or there is a planter detected
 				continue
 			}
-			else if (!IsSet(healthDiff) || Abs(bosses[bossName "Health"] - v) < healthDiff)
-			{
+			else if (!IsSet(healthDiff) || Abs(bosses[bossName "Health"] - v) < healthDiff) {
 				healthDiff := Abs(bosses[bossName "Health"] - v)
 				lastHealth := v
 				confidenceArray.Push(v)
@@ -10042,21 +9808,17 @@ nm_KillTimeEstimation(bossName, bossTimer)
 	}
 	if (!IsSet(lastHealth) || (confidenceArray.Length = 0))
 		return 0
-	for index, value in confidenceArray
-	{
+	for index, value in confidenceArray {
 		confidenceTotal += value
 	}
 	confidenceMean := confidenceTotal / confidenceArray.Length
-	if ((confidenceMean >= lastHealth - 1) && (confidenceMean <= lastHealth + 1))
-	{
+	if ((confidenceMean >= lastHealth - 1) && (confidenceMean <= lastHealth + 1)) {
 		dmgDealt := round((bosses[bossName "Health"]-lastHealth)/(bosses[bossName "TimeInterval"]/60000), 4)
-		if ((dmgDealt > 0) && ((abs(bosses[bossName "Health"]-lastHealth) >= 2.5) && lastHealth > 0))
-		{
+		if ((dmgDealt > 0) && ((abs(bosses[bossName "Health"]-lastHealth) >= 2.5) && lastHealth > 0)) {
 			timeEstimation := round(lastHealth/abs(dmgDealt), 2)
 			elapsedMins := floor(bossTimer/60000)
 			elapsedSecs := Mod(bossTimer, 60)
-			if (timeEstimation > 60)
-			{
+			if (timeEstimation > 60) {
 				sHours := Floor(timeEstimation/60)
 				sMinutes := Mod(timeEstimation, 60)
 				nm_setStatus("Detected",
@@ -10071,8 +9833,7 @@ nm_KillTimeEstimation(bossName, bossTimer)
 					)
 				)
 			}
-			else
-			{
+			else {
 				sMinutes := Floor(timeEstimation)
 				Sseconds := Round((timeEstimation - sMinutes) * 60)
 				nm_setStatus("Detected",
@@ -10090,8 +9851,7 @@ nm_KillTimeEstimation(bossName, bossTimer)
 			IniWrite lastHealth, "settings\nm_config.ini", "Collect", "Input" bossName "Health"
 			bosses[bossName "Health"] := lastHealth
 		}
-		else
-		{
+		else {
 			Return 0
 		}
 	}
@@ -10106,8 +9866,7 @@ nm_imgSearch(fileName,v,aim := "full", trans:="none"){
 	yi:=(aim="low") ? windowHeight//2 : (aim="actionbar") ? (windowHeight//4)*3 : (aim="center") ? windowHeight//4 : (aim="lowright") ? windowHeight//2 : (aim="quest") ? 150 : 0
 	ww:=(aim="actionbar") ? xi*3 : (aim="highleft") ? windowWidth//2 : (aim="left") ? windowWidth//2 : (aim="center") ? xi*3 : (aim="quest" || aim="questbrown") ? 310 : windowWidth
 	wh:=(aim="high") ? windowHeight//2 : (aim="highright") ? windowHeight//2 : (aim="highleft") ? windowHeight//2 : (aim="buff") ? 150 : (aim="abovebuff") ? 30 : (aim="center") ? yi*3 : (aim="quest") ? Max(560, windowHeight-100) : (aim="questbrown") ? windowHeight//2 : windowHeight
-	if DirExist(A_WorkingDir "\nm_image_assets")
-	{
+	if DirExist(A_WorkingDir "\nm_image_assets") {
 		try result := ImageSearch(&FoundX, &FoundY, windowX + xi, windowY + yi, windowX + ww, windowY + wh, "*" v ((trans != "none") ? (" *Trans" trans) : "") " " A_WorkingDir "\nm_image_assets\" fileName)
 		catch {
 			nm_setStatus("Error", "Image file " filename " was not found in:`n" A_WorkingDir "\nm_image_assets\" fileName)
@@ -10187,8 +9946,7 @@ nm_Reset(checkAll:=1, wait:=2000, convert:=1, force:=0){
 		}
 		Gdip_DisposeImage(pBMScreen)
 		;check to make sure you are not in dialog before reset
-		Loop 500
-		{
+		Loop 500 {
 			GetRobloxClientPos(hwnd)
 			pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-50 "|" windowY+2*windowHeight//3 "|100|" windowHeight//3)
 			if (Gdip_ImageSearch(pBMScreen, bitmaps["dialog"], &pos, , , , , 10, , 3) != 1) {
@@ -10452,12 +10210,10 @@ nm_setShiftLock(state, *){
 
 	pBMScreen := Gdip_BitmapFromScreen(windowX+5 "|" windowY+windowHeight-54 "|50|50")
 
-	switch (v := Gdip_ImageSearch(pBMScreen, bitmaps["shiftlock"], , , , , , 2))
-	{
+	switch (v := Gdip_ImageSearch(pBMScreen, bitmaps["shiftlock"], , , , , , 2)) {
 		; shift lock enabled - disable if needed
 		case 1:
-		if (state = 0)
-		{
+		if (state = 0) {
 			send "{" SC_LShift "}"
 			result := 0
 		}
@@ -10466,8 +10222,7 @@ nm_setShiftLock(state, *){
 
 		; shift lock disabled - enable if needed
 		case 0:
-		if (state = 1)
-		{
+		if (state = 1) {
 			send "{" SC_LShift "}"
 			result := 1
 		}
@@ -10493,20 +10248,16 @@ nm_AmuletPrompt(decision:=0, type:=0, *){
 
 	pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY "|500|" windowHeight)
 
-	if (Gdip_ImageSearch(pBMScreen, bitmaps["keep"], &pos, , , , , 2, , 2) = 1)
-	{
-		switch decision, 0
-		{
+	if (Gdip_ImageSearch(pBMScreen, bitmaps["keep"], &pos, , , , , 2, , 2) = 1) {
+		switch decision, 0 {
 			case "keep",1:
 			if type = "Ant" || type = "King Beetle" || type = "Shell"
 				nm_setStatus("Keeping", type " Amulet")	
 			Gdip_DisposeImage(pBMScreen)
-			loop 10
-			{
+			loop 10 {
 				MouseMove windowX+350, windowY+offsetY+100
 				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY "|500|" windowHeight)
-				if (Gdip_ImageSearch(pBMScreen, bitmaps["keep"], &pos, , , , , 2, , 2) = 1)
-				{
+				if (Gdip_ImageSearch(pBMScreen, bitmaps["keep"], &pos, , , , , 2, , 2) = 1) {
 					MouseMove windowX+windowWidth//2-250+SubStr(pos, 1, InStr(pos, ",")-1)+10, windowY+SubStr(pos, InStr(pos, ",")+1)+10, 5
 					Sleep 200
 					Click
@@ -10520,11 +10271,9 @@ nm_AmuletPrompt(decision:=0, type:=0, *){
 			MouseMove windowX+windowWidth//2-250+SubStr(pos, 1, InStr(pos, ",")-1)+190, windowY+SubStr(pos, InStr(pos, ",")+1)+10, 5
 			Click
 			Gdip_DisposeImage(pBMScreen)
-			Loop 25
-			{
+			Loop 25 {
 				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY "|500|" windowHeight)
-				if (Gdip_ImageSearch(pBMScreen, bitmaps["yes"], &pos, , , , , 2, , 2) = 1)
-				{
+				if (Gdip_ImageSearch(pBMScreen, bitmaps["yes"], &pos, , , , , 2, , 2) = 1) {
 					MouseMove windowX+windowWidth//2-250+SubStr(pos, 1, InStr(pos, ",")-1), windowY+SubStr(pos, InStr(pos, ",")+1), 5
 					Click
 					Gdip_DisposeImage(pBMScreen)
@@ -10548,8 +10297,7 @@ nm_AmuletPrompt(decision:=0, type:=0, *){
 			return 1
 		}
 	}
-	else
-	{
+	else {
 		Gdip_DisposeImage(pBMScreen)
 		nm_setShiftLock(Prev_ShiftLock)
 		return 0
@@ -10615,8 +10363,7 @@ nm_gotoCannon(){
 	MouseMove windowX+350, windowY+offsetY+100
 
 	success := 0
-	Loop 10
-	{
+	Loop 10 {
 		movement :=
 		(
 		'Send "{' SC_Space ' down}{' RightKey ' down}"
@@ -10631,11 +10378,9 @@ nm_gotoCannon(){
 		KeyWait "F14", "D T5 L"
 		DllCall("GetSystemTimeAsFileTime","int64p",&s:=0)
 		n := s, f := s+200000000
-		while (n < f)
-		{
+		while (n < f) {
 			pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY "|400|125")
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["redcannon"], , , , , , 2, , 2) = 1)
-			{
+			if (Gdip_ImageSearch(pBMScreen, bitmaps["redcannon"], , , , , , 2, , 2) = 1) {
 				success := 1, Gdip_DisposeImage(pBMScreen)
 				break
 			}
@@ -10644,24 +10389,19 @@ nm_gotoCannon(){
 		}
 		nm_endWalk()
 
-		if (success = 1) ; check that cannon was not overrun, at the expense of a small delay
-		{
-			Loop 10
-			{
-				if (A_Index = 10)
-				{
+		if (success = 1) { ; check that cannon was not overrun, at the expense of a small delay
+			Loop 10 {
+				if (A_Index = 10) {
 					success := 0
 					break
 				}
 				Sleep 500
 				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY "|400|125")
-				if (Gdip_ImageSearch(pBMScreen, bitmaps["redcannon"], , , , , , 2, , 2) = 1)
-				{
+				if (Gdip_ImageSearch(pBMScreen, bitmaps["redcannon"], , , , , , 2, , 2) = 1) {
 					Gdip_DisposeImage(pBMScreen)
 					break 2
 				}
-				else
-				{
+				else {
 					movement := nm_Walk(1.5, LeftKey)
 					nm_createWalk(movement)
 					KeyWait "F14", "D T5 L"
@@ -10672,8 +10412,7 @@ nm_gotoCannon(){
 			}
 		}
 
-		if (success = 0)
-		{
+		if (success = 0) {
 			obj := objective
 			nm_Reset()
 			nm_setStatus("Traveling", obj)
@@ -10696,14 +10435,12 @@ nm_findHiveSlot(){
 	
 	if nm_ConfirmAtHive()
 		HiveConfirmed := 1
-	else
-	{
+	else {
 		; find hive slot
 		DllCall("GetSystemTimeAsFileTime","int64p",&s:=0)
 		n := s, f := s+150000000
 		SendInput "{" LeftKey " down}"
-		while (n < f)
-		{
+		while (n < f) {
 			if nm_ConfirmAtHive() {
 				HiveConfirmed := 1
 				break
@@ -10713,12 +10450,9 @@ nm_findHiveSlot(){
 		SendInput "{" LeftKey " up}"
 	}
 
-	if (HiveConfirmed = 1) ; check that hive slot was not overrun, at the expense of a small delay
-	{
-		Loop 10
-		{
-			if (A_Index = 10)
-			{
+	if (HiveConfirmed = 1) { ; check that hive slot was not overrun, at the expense of a small delay
+		Loop 10 {
+			if (A_Index = 10) {
 				HiveConfirmed := 0
 				break
 			}
@@ -10727,8 +10461,7 @@ nm_findHiveSlot(){
 				nm_convert()
 				break
 			}
-			else
-			{
+			else {
 				movement := nm_Walk(1.5, RightKey)
 				nm_createWalk(movement)
 				KeyWait "F14", "D T5 L"
@@ -10857,8 +10590,7 @@ nm_Blender(){
 					Click
 				}
 
-				if (!BlenderEnd && Gdip_ImageSearch(BlenderSS, bitmaps["EndCraftR"], , , , , , 3, , 6) > 0)
-				{
+				if (!BlenderEnd && Gdip_ImageSearch(BlenderSS, bitmaps["EndCraftR"], , , , , , 3, , 6) > 0) {
 					nm_setStatus("Confirmed", "Blender is already in use")
 					MouseMove windowX+windowwidth//2 - 250, windowY+Floor(0.48*windowHeight) - 200
 					Gdip_disposeimage(BlenderSS) ;Close GUI and dispose of bitmap
@@ -10880,15 +10612,13 @@ nm_Blender(){
 				}
 				gdip_disposeimage(BlenderSS)
 				Sleep 800
-				loop
-				{
+				loop {
 					BlenderSS := Gdip_BitmapFromScreen(SearchX "|" SearchY "|170|245")
 
 					Blender := %("BlenderItem" BlenderRot)%
 					BlenderIMG := Blender "B"
 
-					if (Gdip_ImageSearch(BlenderSS, bitmaps[BlenderIMG], , , , , , 2, , 4) > 0)
-					{
+					if (Gdip_ImageSearch(BlenderSS, bitmaps[BlenderIMG], , , , , , 2, , 4) > 0) {
 						gdip_disposeimage(BlenderSS)  ; Dispose of the bitmap
 						Sleep 200
 						BlenderSS := Gdip_BitmapFromScreen(SearchX "|" SearchY "|553|400")
@@ -12328,6 +12058,21 @@ nm_StickerPrinter(){
 	}
 }
 
+nm_PostFieldBoost(field) {
+	fieldBoosts := ["Pine Tree", "Bamboo", "Blue Flower", "Stump", "Rose", "Strawberry", "Mushroom", "Pepper", "Cactus", "Pumpkin", "Pineapple", "Spider", "Clover", "Dandelion", "Sunflower", "Coconut"]
+
+	boostIdx := 0
+
+	for idx, curField in fieldBoosts {
+		if curField == field {
+			boostIdx := idx
+			break
+		}
+	}
+
+	PostSubmacroMessage("StatMonitor", 0x5559, boostIdx)
+}
+
 ;//todo: pending rewrite of detections?
 nm_Boost(){
 	if(nm_NightInterrupt() || nm_MondoInterrupt())
@@ -12613,13 +12358,10 @@ nm_toAnyBooster(){
 
 	; other
 	eligible := [], available := 0
-	while(A_Index < 4 && (FieldBooster%A_Index%!="none" || QuestBlueBoost || QuestRedBoost))
-	{
+	while(A_Index < 4 && (FieldBooster%A_Index%!="none" || QuestBlueBoost || QuestRedBoost)) {
 		i := A_Index
-		for name in ["Red", "Blue", "Mountain"]
-		{
-			if (FieldBooster%i% = name) || ((name = "Red" || name = "Blue") && Quest%name%Boost)
-			{
+		for name in ["Red", "Blue", "Mountain"] {
+			if (FieldBooster%i% = name) || ((name = "Red" || name = "Blue") && Quest%name%Boost) {
 				loop 2
 					if eligible.Length >= A_Index && eligible[A_Index][1] = name
 						continue 2
@@ -12632,22 +12374,15 @@ nm_toAnyBooster(){
 		}
 	}
 	; ensure rotation through all available boosters, even if earlier one comes off cool-down
-	if available > 0
-	{
-		loop 1 
-		{
-			if IsSet(LastBooster) 
-			{
-				loop eligible.Length
-				{
+	if available > 0 {
+		loop 1 {
+			if IsSet(LastBooster) {
+				loop eligible.Length {
 					i := A_Index
-					if eligible[i][1] = LastBooster 
-					{
-						loop eligible.Length
-						{
+					if eligible[i][1] = LastBooster {
+						loop eligible.Length {
 							i := (i < eligible.Length) ? i+1 : 1
-							if eligible[i][2] = "available"
-							{
+							if eligible[i][2] = "available" {
 								next := eligible[i][1] 
 								break 3
 							}
@@ -12658,8 +12393,7 @@ nm_toAnyBooster(){
 			}
 			; otherwise default to first available, for session start and as failsafe
 			loop eligible.Length 
-				if eligible[A_Index][2] = "available" 
-				{
+				if eligible[A_Index][2] = "available" {
 					next := eligible[A_Index][1]
 					break 2
 				}
@@ -12672,8 +12406,11 @@ nm_toAnyBooster(){
 }
 nm_toBooster(location){
 	global LastBlueBoost, LastRedBoost, LastMountainBoost, LastCoconutDis, RecentFBoost
-	static blueBoosterFields:=["Pine Tree", "Bamboo", "Blue Flower", "Stump"], redBoosterFields:=["Rose", "Strawberry", "Mushroom", "Pepper"], mountainBoosterfields:=["Cactus", "Pumpkin", "Pineapple", "Spider", "Clover", "Dandelion", "Sunflower"], coconutBoosterfields:=["Coconut"]
-	
+	static blueBoosterFields:=["Pine Tree", "Bamboo", "Blue Flower", "Stump"]
+	static redBoosterFields:=["Rose", "Strawberry", "Mushroom", "Pepper"]
+	static mountainBoosterFields:=["Cactus", "Pumpkin", "Pineapple", "Spider", "Clover", "Dandelion", "Sunflower"]
+	static coconutBoosterFields:=["Coconut"]
+
 	Loop 2 {
 		nm_Reset(AFBuseBooster ? 1 : 0)
 		nm_setStatus("Traveling", ((location="Mountain") ? "Mountain Top Booster" : StrTitle(location) " Field Booster") . ((A_Index=2) ? " (Attempt 2)" : ""))
@@ -12696,9 +12433,9 @@ nm_toBooster(location){
 				nm_Move(2000*round(18/MoveSpeedNum, 3), FwdKey, RightKey) ; red needs additional steps to avoid the leaderboard area
 			Loop 10 {
 				for k,v in %location%BoosterFields {
-					if nm_fieldBoostCheck(v, 1)
-					{
+					if nm_fieldBoostCheck(v, 1) {
 						nm_setStatus("Boosted", v), RecentFBoost := v
+						nm_PostFieldBoost(v)
 						break 2
 					}
 
@@ -12710,8 +12447,7 @@ nm_toBooster(location){
 			} 
 			break
 		}
-		else if (A_Index = 2)
-		{
+		else if (A_Index = 2) {
 			If (location = "coconut") {
 				LastCoconutDis:=nowUnix()-7200
 				IniWrite LastCoconutDis, "settings\nm_config.ini", "Collect", "LastCoconutDis"
@@ -12775,11 +12511,9 @@ nm_fieldBoostCheck(fieldName, variant:=0){
 
 	GetRobloxClientPos(hwnd:=GetRobloxHWND())
 	pBMScreen:=Gdip_BitmapFromScreen(windowX "|" windowY + GetYOffset(hwnd) + 36 "|" windowWidth "|" 38)
-	loop Floor(windowWidth/38) ; flooring because you won't have half of an icon
-	{ 
+	loop Floor(windowWidth/38) { ; flooring because you won't have half of an icon 
 		ico:=(A_Index-1)*38
-		if (Gdip_ImageSearch(pBMScreen, bitmaps["boost"][StrReplace(fieldName, " ") variant],,ico,,ico+38,,(variant=1 || variant=0) ? 35 : 50)) ; testing tighter variation
-		{ ; check with original 30 not 35
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["boost"][StrReplace(fieldName, " ") variant],,ico,,ico+38,,(variant=1 || variant=0) ? 35 : 50)) { ; testing tighter variation ; check with original 30 not 35
 			p:=PixelGetColor(ico+windowX, windowY+GetYOffset(hwnd)+73)
 			if ((p & 0xFF0000 >= 0xa60000) && (p & 0xFF0000 <= 0xcf0000)) ; a6b2b8-blackBG|cfdbe1-whiteBG
 			&& ((p & 0x00FF00 >= 0x00b200) && (p & 0x00FF00 <= 0x00db00))
@@ -12787,8 +12521,7 @@ nm_fieldBoostCheck(fieldName, variant:=0){
 				continue ; winds: keep searching, winds and booster may both have boosted the field
 			else if ((p & 0xFF0000 >= 0xb80000) && (p & 0xFF0000 <= 0xe10000)) ; b8a43a-blackBG|e1cd63-whiteBG
 				&& ((p & 0x00FF00 >= 0x00a400) && (p & 0x00FF00 <= 0x00cd00))
-				&& ((p & 0x0000FF >= 0x00003a) && (p & 0x0000FF <= 0x000063)) 
-				{
+				&& ((p & 0x0000FF >= 0x00003a) && (p & 0x0000FF <= 0x000063)) {
 					Gdip_DisposeImage(pBMScreen)
 					return 1 ; booster
 				}	
@@ -12868,6 +12601,7 @@ nm_fieldBoostDice(){
 	} else {
 		AFBrollingDice:=0
 		nm_setStatus(0, "Field was Boosted: Dice")
+		nm_PostFieldBoost(CurrentField)
 		if(FieldLastBoostedBy!="dice" || FieldBoostStacks=0) {
 			FieldBoostStacks:=FieldBoostStacks+1
 			FieldLastBoostedBy:="dice"
@@ -12917,6 +12651,7 @@ nm_fieldBoostGlitter(){
 	;check if gathering field was boosted
 	if(nm_fieldBoostCheck(CurrentField)) {
 		nm_setStatus(0, "Field was Boosted: Glitter")
+		nm_PostFieldBoost(CurrentField)
 		AFBglitterUsed:=AFBglitterUsed+1
 		IniWrite AFBglitterUsed, "settings\nm_config.ini", "Boost", "AFBglitterUsed"
 		if(AFBGlitterLimitEnable && AFBglitterUsed >= AFBglitterLimit) {
@@ -13018,42 +12753,35 @@ nm_Bugrun(){
 				nm_setStatus("Traveling", "Spider")
 				nm_gotoField(BugRunField)
 				found:=0
-				Loop 20
-				{
+				Loop 20 {
 					spiderBug:=nm_HealthDetection()
-					if(spiderBug.Length > 0)
-					{
+					if(spiderBug.Length > 0) {
 						found:= 1
 						break
 					}
 					Sleep 150
 				}
-				if (found)
-				{
+				if (found) {
 					nm_setStatus("Attacking", "Spider")
 					;Send "{" SC_1 "}"
 					SendInput "{" RotUp " 4}"
 					if(!DisableToolUse)
 						Click "Down"
 					r := 0
-					Loop 30
-					{ ;wait to kill
+					Loop 30 { ;wait to kill
 						if(A_Index=30)
 							success:=1
-						Loop 20
-						{
+						Loop 20 {
 							spiderDead:=nm_HealthDetection()
 							if(spiderDead.Length > 0)
 								Break
-							if (A_Index=10)
-							{
+							if (A_Index=10) {
 								SendInput "{" RotLeft " 2}"
 								r := 1
 							}
 							SendInput "{" ZoomOut "}"
 							Sleep 100
-							if (A_Index=20)
-							{
+							if (A_Index=20) {
 								success:=1
 								break 2
 							}
@@ -13139,42 +12867,35 @@ nm_Bugrun(){
 					bypass:=0
 					;(+) new detection
 					found:=0
-					loop 20
-					{
+					loop 20 {
 						strawBug:=nm_HealthDetection()
-						if(strawBug.Length > 0)
-						{
+						if(strawBug.Length > 0) {
 							found:= 1
 							break
 						}
 						Sleep 150
 					}
-					if (found)
-					{
+					if (found) {
 						nm_setStatus("Attacking", "Ladybugs (Strawberry)")
 						SendInput "{" RotUp " 4}"
 						;Send "{" SC_1 "}"
 						if(!DisableToolUse)
 							Click "Down"
 						r := 0
-						loop 10
-						{ ;wait to kill
+						loop 10 { ;wait to kill
 							if(A_Index=10)
 								success:=1
-							Loop 10
-							{
+							Loop 10 {
 								ladybugDead:=nm_HealthDetection()
 								if(ladybugDead.Length > 0)
 									Break
-								if (A_Index=5)
-								{
+								if (A_Index=5) {
 									SendInput "{" RotLeft " 2}"
 									r := 1
 								}
 								Sleep 100
 								SendInput "{" ZoomOut "}"
-								if (A_Index=10)
-								{
+								if (A_Index=10) {
 									success:=1
 									break 2
 								}
@@ -13250,18 +12971,15 @@ nm_Bugrun(){
 				}
 				bypass:=0
 				found:=0
-				loop 20
-				{
+				loop 20 {
 					mushBug:=nm_HealthDetection()
-					if(mushBug.Length > 0)
-					{
+					if(mushBug.Length > 0) {
 						found:= 1
 						break
 					}
 					Sleep 150
 				}
-				if(found)
-				{
+				if(found) {
 					nm_setStatus("Attacking", "Ladybugs (Mushroom)")
 					;Send "{" SC_1 "}"
 					SendInput "{" RotUp " 4}"
@@ -13271,20 +12989,17 @@ nm_Bugrun(){
 					loop 10 { ;wait to kill
 						if(A_Index=10)
 							success:=1
-						Loop 20
-						{
+						Loop 20 {
 							ladybugDead:=nm_HealthDetection()
 							if(ladybugDead.Length > 0)
 								Break
-							if (A_Index=10)
-							{
+							if (A_Index=10) {
 								SendInput "{" RotLeft " 2}"
 								r := 1
 							}
 							Sleep 100
 							SendInput "{" ZoomOut "}"
-							if (A_Index=20)
-							{
+							if (A_Index=20) {
 								success:=1
 								break 2
 							}
@@ -13354,18 +13069,15 @@ nm_Bugrun(){
 				}
 				bypass:=0
 				found:=0
-				loop 20
-				{
+				loop 20 {
 					cloverBug:=nm_HealthDetection()
-					if(cloverBug.Length > 0)
-					{
+					if(cloverBug.Length > 0) {
 						found:= 1
 						break
 					}
 					Sleep 150
 				}
-				if (found)
-				{
+				if (found) {
 					nm_setStatus("Attacking")
 					;Send "{" SC_1 "}"
 					SendInput "{" RotUp " 4}"
@@ -13374,13 +13086,11 @@ nm_Bugrun(){
 					loop 10 { ;wait to kill
 						if(A_Index=10)
 							success:=1
-						Loop 10
-						{
+						Loop 10 {
 							cloverDead:=nm_HealthDetection()
 							if(cloverDead.Length > 0)
 								Break
-							else if (A_Index=10)
-							{
+							else if (A_Index=10) {
 								success:=1
 								break 2
 							}
@@ -13469,18 +13179,15 @@ nm_Bugrun(){
 				if(A_Index>=3)
 					break
 				found:=0
-				loop 20
-				{
+				loop 20 {
 					blufBug:=nm_HealthDetection()
-					if(blufBug.Length > 0)
-					{
+					if(blufBug.Length > 0) {
 						found:= 1
 						break
 					}
 					Sleep 150
 				}
-				if (found)
-				{
+				if (found) {
 					nm_setStatus("Attacking")
 					;Send "{" SC_1 "}"
 					SendInput "{" RotUp " 4}"
@@ -13490,20 +13197,17 @@ nm_Bugrun(){
 					loop 12 { ;wait to kill
 						if(A_Index=12)
 							success:=1
-						Loop 20
-						{
+						Loop 20 {
 							blufDead:=nm_HealthDetection()
 							if(blufDead.Length > 0)
 								Break
-							if (A_Index=10)
-							{
+							if (A_Index=10) {
 								SendInput "{" RotLeft " 2}"
 								r := 1
 							}
 							Sleep 100
 							SendInput "{" ZoomOut "}"
-							if (A_Index=20)
-							{
+							if (A_Index=20) {
 								success:=1
 								break 2
 							}
@@ -13561,18 +13265,15 @@ nm_Bugrun(){
 					}
 					bypass:=0
 					found:=0
-					loop 20
-					{
+					loop 20 {
 						bambBug:=nm_HealthDetection()
-						if(bambBug.Length > 0)
-						{
+						if(bambBug.Length > 0) {
 							found:= 1
 							break
 						}
 						Sleep 150
 					}
-					if (found)
-					{
+					if (found) {
 						nm_setStatus("Attacking")
 						;Send "{" SC_1 "}"
 						SendInput "{" RotUp " 4}"
@@ -13582,20 +13283,17 @@ nm_Bugrun(){
 						loop 15 { ;wait to kill
 							if(A_Index=15)
 								success:=1
-							Loop 20
-							{
+							Loop 20 {
 								bambDead:=nm_HealthDetection()
 								if(bambDead.Length > 0)
 									Break
-								if (A_Index=10)
-								{
+								if (A_Index=10) {
 									SendInput "{" RotLeft " 2}"
 									r := 1
 								}
 								Sleep 100
 								SendInput "{" ZoomOut "}"
-								if (A_Index=20)
-								{
+								if (A_Index=20) {
 									success:=1
 									break 2
 								}
@@ -13712,18 +13410,15 @@ nm_Bugrun(){
 				}
 				bypass:=0
 				found:=0
-				loop 20
-				{
+				loop 20 {
 					pineappleBug:=nm_HealthDetection()
-					if(pineappleBug.Length > 0)
-					{
+					if(pineappleBug.Length > 0) {
 						found:= 1
 						break
 					}
 					Sleep 150
 				}
-				if (found)
-				{
+				if (found) {
 					nm_setStatus("Attacking")
 					;Send "{" SC_1 "}"
 					SendInput "{" RotUp " 4}"
@@ -13734,20 +13429,17 @@ nm_Bugrun(){
 					loop 20 { ;wait to kill
 						if(A_Index=20)
 							success:=1
-						Loop 20
-						{
+						Loop 20 {
 							pineappleDead:=nm_HealthDetection()
 							if(pineappleDead.Length > 0)
 								Break
-							if (A_Index=10)
-							{
+							if (A_Index=10) {
 								SendInput "{" RotLeft " 2}"
 								r := 1
 							}
 							Sleep 100
 							SendInput "{" ZoomOut "}"
-							if (A_Index=20)
-							{
+							if (A_Index=20) {
 								success:=1
 								break 2
 							}
@@ -13810,18 +13502,15 @@ nm_Bugrun(){
 					nm_setStatus("Traveling", "Werewolf (Pumpkin)")
 					nm_gotoField(BugRunField)
 					found:=0
-					loop 20
-					{
+					loop 20 {
 						wereBug:=nm_HealthDetection()
-						if(wereBug.Length > 0)
-						{
+						if(wereBug.Length > 0) {
 							found:= 1
 							break
 						}
 						Sleep 150
 					}
-					if (found)
-					{
+					if (found) {
 						nm_setStatus("Attacking", "Werewolf (Pumpkin)")
 						;Send "{" SC_1 "}"
 						SendInput "{" RotUp " 4}"
@@ -13831,15 +13520,12 @@ nm_Bugrun(){
 							i:=A_Index
 							if(mod(A_Index,4)=1){
 								nm_Move(1500*MoveSpeedFactor, FwdKey)
-								loop 5
-								{
+								loop 5 {
 									wereDead:=nm_HealthDetection()
-									if(wereDead.Length > 0)
-									{
+									if(wereDead.Length > 0) {
 										Break
 									}
-									if (A_Index=5)
-									{
+									if (A_Index=5) {
 										Success:=1
 										Break 2
 									}
@@ -13848,15 +13534,12 @@ nm_Bugrun(){
 								}
 							} else if(mod(A_Index,4)=2){
 								nm_Move(1500*MoveSpeedFactor, LeftKey)
-								loop 5
-								{
+								loop 5 {
 									wereDead:=nm_HealthDetection()
-									if(wereDead.Length > 0)
-									{
+									if(wereDead.Length > 0) {
 										Break
 									}
-									if (A_Index=5)
-									{
+									if (A_Index=5) {
 										Success:=1
 										Break 2
 									}
@@ -13865,15 +13548,12 @@ nm_Bugrun(){
 								}
 							} else if(mod(A_Index,4)=3){
 								nm_Move(1500*MoveSpeedFactor, BackKey)
-								loop 5
-								{
+								loop 5 {
 									wereDead:=nm_HealthDetection()
-									if(wereDead.Length > 0)
-									{
+									if(wereDead.Length > 0) {
 										Break
 									}
-									if (A_Index=5)
-									{
+									if (A_Index=5) {
 										Success:=1
 										Break 2
 									}
@@ -13882,15 +13562,12 @@ nm_Bugrun(){
 								}
 							} else if(mod(A_Index,4)=0){
 								nm_Move(1500*MoveSpeedFactor, RightKey)
-								loop 5
-								{
+								loop 5 {
 									wereDead:=nm_HealthDetection()
-									if(wereDead.Length > 0)
-									{
+									if(wereDead.Length > 0) {
 										Break
 									}
-									if (A_Index=5)
-									{
+									if (A_Index=5) {
 										Success:=1
 										Break 2
 									}
@@ -13974,18 +13651,15 @@ nm_Bugrun(){
 					}
 					bypass:=0
 					found:=0
-					loop 20
-					{
+					loop 20 {
 						pineBug:=nm_HealthDetection()
-						if(pineBug.Length > 0)
-						{
+						if(pineBug.Length > 0) {
 							found:= 1
 							break
 						}
 						Sleep 200
 					}
-					if (found)
-					{
+					if (found) {
 						nm_setStatus("Attacking")
 						;Send "{" SC_1 "}"
 						SendInput "{" RotUp " 4}"
@@ -13995,20 +13669,17 @@ nm_Bugrun(){
 						loop 20 { ;wait to kill
 							if(A_Index=20)
 								success:=1
-							Loop 10
-							{
+							Loop 10 {
 								pineDead:=nm_HealthDetection()
 								if(pineDead.Length > 0)
 									Break
-								if (A_Index=5)
-								{
+								if (A_Index=5) {
 									SendInput "{" RotLeft " 2}"
 									r := 1
 								}
 								Sleep 100
 								SendInput "{" ZoomOut "}"
-								if (A_Index=10)
-								{
+								if (A_Index=10) {
 									success:=1
 									break 2
 								}
@@ -14105,18 +13776,15 @@ nm_Bugrun(){
 					}
 					bypass:=0
 					found:=0
-					loop 20
-					{
+					loop 20 {
 						roseBug:=nm_HealthDetection()
-						if(roseBug.Length > 0)
-						{
+						if(roseBug.Length > 0) {
 							found:= 1
 							break
 						}
 						Sleep 150
 					}
-					if (found)
-					{
+					if (found) {
 						nm_setStatus("Attacking")
 						SendInput "{" RotUp " 4}"
 						SendInput "{" RotLeft " 4}"
@@ -14127,16 +13795,13 @@ nm_Bugrun(){
 							i:=A_Index
 							if(mod(A_Index,4)=1){
 								nm_Move(1500*MoveSpeedFactor, BackKey)
-								loop 5
-								{
+								loop 5 {
 									roseDead:=nm_HealthDetection()
-									if(roseDead.Length > 0)
-									{
+									if(roseDead.Length > 0) {
 										Break
 									}
 									SendInput "{" ZoomOut "}"
-									if (A_Index=5)
-									{
+									if (A_Index=5) {
 										Success:=1
 										Break 2
 									}
@@ -14144,15 +13809,12 @@ nm_Bugrun(){
 								}
 							} else if(mod(A_Index,4)=2){
 								nm_Move(1500*MoveSpeedFactor, RightKey)
-								loop 5
-								{
+								loop 5 {
 									roseDead:=nm_HealthDetection()
-									if(roseDead.Length > 0)
-									{
+									if(roseDead.Length > 0) {
 										Break
 									}
-									if (A_Index=5)
-									{
+									if (A_Index=5) {
 										Success:=1
 										Break 2
 									}
@@ -14160,16 +13822,13 @@ nm_Bugrun(){
 								}
 							} else if(mod(A_Index,4)=3){
 								nm_Move(1500*MoveSpeedFactor, FwdKey)
-								loop 5
-								{
+								loop 5 {
 									roseDead:=nm_HealthDetection()
-									if(roseDead.Length > 0)
-									{
+									if(roseDead.Length > 0) {
 										Break
 									}
 									SendInput "{" ZoomOut "}"
-									if (A_Index=5)
-									{
+									if (A_Index=5) {
 										Success:=1
 										Break 2
 									}
@@ -14177,16 +13836,13 @@ nm_Bugrun(){
 								}
 							} else if(mod(A_Index,4)=0){
 								nm_Move(1500*MoveSpeedFactor, LeftKey)
-								loop 5
-								{
+								loop 5 {
 									roseDead:=nm_HealthDetection()
-									if(roseDead.Length > 0)
-									{
+									if(roseDead.Length > 0) {
 										Break
 									}
 									SendInput "{" ZoomOut "}"
-									if (A_Index=5)
-									{
+									if (A_Index=5) {
 										Success:=1
 										Break 2
 									}
@@ -14341,11 +13997,9 @@ nm_Bugrun(){
 				nm_Move(550*MoveSpeedFactor, LeftKey)
 				found:=0
 				;(+) new detection here
-				loop 20
-				{
+				loop 20 {
 					tBear:= nm_HealthDetection()
-					if(tBear.Length > 0)
-					{
+					if(tBear.Length > 0) {
 						found:=1
 						break
 					}
@@ -14451,11 +14105,9 @@ nm_Bugrun(){
 				found:=0
 				;(+) new detection here
 				;(+) Update health detection
-				loop 20
-				{
+				loop 20 {
 					kBeetle:= nm_HealthDetection(1)
-					if(kBeetle.Length > 0)
-					{
+					if(kBeetle.Length > 0) {
 						found:=1
 						break
 					}
@@ -14564,11 +14216,9 @@ nm_Bugrun(){
 				;search for Stump snail
 				nm_setStatus("Searching", "Stump Snail")
 				found:=0
-				loop 20
-				{
+				loop 20 {
 					sSnail:= nm_HealthDetection()
-					if(sSnail.Length > 0)
-					{
+					if(sSnail.Length > 0) {
 						found:=1
 						break
 					}
@@ -14605,31 +14255,24 @@ nm_Bugrun(){
 					KillCheck := SnailStartTime
 					UpdateTimer := SnailStartTime
 					Send "{" SC_1 "}"
-					loop 2
-					{
+					loop 2 {
 						Send "{" RotUp "}"
 					}
 					inactiveHoney:=0
-					loop ;Custom Stump timer to keep blessings, Will rehunt in an hour
-					{
-						if (SprinklerType = "Supreme")
-						{
-							if (currentWalk.name != "snail")
-							{
+					loop { ;Custom Stump timer to keep blessings, Will rehunt in an hour
+						if (SprinklerType = "Supreme") {
+							if (currentWalk.name != "snail") {
 								nm_createWalk(movement, "snail") ; create cycled walk script for this snail session
 							}
-							else
-							{
+							else {
 								Send "{F13}" ; start new cycle
 							}
 							KeyWait "F14", "D T5 L" ; wait for pattern start
 						}
 						Click "Down"
-						Loop 600
-						{
+						Loop 600 {
 							Sleep 50
-							If ((nm_AmuletPrompt(((ShellAmuletMode = 1) ? 1 : 3), "Shell")) = 1)
-							{
+							If ((nm_AmuletPrompt(((ShellAmuletMode = 1) ? 1 : 3), "Shell")) = 1) {
 								Ssdead := 1
 								Send "{" RotDown " 2}"
 								break 2
@@ -14652,10 +14295,8 @@ nm_Bugrun(){
 								Click "Up"
 								return
 							}
-							if (SprinklerType = "Supreme")
-							{
-								if (!GetKeyState("F14") || A_Index = 600)
-								{
+							if (SprinklerType = "Supreme") {
+								if (!GetKeyState("F14") || A_Index = 600) {
 									nm_fieldDriftCompensation()
 									Break
 								}
@@ -14667,16 +14308,13 @@ nm_Bugrun(){
 						ElaspedSnailTime :=  (currentTime - SnailStartTime)//10000
 						LastHealthCheck := (currentTime - KillCheck)//10000
 						LastUpdate := (currentTime - UpdateTimer)//10000
-						If(SnailTime != "Kill" && ElaspedSnailTime > SnailTime*60000)
-						{
+						If(SnailTime != "Kill" && ElaspedSnailTime > SnailTime*60000) {
 							nm_setStatus("Time Limit", "Stump Snail")
 							LastStumpSnail:=nowUnix()-floor(345600*(1-(MonsterRespawnTime?MonsterRespawnTime:0)*0.01))+1800
 							break
 						}
-						if (LastUpdate > 60000)
-						{
-							if (nm_KillTimeEstimation("Snail", LastHealthCheck) != 0)
-							{
+						if (LastUpdate > 60000) {
+							if (nm_KillTimeEstimation("Snail", LastHealthCheck) != 0) {
 								KillCheck := currentTime
 							}
 							UpdateTimer := currentTime
@@ -14720,8 +14358,7 @@ nm_Bugrun(){
 				;Go to Commando tunnel
 				nm_setStatus("Traveling", "Commando")
 				nm_gotoRamp()
-				if (MoveMethod = "Walk")
-				{
+				if (MoveMethod = "Walk") {
 					movement :=
 					(
 					nm_Walk(44.75, BackKey, LeftKey) '
@@ -14734,8 +14371,7 @@ nm_Bugrun(){
 					' nm_Walk(11, FwdKey)
 					)
 				}
-				else
-				{
+				else {
 					nm_gotoCannon()
 					movement :=
 					(
@@ -14758,8 +14394,7 @@ nm_Bugrun(){
 					)
 				}
 
-				if (MoveSpeedNum < 34)
-				{
+				if (MoveSpeedNum < 34) {
 					movement .=
 					(
 					'
@@ -14776,8 +14411,7 @@ nm_Bugrun(){
 					send "{' SC_Space ' up}"
 					' nm_Walk(5.5, FwdKey) '
 					HyperSleep(750)
-					Loop 3
-					{
+					Loop 3 {
 						send "{' SC_Space ' down}"
 						HyperSleep(50)
 						send "{' SC_Space ' up}"
@@ -14801,8 +14435,7 @@ nm_Bugrun(){
 					HyperSleep(1500)'
 					)
 				}
-				else
-				{
+				else {
 					movement .=
 					(
 					'
@@ -14819,8 +14452,7 @@ nm_Bugrun(){
 					send "{' SC_Space ' up}"
 					' nm_Walk(4.5, FwdKey) '
 					HyperSleep(750)
-					Loop 3
-					{
+					Loop 3 {
 						send "{' SC_Space ' down}"
 						HyperSleep(50)
 						send "{' SC_Space ' up}"
@@ -14853,15 +14485,12 @@ nm_Bugrun(){
 				if (youDied)
 					continue
 
-				while (nm_imgSearch("ChickFled.png",50,"lowright")[1] = 0)
-				{
-					if (A_Index = 5)
-					{
+				while (nm_imgSearch("ChickFled.png",50,"lowright")[1] = 0) {
+					if (A_Index = 5) {
 						nm_endWalk()
 						continue 2
 					}
-					if ((A_Index = 1) || (currentWalk.name != "commando"))
-					{
+					if ((A_Index = 1) || (currentWalk.name != "commando")) {
 						movement :=
 						(
 						nm_Walk(5, FwdKey) '
@@ -14890,11 +14519,9 @@ nm_Bugrun(){
 					Send "{" ZoomIn "}"
 				}
 				;(+) Update health detection
-				loop 20
-				{
+				loop 20 {
 					cChick:= nm_HealthDetection()
-					if(cChick.Length > 0)
-					{
+					if(cChick.Length > 0) {
 						found:=1
 						break
 					}
@@ -14931,33 +14558,26 @@ nm_Bugrun(){
 						LastHealthCheck := (currentTime - KillCheck)//10000
 						ElaspedChickTime := (currentTime-ChickStartTime)//10000
 						LastUpdate := (currentTime - UpdateTimer)//10000
-						If(ChickTime != "Kill" && ElaspedChickTime > ChickTime*60000)
-						{
+						If(ChickTime != "Kill" && ElaspedChickTime > ChickTime*60000) {
 							nm_setStatus("Time Limit", "Commando Chick")
 							LastCommando:=nowUnix()-floor(1800*(1-(MonsterRespawnTime?MonsterRespawnTime:0)*0.01))+1800
 							Break
 						}
-						if (LastUpdate > 60000)
-						{
-							if (nm_KillTimeEstimation("Chick", LastHealthCheck) != 0)
-							{
+						if (LastUpdate > 60000) {
+							if (nm_KillTimeEstimation("Chick", LastHealthCheck) != 0) {
 								KillCheck := currentTime
 							}
 							UpdateTimer := currentTime
 						}
-						loop 20
-						{
+						loop 20 {
 							comChick:= nm_HealthDetection()
 							if(comChick.Length > 0)
 								break
-							if(A_Index=20)
-							{
-								if (chickStrikes <= 10)
-								{
+							if(A_Index=20) {
+								if (chickStrikes <= 10) {
 									chickStrikes += 1
 								}
-								else
-								{
+								else {
 									CCdead:=1
 									break 2
 								}
@@ -15011,11 +14631,9 @@ nm_Bugrun(){
 				found:=0
 
 				;(+) new detection here
-				loop 20
-				{
+				loop 20 {
 					cCrab:= nm_HealthDetection()
-					if(cCrab.Length > 0)
-					{
+					if(cCrab.Length > 0) {
 						found:=1
 						break
 					}
@@ -15081,8 +14699,7 @@ nm_Bugrun(){
 
 						KeyWait "F14", "D T5 L" ; wait for pattern start
 
-						Loop 600
-						{
+						Loop 600 {
 							if(!DisableToolUse) {
 								sendinput "{click down}"
 								sleep 50
@@ -15198,32 +14815,25 @@ nm_Mondo(){
 			;;; (+) new conditions probably
 			found := 0
 			mondoChick := 0
-			loop 20
-			{
+			loop 20 {
 				mChick:= nm_HealthDetection()
-				if(mChick.Length > 0)
-				{
+				if(mChick.Length > 0) {
 					found:=1
 					break
 				}
 				Sleep 250
 			}
-			if (found)
-			{
+			if (found) {
 				nm_setStatus("Found", "Mondo")
-				for index, value in mChick ;Mondo is already dmging itself before we get there
-				{
-					if (value = 100.00) ;Planter detected since mondo will already have taken dmg by the time you come up
-					{
+				for index, value in mChick { ;Mondo is already dmging itself before we get there
+					if (value = 100.00) { ;Planter detected since mondo will already have taken dmg by the time you come up
 						continue
 					}
-					else
-					{
+					else {
 						mondoChick:=1
 					}
 				}
-				if (mondoChick)
-				{
+				if (mondoChick) {
 					nm_setStatus("Attacking", "Mondo")
 					if(MondoAction="Buff"){
 						repeat:=0
@@ -15341,8 +14951,7 @@ nm_Mondo(){
 					}
 				}
 			}
-			else
-			{
+			else {
 				Break
 			}
 
@@ -15403,8 +15012,8 @@ nm_GoGather(){
 			BoostChaserField:="None"
 			blueBoosterFields		:=Map("PineTreeBoosterCheck","Pine Tree", "BambooBoosterCheck","Bamboo", "BlueFlowerBoosterCheck","Blue Flower", "StumpBoosterCheck","Stump")
 			redBoosterFields		:=Map("RoseBoosterCheck","Rose", "StrawberryBoosterCheck","Strawberry", "MushroomBoosterCheck","Mushroom", "PepperBoosterCheck","Pepper")
-			mountainBoosterfields	:=Map("CactusBoosterCheck","Cactus", "PumpkinBoosterCheck","Pumpkin", "PineappleBoosterCheck","Pineapple", "SpiderBoosterCheck","Spider", "CloverBoosterCheck","Clover", "DandelionBoosterCheck","Dandelion", "SunflowerBoosterCheck","Sunflower")
-			coconutBoosterfields	:=Map("CoconutBoosterCheck","Coconut")
+			mountainBoosterFields	:=Map("CactusBoosterCheck","Cactus", "PumpkinBoosterCheck","Pumpkin", "PineappleBoosterCheck","Pineapple", "SpiderBoosterCheck","Spider", "CloverBoosterCheck","Clover", "DandelionBoosterCheck","Dandelion", "SunflowerBoosterCheck","Sunflower")
+			coconutBoosterFields	:=Map("CoconutBoosterCheck","Coconut")
 			otherFields				:=["Mountain Top"]
 
 			loop 1 {
@@ -15508,18 +15117,15 @@ nm_GoGather(){
 			if (eligible.Has(1) || eligible.Has(2) || eligible.Has(3)) {
 
 				; find next eligible field and slot
-				if 		((eligible.Has(1)) && (((LastPlanterGatherSlot=1) && (!eligible.Has(2)) && (!eligible.Has(3))) || ((LastPlanterGatherSlot=2) && (!eligible.Has(3))) || (LastPlanterGatherSlot=3)))
-						{
+				if 		((eligible.Has(1)) && (((LastPlanterGatherSlot=1) && (!eligible.Has(2)) && (!eligible.Has(3))) || ((LastPlanterGatherSlot=2) && (!eligible.Has(3))) || (LastPlanterGatherSlot=3))) {
 						LastPlanterGatherSlot:= 1
 						field := PlanterField1
 						}
-				else if ((eligible.Has(2)) && (((LastPlanterGatherSlot=2) && (!eligible.Has(3)) && (!eligible.Has(1))) || ((LastPlanterGatherSlot=3) && (!eligible.Has(1))) || (LastPlanterGatherSlot=1)))
-						{
+				else if ((eligible.Has(2)) && (((LastPlanterGatherSlot=2) && (!eligible.Has(3)) && (!eligible.Has(1))) || ((LastPlanterGatherSlot=3) && (!eligible.Has(1))) || (LastPlanterGatherSlot=1))) {
 						LastPlanterGatherSlot:= 2
 						field := PlanterField2
 						}
-				else if ((eligible.Has(3)) && (((LastPlanterGatherSlot=3) && (!eligible.Has(1)) && (!eligible.Has(2))) || ((LastPlanterGatherSlot=1) && (!eligible.Has(2))) || (LastPlanterGatherSlot=2)))
-						{
+				else if ((eligible.Has(3)) && (((LastPlanterGatherSlot=3) && (!eligible.Has(1)) && (!eligible.Has(2))) || ((LastPlanterGatherSlot=1) && (!eligible.Has(2))) || (LastPlanterGatherSlot=2))) {
 						LastPlanterGatherSlot:= 3
 						field := PlanterField3
 						}
@@ -16012,8 +15618,7 @@ nm_Walk(tiles, MoveKey1, MoveKey2:=0){ ; string form of the function which holds
 	Send "{' MoveKey1 ' up}' (MoveKey2 ? '{' MoveKey2 ' up}"' : '"')
 	)
 }
-nm_createWalk(movement, name:="", vars:="") ; this function generates the 'walk' code and runs it for a given 'movement' (AHK code string), using movespeed correction if 'NewWalk' is enabled and legacy movement otherwise
-{
+nm_createWalk(movement, name:="", vars:="") { ; this function generates the 'walk' code and runs it for a given 'movement' (AHK code string), using movespeed correction if 'NewWalk' is enabled and legacy movement otherwise
 	; F13 is used by 'natro_macro.ahk' to tell 'walk' to complete a cycle
 	; F14 is held down by 'walk' to indicate that the cycle is in progress, then released when the cycle is finished
 	; F16 can be used by any script to pause / unpause the walk script, when unpaused it will resume from where it left off
@@ -16075,34 +15680,28 @@ nm_createWalk(movement, name:="", vars:="") ; this function generates the 'walk'
 	start()
 	return
 
-	nm_Walk(tiles, MoveKey1, MoveKey2:=0)
-	{
+	nm_Walk(tiles, MoveKey1, MoveKey2:=0) {
 		Send "{" MoveKey1 " down}" (MoveKey2 ? "{" MoveKey2 " down}" : "")
 		' (NewWalk ? 'Walk(tiles)' : ('HyperSleep(4000/' MoveSpeedNum '*tiles)')) '
 		Send "{" MoveKey1 " up}" (MoveKey2 ? "{" MoveKey2 " up}" : "")
 	}
 
 	F13::
-		start(hk?)
-		{
+		start(hk?) {
 			Send "{F14 down}"
 			' movement '
 			Send "{F14 up}"
 		}
 
-	F16::
-	{
+	F16:: {
 		static key_states := Map(LeftKey,0, RightKey,0, FwdKey,0, BackKey,0, "LButton",0, "RButton",0, SC_E,0)
-		if A_IsPaused
-		{
+		if A_IsPaused {
 			for k,v in key_states
 				if (v = 1)
 					Send "{" k " down}"
 		}
-		else
-		{
-			for k,v in key_states
-			{
+		else {
+			for k,v in key_states {
 				key_states[k] := GetKeyState(k)
 				Send "{" k " up}"
 			}
@@ -16110,8 +15709,7 @@ nm_createWalk(movement, name:="", vars:="") ; this function generates the 'walk'
 		Pause -1
 	}
 
-	ExitFunc(*)
-	{
+	ExitFunc(*) {
 		Send "{' LeftKey ' up}{' RightKey ' up}{' FwdKey ' up}{' BackKey ' up}{' SC_Space ' up}{F14 up}{' SC_E ' up}"
 		try Gdip_Shutdown(pToken)
 	}
@@ -16132,8 +15730,7 @@ nm_createWalk(movement, name:="", vars:="") ; this function generates the 'walk'
 		return 0
 	}
 }
-nm_endWalk() ; this function ends the walk script
-{
+nm_endWalk() { ; this function ends the walk script
 	global currentWalk
 	DetectHiddenWindows 1
 	try WinClose "ahk_class AutoHotkey ahk_pid " currentWalk.pid
@@ -16161,17 +15758,14 @@ nm_loot(length, reps, direction, tokenlink:=0){ ; length in tiles instead of ms 
 
 	if (tokenlink = 0) ; wait for pattern finish
 		KeyWait "F14", "T" length*reps " L"
-	else ; wait for token link or pattern finish
-	{
+	else { ; wait for token link or pattern finish
 		GetRobloxClientPos()
 		Sleep 1000 ; primary delay, only accept token links after this
 		DllCall("GetSystemTimeAsFileTime","int64p",&s:=0)
 		n := s, f := s+length*reps*10000000 ; timeout at length * reps
-		while ((n < f) && GetKeyState("F14"))
-		{
+		while ((n < f) && GetKeyState("F14")) {
 			pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth-400 "|" windowY+windowHeight-400 "|400|400")
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["tokenlink"], , , , , , 50, , 7) = 1)
-			{
+			if (Gdip_ImageSearch(pBMScreen, bitmaps["tokenlink"], , , , , , 50, , 7) = 1) {
 				Gdip_DisposeImage(pBMScreen)
 				break
 			}
@@ -16337,8 +15931,7 @@ nm_setSprinkler(field, loc, dist){
 		return
 
 	;field dimensions
-	switch field, 0
-	{
+	switch field, 0 {
 		case "sunflower":
 		flen:=1250*dist/10
 		fwid:=2000*dist/10
@@ -16568,8 +16161,7 @@ nm_LocateSprinkler(&X:="", &Y:=""){ ; find client coordinates of approximately c
 	local n1width, n1height, n1Stride, n1Scan, n1BitmapData
 		, n1width, n1height, n2Stride, n2Scan, n2BitmapData
 		, n1width, n1height, n3Stride, n3Scan, n3BitmapData
-	for i,k in sprinklerImages
-	{
+	for i,k in sprinklerImages {
 		Gdip_GetImageDimensions(bitmaps[k], &n%i%Width, &n%i%Height)
 		Gdip_LockBits(bitmaps[k], 0, 0, n%i%Width, n%i%Height, &n%i%Stride, &n%i%Scan, &n%i%BitmapData)
 		n%i%Width := NumGet(n%i%BitmapData, 0, "UInt"), n%i%Height := NumGet(n%i%BitmapData, 4, "UInt")
@@ -16581,10 +16173,8 @@ nm_LocateSprinkler(&X:="", &Y:=""){ ; find client coordinates of approximately c
 	w := hWidth//d, h := hHeight//d
 
 	; to search from centre (approximately), we will split the rectangle like a pinwheel configuration and search outwards (notice SearchDirection)
-	Loop m + 1
-	{
-		if (A_Index = 1)
-		{
+	Loop m + 1 {
+		if (A_Index = 1) {
 			; initial rectangle (center)
 			d1 := m, d2 := m + 1
 			OuterX1 := d1 * w, OuterX2 := d2 * w
@@ -16593,8 +16183,7 @@ nm_LocateSprinkler(&X:="", &Y:=""){ ; find client coordinates of approximately c
 				if (Gdip_MultiLockedBitsSearch(hStride, hScan, hWidth, hHeight, n%A_Index%Stride, n%A_Index%Scan, n%A_Index%Width, n%A_Index%Height, &pos, OuterX1, OuterY1, OuterX2-n%A_Index%Width+1, OuterY2-n%A_Index%Height+1, v, 1, 1) > 0)
 					break 2
 		}
-		else
-		{
+		else {
 			; upper-right
 			dx1 := m + 2 - A_Index, dx2 := m + A_Index
 			OuterX1 := dx1 * w, OuterX2 := dx2 * w
@@ -16638,13 +16227,11 @@ nm_LocateSprinkler(&X:="", &Y:=""){ ; find client coordinates of approximately c
 		Gdip_UnlockBits(bitmaps[k],&n%i%BitmapData)
 	Gdip_DisposeImage(pBMScreen)
 
-	if pos
-	{
+	if pos {
 		x := SubStr(pos, 1, InStr(pos, ",") - 1), y := 75 + SubStr(pos, InStr(pos, ",") + 1)
 		return 1
 	}
-	else
-	{
+	else {
 		x := "", y := ""
 		return 0
 	}
@@ -16662,14 +16249,11 @@ nm_Move(MoveTime, MoveKey1, MoveKey2:="None"){
 		Send "{" MoveKey2 " up}"
 	SetKeyDelay PrevKeyDelay
 }
-CloseRoblox()
-{
+CloseRoblox() {
 	; if roblox exists, activate it and send Esc+L+Enter
-	if (hwnd := GetRobloxHWND())
-	{
+	if (hwnd := GetRobloxHWND()) {
 		GetRobloxClientPos(hwnd)
-		if (windowHeight >= 500) ; requirement for L to activate "Leave"
-		{
+		if (windowHeight >= 500) { ; requirement for L to activate "Leave"
 			ActivateRoblox()
 			PrevKeyDelay := A_KeyDelay
 			SetKeyDelay 250+KeyDelay
@@ -16685,8 +16269,7 @@ CloseRoblox()
 	for p in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_Process WHERE Name LIKE '%Roblox%' OR CommandLine LIKE '%ROBLOXCORPORATION%'")
 		ProcessClose p.ProcessID
 }
-DisconnectCheck(testCheck := 0)
-{
+DisconnectCheck(testCheck := 0) {
 	global LastClock, LastGingerbread, HiveSlot, PrivServer, TotalDisconnects, SessionDisconnects, ReconnectMethod, PublicFallback, resetTime
 		, PlanterName1, PlanterName2, PlanterName3, PlanterHarvestTime1, PlanterHarvestTime2, PlanterHarvestTime3
 		, MacroState, ReconnectDelay
@@ -16857,8 +16440,7 @@ DisconnectCheck(testCheck := 0)
 		}
 
 		;Successful Reconnect
-		if (success = 1)
-		{
+		if (success = 1) {
 			if usingBrowser
 				CloseBrowserTabs(), Sleep(1000) ;addition sleep, prevent not tabbing back to roblox
 			ActivateRoblox()
@@ -16870,8 +16452,7 @@ DisconnectCheck(testCheck := 0)
 
 			LastClock:=nowUnix()
 			IniWrite LastClock, "settings\nm_config.ini", "Collect", "LastClock"
-			if (beesmasActive)
-			{
+			if (beesmasActive) {
 				LastGingerbread += ReconnectDuration ? ReconnectDuration : 300
 				IniWrite LastGingerbread, "settings\nm_config.ini", "Collect", "LastGingerbread"
 			}
@@ -16880,8 +16461,7 @@ DisconnectCheck(testCheck := 0)
 				IniWrite PlanterHarvestTime%A_Index%, "settings\nm_config.ini", "Planters", "PlanterHarvestTime" A_Index
 			}
 
-			if (server > 1) ; swap PrivServer and FallbackServer - original PrivServer probably has an issue
-			{
+			if (server > 1) { ; swap PrivServer and FallbackServer - original PrivServer probably has an issue
 				n := server - 1
 				temp := PrivServer, PrivServer := FallbackServer%n%, FallbackServer%n% := temp
 				MainGui["PrivServer"].Value := PrivServer
@@ -16925,8 +16505,7 @@ DisconnectCheck(testCheck := 0)
 		}
 
 		CloseBrowserTabs(){
-			for hwnd in WinGetList(,, "Program Manager")
-			{
+			for hwnd in WinGetList(,, "Program Manager") {
 				p := WinGetProcessName("ahk_id " hwnd)
 				if (InStr(p, "Roblox") || InStr(p, "AutoHotkey"))
 					continue ; skip roblox and AHK windows
@@ -16939,8 +16518,7 @@ DisconnectCheck(testCheck := 0)
 				s := WinGetExStyle("ahk_id " hwnd)
 				if ((s & 0x80) || (s & 0x40000) || (s & 0x8))
 					continue ; skip ToolWindow and AlwaysOnTop windows
-				try
-				{
+				try {
 					WinActivate "ahk_id " hwnd
 					Sleep 500
 					Send "^{w}"
@@ -16961,8 +16539,7 @@ Shell.ShellExecute(File [, Arguments, Directory, Operation, Show])
 http://msdn.microsoft.com/en-us/library/windows/desktop/gg537745
 */
 ;Note might have to use for deeplinking if we have roblox admin issues
-ShellRun(prms*)
-{
+ShellRun(prms*) {
 	shellWindows := ComObject("Shell.Application").Windows
 	desktop := shellWindows.FindWindowSW(0, 0, 8, 0, 1) ; SWC_DESKTOP, SWFO_NEEDDISPATCH
 
@@ -17006,8 +16583,7 @@ nm_claimHiveSlot(){
 	}
 
 	DetectHiveslots := 1
-	Loop 5
-	{
+	Loop 5 {
 		ActivateRoblox()
 		hwnd := GetRobloxHWND()
 		offsetY := GetYOffset(hwnd)
@@ -17015,8 +16591,7 @@ nm_claimHiveSlot(){
 		MouseMove windowX+350, windowY+offsetY+100
 
 		;reset
-		if (A_Index > 1)
-		{
+		if (A_Index > 1) {
 			resetTime:=nowUnix()
 			PostSubmacroMessage("background", 0x5554, 1, resetTime)
 			ActivateRoblox()
@@ -17025,8 +16600,7 @@ nm_claimHiveSlot(){
 			send "{" SC_Esc "}{" SC_R "}{" SC_Enter "}"
 			SetKeyDelay PrevKeyDelay
 			n := 0
-			while ((n < 2) && (A_Index <= 80))
-			{
+			while ((n < 2) && (A_Index <= 80)) {
 				Sleep 100
 				GetRobloxClientPos(hwnd)
 				pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY "|" windowWidth "|50")
@@ -17108,10 +16682,8 @@ nm_claimHiveSlot(){
 		;check slots 1 to old HiveSlot
 		slots := Map()
 		movement := nm_Walk(9.2, LeftKey)
-		Loop HiveSlot
-		{
-			if (A_Index > 1)
-			{
+		Loop HiveSlot {
+			if (A_Index > 1) {
 				nm_createWalk(movement)
 				KeyWait "F14", "D T5 L"
 				KeyWait "F14", "T20 L"
@@ -17127,10 +16699,8 @@ nm_claimHiveSlot(){
 
 		if (slots.Has(HiveSlot) && (slots[HiveSlot] = 1))
 			break
-		else
-		{
-			if ((slot := ObjMinIndex(slots)) > 0)
-			{
+		else {
+			if ((slot := ObjMinIndex(slots)) > 0) {
 				movement := nm_Walk((HiveSlot - slot) * 9.2, RightKey)
 				nm_createWalk(movement)
 				KeyWait "F14", "D T5 L"
@@ -17147,8 +16717,7 @@ nm_claimHiveSlot(){
 				Gdip_DisposeImage(pBMScreen)
 			}
 			else {
-				Loop (6 - HiveSlot)
-				{
+				Loop (6 - HiveSlot) {
 					nm_createWalk(movement)
 					KeyWait "F14", "D T5 L"
 					KeyWait "F14", "T20 L"
@@ -17220,11 +16789,9 @@ nm_searchForE(){
 	movement :=
 	(
 	'
-	Loop 8
-	{
+	Loop 8 {
 		i := A_Index
-		Loop 2
-		{
+		Loop 2 {
 			Send "{' FwdKey ' down}"
 			Walk(3*i)
 			Send "{' FwdKey ' up}{' RotRight ' 2}"
@@ -17242,11 +16809,9 @@ nm_searchForE(){
 	success := 0
 	DllCall("GetSystemTimeAsFileTime","int64p",&s:=0)
 	n := s, f := s+90*10000000 ; 90 second timeout
-	while (n < f && GetKeyState("F14"))
-	{
+	while (n < f && GetKeyState("F14")) {
 		pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY+36 "|200|120")
-		if (Gdip_ImageSearch(pBMScreen, bitmaps["e_button"], , , , , , 2, , 6) = 1)
-		{
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["e_button"], , , , , , 2, , 6) = 1) {
 			success := 1, Gdip_DisposeImage(pBMScreen)
 			break
 		}
@@ -17255,24 +16820,19 @@ nm_searchForE(){
 	}
 	nm_endWalk()
 
-	if (success = 1) ; check that planter was not overrun, at the expense of a small delay
-	{
-		Loop 10
-		{
-			if (A_Index = 10)
-			{
+	if (success = 1) { ; check that planter was not overrun, at the expense of a small delay
+		Loop 10 {
+			if (A_Index = 10) {
 				success := 0
 				break
 			}
 			Sleep 500
 			pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY+36 "|200|120")
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["e_button"], , , , , , 2, , 6) = 1)
-			{
+			if (Gdip_ImageSearch(pBMScreen, bitmaps["e_button"], , , , , , 2, , 6) = 1) {
 				Gdip_DisposeImage(pBMScreen)
 				break
 			}
-			else
-			{
+			else {
 				movement := nm_Walk(1.5, BackKey)
 				nm_createWalk(movement)
 				KeyWait "F14", "D T5 L"
@@ -17299,8 +16859,7 @@ nm_Night(){
 	CheckNight := 0
 }
 
-nm_confirmNight()
-{
+nm_confirmNight() {
 	isNight := 0
 	nm_Reset(0, 0, 0)
 	nm_setStatus("Confirming", "Night")
@@ -17353,48 +16912,37 @@ nm_locateVB(){
 		return -1 
 	}
 
-	static VBData := [
-		{ field: "Pepper", enabled: StingerPepperCheck
+	static VBData := [ { field: "Pepper", enabled: StingerPepperCheck
 		, bees: 35
 		, reps: 1
 		, lrdist: 20
 		, fbdist: 7
 		, initRight: 10
-		, initFwd: 7 },
-
-		{ field: "MountainTop", enabled: StingerMountainTopCheck
+		, initFwd: 7 }, { field: "MountainTop", enabled: StingerMountainTopCheck
 		, bees: 25
 		, reps: 2
 		, lrdist: 17
 		, fbdist: 5.5
 		, initRight: 8.5
-		, initFwd: 10.5 },
-
-		{ field: "Rose", enabled: StingerRoseCheck
+		, initFwd: 10.5 }, { field: "Rose", enabled: StingerRoseCheck
 		, bees: 15
 		, reps: 2
 		, lrdist: 13
 		, fbdist: 6
 		, initRight: 6.5
-		, initFwd: 12 },
-
-		{ field: "Cactus", enabled: StingerCactusCheck
+		, initFwd: 12 }, { field: "Cactus", enabled: StingerCactusCheck
 		, bees: 15
 		, reps: 1
 		, lrdist: 26
 		, fbdist: 5.5
 		, initRight: 13
-		, initFwd: 3.7 },
-
-		{ field: "Spider", enabled: StingerSpiderCheck
+		, initFwd: 3.7 }, { field: "Spider", enabled: StingerSpiderCheck
 		, bees: 5
 		, reps: 2
 		, lrdist: 21
 		, fbdist: 5.7
 		, initRight: 10.5
-		, initFwd: 9.5 },
-
-		{ field: "Clover", enabled: StingerCloverCheck
+		, initFwd: 9.5 }, { field: "Clover", enabled: StingerCloverCheck
 		, bees: 0
 		, reps: 2
 		, lrdist: 22
@@ -17414,8 +16962,7 @@ nm_locateVB(){
 	nm_setStatus("Starting", "Vicious Bee Cycle")
 	nm_updateAction("Stingers")
 
-	for data in VBData
-	{
+	for data in VBData {
 		if !data.enabled || data.bees >= HiveBees
 			continue
 		; This is built into the game
@@ -17426,8 +16973,7 @@ nm_locateVB(){
 		global VBfieldStart := nowUnix()
 		
 		fieldloop:
-		while (A_Index < 4) || attackingVB ; keep going to field if attacking vb, max 3 loops otherwise
-		{
+		while (A_Index < 4) || attackingVB { ; keep going to field if attacking vb, max 3 loops otherwise
 			nm_Reset(0, 2000, 0)
 			nm_setStatus("Traveling", "Vicious Bee (" data.field ")" ((A_Index > 1) ? " — Attempt " A_Index : ""))
 			nm_gotoField(data.field)
@@ -17500,8 +17046,7 @@ WalkwithVBCheck(movement, search:=true){
     start := nowUnix()
     nm_createWalk(movement)
     KeyWait "F14", "D T5 L"
-    while (GetKeyState("F14") && nowUnix()-start <= 20) ;20sec timeout
-    {
+    while (GetKeyState("F14") && nowUnix()-start <= 20) { ;20sec timeout
         vic := nm_VBCheck()
 		switch {
 			case vic.result:
@@ -17757,8 +17302,7 @@ nm_hotbar(boost:=0){
 						x := SubStr(pos, 1, InStr(pos, ",")-1)
 
 						(digits := Map()).Default := ""
-						Loop 10
-						{
+						Loop 10 {
 							n := 10-A_Index
 							if ((n = 1) || (n = 3))
 								continue
@@ -17767,13 +17311,10 @@ nm_hotbar(boost:=0){
 								if (A_Index & 1)
 									digits[Integer(A_LoopField)] := n
 						}
-						for m,n in [1,3]
-						{
+						for m,n in [1,3] {
 							Gdip_ImageSearch(pBMArea, bitmaps["buffdigit" n], &list, x-32, 15, x-8, 50, 1, , 5, 5, , "`n")
-							Loop Parse list, "`n"
-							{
-								if (A_Index & 1)
-								{
+							Loop Parse list, "`n" {
+								if (A_Index & 1) {
 									if (((n = 1) && (digits[A_LoopField - 5] = 4)) || ((n = 3) && (digits[A_LoopField - 1] = 8)))
 										continue
 									digits[Integer(A_LoopField)] := n
@@ -17858,8 +17399,7 @@ nm_HoneyQuest(){
 	hwnd := GetRobloxHWND()
 	offsetY := GetYOffset(hwnd)
 	;search for honey quest
-	Loop 70
-	{
+	Loop 70 {
 		Qfound:=nm_imgSearch("honeyhunt.png",50,"quest")
 		if (Qfound[1]=0) {
 			if (A_Index > 1)
@@ -17868,13 +17408,11 @@ nm_HoneyQuest(){
 		}
 
 		ActivateRoblox()
-		switch A_Index
-		{
+		switch A_Index {
 			case 1:
 			GetRobloxClientPos(hwnd)
 			MouseMove windowX+30, windowY+offsetY+200, 5
-			Loop 50 ; scroll all the way up
-			{
+			Loop 50 { ; scroll all the way up
 				MouseMove windowX+30, windowY+offsetY+200, 5
 				sendinput "{WheelUp}"
 				Sleep 50
@@ -17908,8 +17446,7 @@ nm_HoneyQuest(){
 		ww := windowX+306
 		wh := windowY+windowHeight
 		fileName:="questbargap.png"
-		if DirExist(A_WorkingDir "\nm_image_assets")
-		{
+		if DirExist(A_WorkingDir "\nm_image_assets") {
 			try result := ImageSearch(&FoundX, &FoundY, xi, yi, ww, wh, "*5 " A_WorkingDir "\nm_image_assets\" fileName)
 			catch {
 				nm_setStatus("Error", "Image file " filename " was not found in:`n" A_WorkingDir "\nm_image_assets\" fileName)
@@ -17940,8 +17477,7 @@ nm_HoneyQuest(){
 		IniWrite honeyProgress, "settings\nm_config.ini", "Quests", "HoneyQuestProgress"
 		MainGui["HoneyQuestProgress"].Text := StrReplace(honeyProgress, "|", "`n")
 	}
-	if(HoneyQuestComplete)
-	{
+	if(HoneyQuestComplete) {
 		nm_updateAction("Quest")
 		nm_gotoQuestgiver("Honey")
 		nm_setStatus("Starting", "Honey Quest: Honey Hunt")
@@ -17974,8 +17510,7 @@ nm_PolarQuestProg(){
 	hwnd := GetRobloxHWND()
 	offsetY := GetYOffset(hwnd)
 	;search for polar quest
-	Loop 70
-	{
+	Loop 70 {
 		Qfound:=nm_imgSearch("polar_bear.png",50,"quest")
 		if (Qfound[1]=0) {
 			if (A_Index > 1)
@@ -17998,13 +17533,11 @@ nm_PolarQuestProg(){
 		}
 
 		ActivateRoblox()
-		switch A_Index
-		{
+		switch A_Index {
 			case 1:
 			GetRobloxClientPos(hwnd)
 			MouseMove windowX+30, windowY+offsetY+200, 5
-			Loop 50 ; scroll all the way up
-			{
+			Loop 50 { ; scroll all the way up
 				MouseMove windowX+30, windowY+offsetY+200, 5
 				sendinput "{WheelUp}"
 				Sleep 50
@@ -18038,8 +17571,7 @@ nm_PolarQuestProg(){
 		ww := windowX+306
 		wh := windowY+windowHeight
 		fileName:="questbargap.png"
-		if DirExist(A_WorkingDir "\nm_image_assets")
-		{
+		if DirExist(A_WorkingDir "\nm_image_assets") {
 			try result := ImageSearch(&FoundX, &FoundY, xi, yi, ww, wh, "*5 " A_WorkingDir "\nm_image_assets\" fileName)
 			catch {
 				nm_setStatus("Error", "Image file " filename " was not found in:`n" A_WorkingDir "\nm_image_assets\" fileName)
@@ -18202,8 +17734,7 @@ nm_RileyQuestProg(){
 	hwnd := GetRobloxHWND()
 	offsetY := GetYOffset(hwnd)
 	;search for riley quest
-	Loop 70
-	{
+	Loop 70 {
 		Qfound:=nm_imgSearch("riley.png",50,"quest")
 		if (Qfound[1]=0) {
 			if (A_Index > 1)
@@ -18219,13 +17750,11 @@ nm_RileyQuestProg(){
 		}
 
 		ActivateRoblox()
-		switch A_Index
-		{
+		switch A_Index {
 			case 1:
 			GetRobloxClientPos(hwnd)
 			MouseMove windowX+30, windowY+offsetY+200, 5
-			Loop 50 ; scroll all the way up
-			{
+			Loop 50 { ; scroll all the way up
 				MouseMove windowX+30, windowY+offsetY+200, 5
 				sendinput "{WheelUp}"
 				Sleep 50
@@ -18259,8 +17788,7 @@ nm_RileyQuestProg(){
 		ww := windowX+306
 		wh := windowY+windowHeight
 		fileName:="questbargap.png"
-		if DirExist(A_WorkingDir "\nm_image_assets")
-		{
+		if DirExist(A_WorkingDir "\nm_image_assets") {
 			try result := ImageSearch(&FoundX, &FoundY, xi, yi, ww, wh, "*5 " A_WorkingDir "\nm_image_assets\" fileName)
 			catch {
 				nm_setStatus("Error", "Image file " filename " was not found in:`n" A_WorkingDir "\nm_image_assets\" fileName)
@@ -18478,8 +18006,7 @@ nm_BuckoQuestProg(){
 	hwnd := GetRobloxHWND()
 	offsetY := GetYOffset(hwnd)
 	;search for bucko quest
-	Loop 70
-	{
+	Loop 70 {
 		Qfound:=nm_imgSearch("bucko.png",50,"quest")
 		if (Qfound[1]=0) {
 			if (A_Index > 1)
@@ -18495,13 +18022,11 @@ nm_BuckoQuestProg(){
 		}
 
 		ActivateRoblox()
-		switch A_Index
-		{
+		switch A_Index {
 			case 1:
 			GetRobloxClientPos(hwnd)
 			MouseMove windowX+30, windowY+offsetY+200, 5
-			Loop 50 ; scroll all the way up
-			{
+			Loop 50 { ; scroll all the way up
 				MouseMove windowX+30, windowY+offsetY+200, 5
 				sendinput "{WheelUp}"
 				Sleep 50
@@ -18535,8 +18060,7 @@ nm_BuckoQuestProg(){
 		ww := windowX+306
 		wh := windowY+windowHeight
 		fileName:="questbargap.png"
-		if DirExist(A_WorkingDir "\nm_image_assets")
-		{
+		if DirExist(A_WorkingDir "\nm_image_assets") {
 			try result := ImageSearch(&FoundX, &FoundY, xi, yi, ww, wh, "*5 " A_WorkingDir "\nm_image_assets\" fileName)
 			catch {
 				nm_setStatus("Error", "Image file " filename " was not found in:`n" A_WorkingDir "\nm_image_assets\" fileName)
@@ -18750,8 +18274,7 @@ nm_BlackQuestProg(){
 	hwnd := GetRobloxHWND()
 	offsetY := GetYOffset(hwnd)
 	;search for black quest
-	Loop 70
-	{
+	Loop 70 {
 		Qfound:=nm_imgSearch("black_bear.png",50,"quest")
 		if (Qfound[1]=0) {
 			if (A_Index > 1)
@@ -18795,13 +18318,11 @@ nm_BlackQuestProg(){
 		}
 
 		ActivateRoblox()
-		switch A_Index
-		{
+		switch A_Index {
 			case 1:
 			GetRobloxClientPos(hwnd)
 			MouseMove windowX+30, windowY+offsetY+200, 5
-			Loop 50 ; scroll all the way up
-			{
+			Loop 50 { ; scroll all the way up
 				MouseMove windowX+30, windowY+offsetY+200, 5
 				sendinput "{WheelUp}"
 				Sleep 50
@@ -18835,8 +18356,7 @@ nm_BlackQuestProg(){
 		ww := windowX+306
 		wh := windowY+windowHeight
 		fileName:="questbargap.png"
-		if DirExist(A_WorkingDir "\nm_image_assets")
-		{
+		if DirExist(A_WorkingDir "\nm_image_assets") {
 			try result := ImageSearch(&FoundX, &FoundY, xi, yi, ww, wh, "*5 " A_WorkingDir "\nm_image_assets\" fileName)
 			catch {
 				nm_setStatus("Error", "Image file " filename " was not found in:`n" A_WorkingDir "\nm_image_assets\" fileName)
@@ -19008,14 +18528,11 @@ nm_BrownQuestProg(){
 		;search for brown quest
 		; if possible, move quest to top half of screen, to ensure quest tasks not cut off
 		aim := ["questbrown", "quest"]
-		loop aim.Length 
-		{
+		loop aim.Length {
 			i := A_Index
-			Loop 70
-			{
+			Loop 70 {
 				n := A_Index				
-				loop 5 
-				{
+				loop 5 {
 					Qfound:=nm_imgSearch("brown_bear" A_Index ".png",50,aim[i])
 					if (Qfound[1]=0) {
 						if (n > 1)
@@ -19025,13 +18542,11 @@ nm_BrownQuestProg(){
 				}
 
 				ActivateRoblox()
-				switch A_Index
-				{
+				switch A_Index {
 					case 1:
 					GetRobloxClientPos(hwnd)
 					MouseMove windowX+30, windowY+offsetY+200, 5
-					Loop 50 ; scroll all the way up
-					{
+					Loop 50 { ; scroll all the way up
 						MouseMove windowX+30, windowY+offsetY+200, 5
 						sendinput "{WheelUp}"
 						Sleep 50
@@ -19069,8 +18584,7 @@ nm_BrownQuestProg(){
 			ww := windowX+306
 			wh := windowY+windowHeight
 			fileName:="questbargap.png"
-			if DirExist(A_WorkingDir "\nm_image_assets\")
-			{
+			if DirExist(A_WorkingDir "\nm_image_assets\") {
 				try result := ImageSearch(&FoundX, &FoundY, xi, yi, ww, wh, "*5 " A_WorkingDir "\nm_image_assets\" fileName)
 				catch {
 					nm_setStatus("Error", "Image file " filename " was not found in:`n" A_WorkingDir "\nm_image_assets\" fileName)
@@ -19253,28 +18767,22 @@ nm_Feed(food){
 	nm_InventorySearch(food)
 	hwnd := GetRobloxHWND()
 	offsetY := GetYOffset(hwnd)
-	Loop 10
-	{
+	Loop 10 {
 		GetRobloxClientPos(hwnd)
 		pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY+offsetY+150 "|" (54*windowWidth)//100-50 "|" Max(480, windowHeight-offsetY-150))
 
-		if (A_Index = 1)
-		{
+		if (A_Index = 1) {
 			; wait for red vignette effect to disappear
-			Loop 40
-			{
+			Loop 40 {
 				if (Gdip_ImageSearch(pBMScreen, bitmaps["item"], , , , 6, , 2) = 1)
 					break
-				else
-				{
-					if (A_Index = 40)
-					{
+				else {
+					if (A_Index = 40) {
 						Gdip_DisposeImage(pBMScreen)
 						nm_setStatus("Missing", food)
 						return 0
 					}
-					else
-					{
+					else {
 						Sleep 50
 						Gdip_DisposeImage(pBMScreen)
 						pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY+offsetY+150 "|" (54*windowWidth)//100-50 "|" Max(480, windowHeight-offsetY-150))
@@ -19486,8 +18994,7 @@ nm_PathVars(){
 		SendEvent "{Click " windowX+350 " " windowY+offsetY+100 " 0}"
 
 		success := 0
-		Loop 10
-		{
+		Loop 10 {
 			Send "{" SC_Space " down}{" RightKey " down}"
 			Sleep 100
 			Send "{" SC_Space " up}"
@@ -19497,11 +19004,9 @@ nm_PathVars(){
 
 			DllCall("GetSystemTimeAsFileTime","int64p",&s:=0)
 			n := s, f := s+100000000
-			while (n < f)
-			{
+			while (n < f) {
 				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY "|400|125")
-				if (Gdip_ImageSearch(pBMScreen, pBMCannon, , , , , , 2, , 2) = 1)
-				{
+				if (Gdip_ImageSearch(pBMScreen, pBMCannon, , , , , , 2, , 2) = 1) {
 					success := 1, Gdip_DisposeImage(pBMScreen)
 					break
 				}
@@ -19510,19 +19015,15 @@ nm_PathVars(){
 			}
 			Send "{" RightKey " up}"
 
-			if (success = 1) ; check that cannon was not overrun, at the expense of a small delay
-			{
-				Loop 10
-				{
-					if (A_Index = 10)
-					{
+			if (success = 1) { ; check that cannon was not overrun, at the expense of a small delay
+				Loop 10 {
+					if (A_Index = 10) {
 						success := 0
 						break
 					}
 					Sleep 500
 					pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY "|400|125")
-					if (Gdip_ImageSearch(pBMScreen, pBMCannon, , , , , , 2, , 2) = 1)
-					{
+					if (Gdip_ImageSearch(pBMScreen, pBMCannon, , , , , , 2, , 2) = 1) {
 						Gdip_DisposeImage(pBMScreen)
 						break 2
 					}
@@ -19532,8 +19033,7 @@ nm_PathVars(){
 				}
 			}
 
-			if (success = 0)
-			{
+			if (success = 0) {
 				nm_Reset()
 				nm_gotoRamp()
 			}
@@ -19542,8 +19042,7 @@ nm_PathVars(){
 			ExitApp
 	}
 
-	nm_Reset()
-	{
+	nm_Reset() {
 		static hivedown := 0
 		static pBMR := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAACgAAAAGCAAAAACUM4P3AAAAAnRSTlMAAHaTzTgAAAAXdEVYdFNvZnR3YXJlAFBob3RvRGVtb24gOS4wzRzYMQAAAyZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0n77u/JyBpZD0nVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkJz8+Cjx4OnhtcG1ldGEgeG1sbnM6eD0nYWRvYmU6bnM6bWV0YS8nIHg6eG1wdGs9J0ltYWdlOjpFeGlmVG9vbCAxMi40NCc+CjxyZGY6UkRGIHhtbG5zOnJkZj0naHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyc+CgogPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9JycKICB4bWxuczpleGlmPSdodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyc+CiAgPGV4aWY6UGl4ZWxYRGltZW5zaW9uPjQwPC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICA8ZXhpZjpQaXhlbFlEaW1lbnNpb24+NjwvZXhpZjpQaXhlbFlEaW1lbnNpb24+CiA8L3JkZjpEZXNjcmlwdGlvbj4KCiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0nJwogIHhtbG5zOnRpZmY9J2h0dHA6Ly9ucy5hZG9iZS5jb20vdGlmZi8xLjAvJz4KICA8dGlmZjpJbWFnZUxlbmd0aD42PC90aWZmOkltYWdlTGVuZ3RoPgogIDx0aWZmOkltYWdlV2lkdGg+NDA8L3RpZmY6SW1hZ2VXaWR0aD4KICA8dGlmZjpPcmllbnRhdGlvbj4xPC90aWZmOk9yaWVudGF0aW9uPgogIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgPHRpZmY6WFJlc29sdXRpb24+OTYvMTwvdGlmZjpYUmVzb2x1dGlvbj4KICA8dGlmZjpZUmVzb2x1dGlvbj45Ni8xPC90aWZmOllSZXNvbHV0aW9uPgogPC9yZGY6RGVzY3JpcHRpb24+CjwvcmRmOlJERj4KPC94OnhtcG1ldGE+Cjw/eHBhY2tldCBlbmQ9J3InPz77yGiWAAAAI0lEQVR42mNUYyAOMDJggOUMDAyRmAqXMxAHmBiobjWxngEAj7gC+wwAe1AAAAAASUVORK5CYII=")
 
@@ -19555,8 +19054,7 @@ nm_PathVars(){
 		GetRobloxClientPos(hwnd)
 		SendEvent "{Click " windowX+350 " " windowY+offsetY+100 " 0}"
 
-		Loop 10
-		{
+		Loop 10 {
 			DetectHiddenWindows 1
 			if WinExist("background.ahk ahk_class AutoHotkey") {
 				PostMessage 0x5554, 1, DateDiff(A_NowUTC, "19700101000000", "Seconds")
@@ -19569,8 +19067,7 @@ nm_PathVars(){
 			SetKeyDelay 100+KeyDelay
 
 			n := 0
-			while ((n < 2) && (A_Index <= 80))
-			{
+			while ((n < 2) && (A_Index <= 80)) {
 				Sleep 100
 				pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY "|" windowWidth "|50")
 				n += (Gdip_ImageSearch(pBMScreen, pBMR, , , , , , 10) = (n = 0))
@@ -19599,8 +19096,7 @@ nm_PathVars(){
 				}
 				Gdip_DisposeImage(pBMScreen)
 				Send "{" RotRight " 4}"
-				if (A_Index = 2)
-				{
+				if (A_Index = 2) {
 					if hivedown := !hivedown
 						Send "{" RotDown "}"
 					else
@@ -19646,8 +19142,7 @@ nm_gotoPlanter(location, waitEnd := 1){
 
 	nm_createPath(path)
 	KeyWait "F14", "D T5 L"
-	if WaitEnd
-	{
+	if WaitEnd {
 		KeyWait "F14", "T120 L"
 		nm_endWalk()
 	}
@@ -19660,8 +19155,7 @@ nm_gotoCollect(location, waitEnd := 1){
 
 	nm_createPath(path)
 	KeyWait "F14", "D T5 L"
-	if waitEnd
-	{
+	if waitEnd {
 		KeyWait "F14", "T120 L"
 		nm_endWalk()
 	}
@@ -19681,8 +19175,7 @@ nm_gotoQuestgiver(giver){
 	path := paths["gtq"][giver]
 	nm_setShiftLock(0)
 	success:=0
-	Loop 2
-	{
+	Loop 2 {
 		nm_Reset()
 
 		global HiveConfirmed := 0
@@ -19694,8 +19187,7 @@ nm_gotoQuestgiver(giver){
 		KeyWait "F14", "T120 L"
 		nm_endWalk()
 
-		Loop 2
-		{
+		Loop 2 {
 			Sleep 500
 			searchRet := nm_imgSearch("e_button.png",30,"high")
 			If (searchRet[1] = 0) {
@@ -19706,8 +19198,7 @@ nm_gotoQuestgiver(giver){
 				Sleep 2000
 				hwnd := GetRobloxHWND()
 				offsetY := GetYOffset(hwnd)
-				Loop 500
-				{
+				Loop 500 {
 					GetRobloxClientPos(hwnd)
 					pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-50 "|" windowY+2*windowHeight//3 "|100|" windowHeight//3)
 					if (Gdip_ImageSearch(pBMScreen, bitmaps["dialog"], &pos, , , , , 10, , 3) != 1) {
@@ -19943,8 +19434,7 @@ ba_planter(){
 		nextPlanter:=[]
 		;get maxNectarPlanters
 		maxNectarPlanters:=0
-		for ind, field in %currentNectar%Fields
-		{
+		for ind, field in %currentNectar%Fields {
 			tempfieldname := StrReplace(field, " ", "")
 			if(%tempfieldname%FieldCheck)
 				maxNectarPlanters:=maxNectarPlanters+1
@@ -20034,8 +19524,7 @@ ba_planter(){
 
 								default: ;cannot find planter, try alternative planter in this field
 								nextPlanter:=ba_getNextPlanter(nextField)
-								if (nextPlanter[1]="none")
-								{
+								if (nextPlanter[1]="none") {
 									nm_endWalk()
 									break
 								}
@@ -20111,8 +19600,7 @@ ba_planter(){
 		planterSlots:=[]
 		;get maxNectarPlanters
 		maxNectarPlanters:=0
-		for ind, field in %currentNectar%Fields
-		{
+		for ind, field in %currentNectar%Fields {
 			tempfieldname := StrReplace(field, " ", "")
 			if(%tempfieldname%FieldCheck)
 				maxNectarPlanters:=maxNectarPlanters+1
@@ -20190,8 +19678,7 @@ ba_planter(){
 
 							default: ;cannot find planter, try alternative planter in this field
 							nextPlanter:=ba_getNextPlanter(nextField)
-							if (nextPlanter[1]="none")
-							{
+							if (nextPlanter[1]="none") {
 								nm_endWalk()
 								break
 							}
@@ -20238,8 +19725,7 @@ ba_planter(){
 
 								default: ;cannot find planter, try alternative planter in this field
 								nextPlanter:=ba_getNextPlanter(nextField)
-								if (nextPlanter[1]="none")
-								{
+								if (nextPlanter[1]="none") {
 									nm_endWalk()
 									break
 								}
@@ -20279,8 +19765,7 @@ ba_planter(){
 		nextPlanter:=[]
 		;get maxNectarPlanters
 		maxNectarPlanters:=0
-		for ind, field in %currentNectar%Fields
-		{
+		for ind, field in %currentNectar%Fields {
 			tempfieldname := StrReplace(field, " ", "")
 			if(%tempfieldname%FieldCheck)
 				maxNectarPlanters:=maxNectarPlanters+1
@@ -20359,8 +19844,7 @@ ba_planter(){
 
 							default: ;cannot find planter, try alternative planter in this field
 							nextPlanter:=ba_getNextPlanter(nextField)
-							if (nextPlanter[1]="none")
-							{
+							if (nextPlanter[1]="none") {
 								nm_endWalk()
 								break
 							}
@@ -20451,8 +19935,7 @@ ba_getLastField(currentnectar){
 	;find index of last nectar field
 	for k, v in availablefields {
 		;found index of last nectar field in availablefields
-		if (v=Last%currentnectar%Field)
-		{
+		if (v=Last%currentnectar%Field) {
 			arr[2] := availablefields[Mod(k,arrayLen)+1]
 			break
 		}
@@ -20479,10 +19962,8 @@ ba_getNextPlanter(nextfield){
 	Loop arrayLen {
 		tempPlanter:=Trim(%tempfieldname%Planters[A_Index][1])
 		tempPlanterCheck:=%tempPlanter%Check
-		if(tempPlanterCheck && tempPlanter!=PlanterName1 && tempPlanter!=PlanterName2 && tempPlanter!=PlanterName3)
-		{
-			if !InStr(LostPlanters, tempPlanter)
-			{
+		if(tempPlanterCheck && tempPlanter!=PlanterName1 && tempPlanter!=PlanterName2 && tempPlanter!=PlanterName3) {
+			if !InStr(LostPlanters, tempPlanter) {
 				nextPlanterName:=%tempfieldname%Planters[A_Index][1]
 				nextPlanterNectarBonus:=%tempfieldname%Planters[A_Index][2]
 				nextPlanterGrowBonus:=%tempfieldname%Planters[A_Index][3]
@@ -20498,8 +19979,7 @@ placePlanter(planterName) {
 	if planterName == "HeatTreatedPlanter" {
 		planterName := "Heat-TreatedPlanter"
 	}
-	Loop 10
-	{
+	Loop 10 {
 		GetRobloxClientPos(hwnd)
 
 		TextInRegion := findTextInRegion(planterName,, windowX, windowY, 360, windowHeight, true)
@@ -20520,8 +20000,7 @@ placePlanter(planterName) {
 	}
 
 	Detected := false
-	Loop 50
-	{
+	Loop 50 {
 		GetRobloxClientPos(hwnd)
 		loop 3 {
 			TextInRegion := findTextInRegion("Yes",, windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2, true)
@@ -20550,8 +20029,7 @@ placePlanter(planterName) {
 		Sleep 100
 	}
 
-	Loop 10
-	{
+	Loop 10 {
 		Sleep 100
 		imgPos := nm_imgSearch("3Planters.png",30,"lowright")
 		If (imgPos[1] = 0){
@@ -20581,8 +20059,7 @@ ba_placePlanter(fieldName, planter, planterNum, atField:=0){
 	nm_setShiftLock(0)
 
 	planterName := planter[1]
-	if (atField = 0)
-	{
+	if (atField = 0) {
 		nm_Reset()
 		nm_OpenMenu("itemmenu")
 		nm_setStatus("Traveling", (planterName . " (" . fieldName . ")"))
@@ -20591,15 +20068,13 @@ ba_placePlanter(fieldName, planter, planterNum, atField:=0){
 
 	planterPos := nm_InventorySearch(planterName, "up", 4)
 
-	if (planterPos = 0) ; planter not in inventory
-	{
+	if (planterPos = 0) { ; planter not in inventory
 		nm_setStatus("Missing", planterName)
 		LostPlanters.=planterName
 		ba_saveConfig_()
 		return 0
 	}
-	else
-	{
+	else {
 		GetRobloxClientPos()
 		MouseMove windowX+30, planterPos[3]+planterPos[4]
 	}
@@ -20670,8 +20145,7 @@ ba_harvestPlanter(planterNum){
 
 		hwnd := GetRobloxHWND()
 		offsetY := GetYOffset(hwnd)
-		Loop 50
-		{
+		Loop 50 {
 			GetRobloxClientPos(hwnd)
 			pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY+36 "|200|120")
 			if (Gdip_ImageSearch(pBMScreen, bitmaps["e_button"], , , , , , 2, , 6) = 0) {
@@ -20746,8 +20220,7 @@ ba_harvestPlanter(planterNum){
 		IniWrite TotalPlantersCollected, "settings\nm_config.ini", "Status", "TotalPlantersCollected"
 		IniWrite SessionPlantersCollected, "settings\nm_config.ini", "Status", "SessionPlantersCollected"
 		;gather loot
-		if (GatherPlanterLoot = 1)
-		{
+		if (GatherPlanterLoot = 1) {
 			nm_setStatus("Looting", planterName . " Loot")
 			Sleep 1000
 			movement := nm_Walk(7, BackKey, RightKey)
@@ -20757,8 +20230,7 @@ ba_harvestPlanter(planterNum){
 			nm_endWalk()
 			nm_loot(9, 5, "left")
 		}
-		if ((ConvertFullBagHarvest = 1) && (BackpackPercent >= 95))
-		{
+		if ((ConvertFullBagHarvest = 1) && (BackpackPercent >= 95)) {
 			; loot path end location for some fields prevents successful return to hive
 			If (GatherPlanterLoot = 1) {
 				If (fieldname = "Cactus") || (fieldname = "Sunflower") {
@@ -21013,8 +20485,7 @@ mp_PlantPlanter(PlanterIndex) {
 
 	planterPos := nm_InventorySearch(MPlanterName, "up", 4) ;~ new function
 
-	if (planterPos = 0) ; planter not in inventory
-	{
+	if (planterPos = 0) { ; planter not in inventory
 		nm_setStatus("Missing", MPlanterName)
 		return 0
 	}
@@ -21079,13 +20550,11 @@ mp_UseGlitter(PlanterIndex, atField:=0) {
 
 	glitterPos := nm_InventorySearch("glitter")
 
-	if (glitterPos = 0) ; glitter not in inventory
-	{
+	if (glitterPos = 0) { ; glitter not in inventory
 		nm_setStatus("Missing", "Glitter")
 		return 0
 	}
-	else
-	{
+	else {
 		GetRobloxClientPos()
 		MouseMove windowX+30, windowY+glitterPos[3]+glitterPos[4]
 	}
@@ -21095,28 +20564,22 @@ mp_UseGlitter(PlanterIndex, atField:=0) {
 
 	hwnd := GetRobloxHWND()
 	offsetY := GetYOffset(hwnd)
-	Loop 10
-	{
+	Loop 10 {
 		GetRobloxClientPos(hwnd)
 		pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY+offsetY+150 "|" windowWidth//2 "|" Max(480, windowHeight-offsetY-150))
 
-		if (A_Index = 1)
-		{
+		if (A_Index = 1) {
 			; wait for red vignette effect to disappear
-			Loop 40
-			{
+			Loop 40 {
 				if (Gdip_ImageSearch(pBMScreen, bitmaps["item"], , , , 6, , 2) = 1)
 					break
-				else
-				{
-					if (A_Index = 40)
-					{
+				else {
+					if (A_Index = 40) {
 						Gdip_DisposeImage(pBMScreen)
 						nm_setStatus("Missing", "Glitter")
 						return 0
 					}
-					else
-					{
+					else {
 						Sleep 50
 						Gdip_DisposeImage(pBMScreen)
 						pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY+offsetY+150 "|306|" Max(480, windowHeight-offsetY-150))
@@ -21229,8 +20692,7 @@ mp_HarvestPlanter(PlanterIndex) {
 
 		hwnd := GetRobloxHWND()
 		offsetY := GetYOffset(hwnd)
-		Loop 50
-		{
+		Loop 50 {
 			GetRobloxClientPos(hwnd)
 			pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY+36 "|200|120")
 			if (Gdip_ImageSearch(pBMScreen, bitmaps["e_button"], , , , , , 2, , 6) = 0) {
@@ -21317,15 +20779,13 @@ mp_HarvestPlanter(PlanterIndex) {
 		IniWrite TotalPlantersCollected, "settings\nm_config.ini", "Status", "TotalPlantersCollected"
 		IniWrite SessionPlantersCollected, "settings\nm_config.ini", "Status", "SessionPlantersCollected"
 		;gather loot
-		if (MGatherPlanterLoot = 1)
-			{
+		if (MGatherPlanterLoot = 1) {
 				nm_setStatus("Looting", MPlanterName . " Loot")
 				Sleep 1000
 				nm_Move(1500*round(18/MoveSpeedNum, 2), BackKey, RightKey)
 				nm_loot(9, 5, "left")
 			}
-		if ((MConvertFullBagHarvest = 1) && (BackpackPercent >= 95))
-		{
+		if ((MConvertFullBagHarvest = 1) && (BackpackPercent >= 95)) {
 			; loot path end location for some fields prevents successful return to hive
 			If (MGatherPlanterLoot = 1) {
 				If (MFieldName = "Cactus") || (MFieldName = "Sunflower") {
@@ -21716,8 +21176,7 @@ nm_Pause(*){
 		DetectHiddenWindows 1
 		if WinExist("ahk_class AutoHotkey ahk_pid " currentWalk.pid)
 			Send "{F16}"
-		else
-		{
+		else {
 			if(FwdKeyState)
 				sendinput "{" FwdKey " down}"
 			if(BackKeyState)
@@ -21748,8 +21207,7 @@ nm_Pause(*){
 		DetectHiddenWindows 1
 		if WinExist("ahk_class AutoHotkey ahk_pid " currentWalk.pid)
 			Send "{F16}"
-		else
-		{
+		else {
 			FwdKeyState:=GetKeyState(FwdKey), BackKeyState:=GetKeyState(BackKey), LeftKeyState:=GetKeyState(LeftKey), RightKeyState:=GetKeyState(RightKey), SpaceKeyState:=GetKeyState(SC_Space)
 			sendinput "{" FwdKey " up}{" BackKey " up}{" LeftKey " up}{" RightKey " up}{" SC_Space " up}"
 			Click "Up"
@@ -21810,8 +21268,7 @@ nm_WM_COPYDATA(wParam, lParam, *){
 		DetectHiddenWindows 1
 		if WinExist("ahk_class AutoHotkey ahk_pid " currentWalk.pid)
 			Send "{F16}"
-		else
-		{
+		else {
 			FwdKeyState:=GetKeyState(FwdKey)
 			BackKeyState:=GetKeyState(BackKey)
 			LeftKeyState:=GetKeyState(LeftKey)
@@ -21838,8 +21295,7 @@ nm_WM_COPYDATA(wParam, lParam, *){
 		} else {
 			if WinExist("ahk_class AutoHotkey ahk_pid " currentWalk.pid)
 				Send "{F16}"
-			else
-			{
+			else {
 				if(FwdKeyState)
 					sendinput "{" FwdKey " down}"
 				if(BackKeyState)
@@ -21861,8 +21317,7 @@ nm_WM_COPYDATA(wParam, lParam, *){
 }
 nm_ForceLabel(wParam, *){
 	Critical
-	switch wParam
-	{
+	switch wParam {
 		case 1:
 		if (MainGui["StartButton"].Enabled = 1){
 			global RemoteStart := 1
@@ -21896,8 +21351,7 @@ nm_backgroundEvent(wParam, lParam, *){
 	var := arr[wParam], %var% := lParam
 	return 0
 }
-nm_setGlobalStr(wParam, lParam, *)
-{
+nm_setGlobalStr(wParam, lParam, *) {
 	global
 	Critical
 	; enumeration
@@ -21909,8 +21363,7 @@ nm_setGlobalStr(wParam, lParam, *)
 	nm_UpdateGUIVar(var)
 	return 0
 }
-nm_setGlobalInt(wParam, lParam, *)
-{
+nm_setGlobalInt(wParam, lParam, *) {
 	global
 	Critical
 	; enumeration
@@ -21921,8 +21374,7 @@ nm_setGlobalInt(wParam, lParam, *)
 	nm_UpdateGUIVar(var)
 	return 0
 }
-nm_UpdateGUIVar(var)
-{
+nm_UpdateGUIVar(var) {
 	global
 	local k, z, num
 
@@ -21933,8 +21385,7 @@ nm_UpdateGUIVar(var)
 	else
 		k := var
 
-	switch k, 0
-	{
+	switch k, 0 {
 		case "FieldPatternSize1", "FieldPatternSize2", "FieldPatternSize3":
 		MainGui[k].Text := %k%
 		MainGui[k "UpDown"].Value := FieldPatternSizeArr[%k%]
@@ -21997,8 +21448,7 @@ nm_UpdateGUIVar(var)
 
 		case "":
 		k := var
-		switch k, 0
-		{
+		switch k, 0 {
 			case "BlenderItem1", "BlenderItem2", "BlenderItem3":
 			MainGui[k "Picture"].Value := hBitmapsSB[%k%] ? ("HBITMAP:*" hBitmapsSB[%k%]) : ""
 			z := SubStr(k, -1)
@@ -22038,8 +21488,7 @@ nm_UpdateGUIVar(var)
 		}
 
 		default:
-		switch MainGui[k].Type, 0
-		{
+		switch MainGui[k].Type, 0 {
 			case "DDL", "Text":
 			MainGui[k].Text := %k%
 			default: ; "CheckBox", "Edit", "UpDown", "Slider"

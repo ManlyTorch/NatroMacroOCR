@@ -1,5 +1,4 @@
-﻿if (MoveMethod = "walk")
-{
+﻿if (MoveMethod = "walk") {
 	nm_gotoramp()
 	nm_Walk(88.875, BackKey, LeftKey)
 	nm_Walk(27, LeftKey)
@@ -10,8 +9,7 @@
 	nm_Walk(11.5, FwdKey, RightKey)
 	nm_Walk(2, RightKey)
 }
-else
-{
+else {
 	nm_gotoramp()
 	nm_gotocannon()
 	send "{e down}"

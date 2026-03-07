@@ -1,7 +1,5 @@
-﻿if (MoveMethod = "walk")
-{
-	switch HiveSlot
-	{
+﻿if (MoveMethod = "walk") {
+	switch HiveSlot {
 		case 2:
 			nm_gotoramp()
 			nm_Walk(41, BackKey, LeftKey)
@@ -83,8 +81,7 @@
 	Send "{" FwdKey " up}{" RotLeft " 2}"
 	nm_Walk(3, FwdKey)
 }
-else
-{
+else {
 	nm_gotoramp()
 	nm_gotocannon()
 	send "{" RotLeft " 2}{e down}"

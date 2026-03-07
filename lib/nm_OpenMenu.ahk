@@ -8,12 +8,9 @@
 		return 0
 	offsetY := GetYOffset(hwnd)
 
-	if ((tab = "") || (refresh = 1)) ; close
-	{
-		if open ; close the open tab
-		{
-			Loop 10
-			{
+	if ((tab = "") || (refresh = 1)) { ; close
+		if open { ; close the open tab
+			Loop 10 {
 				GetRobloxClientPos(hwnd)
 				pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY+offsetY+72 "|350|80")
 				if (Gdip_ImageSearch(pBMScreen, bitmaps[open], , , , , , 2) != 1) {
@@ -28,12 +25,9 @@
 				sleep 500
 			}
 		}
-		else ; close any open tab
-		{
-			for k,v in x
-			{
-				Loop 10
-				{
+		else { ; close any open tab
+			for k,v in x {
+				Loop 10 {
 					GetRobloxClientPos(hwnd)
 					pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY+offsetY+72 "|350|80")
 					if (Gdip_ImageSearch(pBMScreen, bitmaps[k], , , , , , 2) != 1) {
@@ -50,12 +44,9 @@
 			open := ""
 		}
 	}
-	else
-	{
-		if ((tab != open) && open) ; close the open tab
-		{
-			Loop 10
-			{
+	else {
+		if ((tab != open) && open) { ; close the open tab
+			Loop 10 {
 				GetRobloxClientPos(hwnd)
 				pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY+offsetY+72 "|350|80")
 				if (Gdip_ImageSearch(pBMScreen, bitmaps[open], , , , , , 2) != 1) {
@@ -71,8 +62,7 @@
 			}
 		}
 		; open the desired tab
-		Loop 10
-		{
+		Loop 10 {
 			GetRobloxClientPos(hwnd)
 			pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY+offsetY+72 "|350|80")
 			if (Gdip_ImageSearch(pBMScreen, bitmaps[tab], , , , , , 2) = 1) {

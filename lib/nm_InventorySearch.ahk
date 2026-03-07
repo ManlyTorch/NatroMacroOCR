@@ -1,6 +1,5 @@
 Scroll(direction:="Down", repeat:=1) {
-	Loop repeat
-	{
+	Loop repeat {
 		SendInput "{Wheel" direction "}"
 	}
 }
@@ -23,10 +22,8 @@ nm_InventorySearch(item, direction:="down", prescroll:=0, prescrolldir:="", scro
 	nm_OpenMenu("itemmenu")
 
 	; Activate roblox window and get it's current position and height
-	if (hwnd := GetRobloxHWND())
-	{
-		if (hwnd != hRoblox)
-		{
+	if (hwnd := GetRobloxHWND()) {
+		if (hwnd != hRoblox) {
 			ActivateRoblox()
 			GetRobloxClientPos(hwnd)
 			hRoblox := hwnd
@@ -39,8 +36,7 @@ nm_InventorySearch(item, direction:="down", prescroll:=0, prescrolldir:="", scro
 	; search inventory
 	TopText := ""
 	idx := 0
-	Loop max
-	{
+	Loop max {
 		idx += 1
 		ActivateRoblox()
 		GetRobloxClientPos(hwnd)
@@ -68,13 +64,10 @@ nm_InventorySearch(item, direction:="down", prescroll:=0, prescrolldir:="", scro
 			TopText := TopEntry.Text
 		}
 		
-		switch A_Index
-		{
+		switch A_Index {
 			case (prescroll+1): ; scroll entire inventory on (prescroll+1)th search
-			if (scrolltoend = 1)
-			{
-				Loop 10
-				{
+			if (scrolltoend = 1) {
+				Loop 10 {
 					SendEvent "{Click " windowX+30 " " windowY+offsetY+200 " 0}"
 					Scroll(((direction = "down") ? "Up" : "Down"), 100)
 					Sleep 50
