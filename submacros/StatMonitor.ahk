@@ -435,7 +435,7 @@ buff_Data := Map(
 	, "cloudbuff",			[110, 0xfffefefe]
 	, "PineTree",			[110, 0xff0000ff]
 	, "Bamboo",				[110, 0xff0000ff]
-	, "BlueFlower",		[110, 0xff0000ff]
+	, "BlueFlower",			[110, 0xff0000ff]
 	, "Stump",				[110, 0xff0000ff]
 	, "Rose",				[110, 0xffff0000]
 	, "Strawberry",			[110, 0xffff0000]
