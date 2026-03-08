@@ -119,7 +119,7 @@ Gdip_ImageSearch(pBitmapHaystack,pBitmapNeedle,&OutputList:=""
     OR !(nHeight := NumGet(nBitmapData,4,"UInt")) {
         If IsSet( DumpCurrentNeedle )
             Gdip_DisposeImage(pBitmapNeedle)
-        Gdip_UnlockBits(pBitmapHaystack,hBitmapData)
+        Gdip_UnlockBits(pBitmapHaystack,&hBitmapData)
         Return -1005
     }
     
