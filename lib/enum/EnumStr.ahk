@@ -80,6 +80,6 @@
 	, "FieldFollowingFollowMode"
 	, "FieldFollowingMaxTime"
 	, "FieldFollowingChannelID"
-	, "VicHopMode"
-	, "VicHopMaxQueueTime"
-	, "VicHopChannelID"]
+	, "DiscordUIDCommands"
+	, "ClaimMethod"
+]
