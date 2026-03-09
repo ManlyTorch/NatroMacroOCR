@@ -21,12 +21,12 @@ You should have received a copy of the license along with Natro Macro. If not, p
 #Include "Gdip_ImageSearch.ahk"
 #Include "Roblox.ahk"
 #Include "DurationFromSeconds.ahk"
+#Include "OCR.ahk"
 #Include "nowUnix.ahk"
 #include "ErrorHandling.ahk"
 SetWorkingDir A_ScriptDir "\.."
 
-if (A_Args.Length = 0)
-{
+if (A_Args.Length = 0) {
 	msgbox "This script needs to be run by Natro Macro! You are not supposed to run it manually."
 	ExitApp
 }
@@ -50,7 +50,6 @@ NightMemoryMatchCheck := A_Args[11]
 
 pToken := Gdip_Startup()
 bitmaps := Map(), bitmaps.CaseSense := 0
-#Include "%A_ScriptDir%\..\nm_image_assets\offset\bitmaps.ahk"
 #Include "%A_ScriptDir%\..\nm_image_assets\night\bitmaps.ahk"
 
 CoordMode "Pixel", "Screen"
@@ -419,10 +418,8 @@ nm_dailyReconnect(){
 	RChourUTC := Number(FormatTime(A_NowUTC, "HH"))
 	RCminUTC := Number(FormatTime(A_NowUTC, "mm"))
 	HourReady:=0
-	Loop 24//ReconnectInterval
-	{
-		if (Mod(ReconnectHour+ReconnectInterval*(A_Index-1), 24)=RChourUTC)
-		{
+	Loop 24//ReconnectInterval {
+		if (Mod(ReconnectHour+ReconnectInterval*(A_Index-1), 24)=RChourUTC) {
 			HourReady:=1
 			break
 		}
@@ -438,8 +435,7 @@ nm_dailyReconnect(){
 
 nm_EmergencyBalloon(){
 	static LastEmergency:=0
-	if ((EmergencyBalloonPingCheck = 1) && (ConvertBalloon != "Never") && (nowUnix() - LastEmergency > 60) && ((time := nowUnix() - LastConvertBalloon) > 2700) && (time < 3600))
-	{
+	if ((EmergencyBalloonPingCheck = 1) && (ConvertBalloon != "Never") && (nowUnix() - LastEmergency > 60) && ((time := nowUnix() - LastConvertBalloon) > 2700) && (time < 3600)) {
 		if WinExist("natro_macro ahk_class AutoHotkey") {
 			duration := DurationFromSeconds(time, "m'm' ss's'")
 			Send_WM_COPYDATA("Detected: No Balloon Convert in " duration, "natro_macro ahk_class AutoHotkey")
@@ -456,8 +452,7 @@ nm_sendHeartbeat(*){
 	return 0
 }
 
-nm_setGlobalInt(wParam, lParam, *)
-{
+nm_setGlobalInt(wParam, lParam, *) {
 	global
 	Critical
 	; enumeration
@@ -468,8 +463,7 @@ nm_setGlobalInt(wParam, lParam, *)
 	return 0
 }
 
-nm_setGlobalStr(wParam, lParam, *)
-{
+nm_setGlobalStr(wParam, lParam, *) {
 	global
 	Critical
 	; enumeration
@@ -481,8 +475,7 @@ nm_setGlobalStr(wParam, lParam, *)
 	return 0
 }
 
-Send_WM_COPYDATA(StringToSend, TargetScriptTitle, wParam:=0)
-{
+Send_WM_COPYDATA(StringToSend, TargetScriptTitle, wParam:=0) {
     CopyDataStruct := Buffer(3*A_PtrSize)
     SizeInBytes := (StrLen(StringToSend) + 1) * 2
     NumPut("Ptr", SizeInBytes
