@@ -1,4 +1,4 @@
-/*
+﻿/*
 Natro Macro (https://github.com/NatroTeam/NatroMacro)
 Copyright © Natro Team (https://github.com/NatroTeam)
 
@@ -19,7 +19,9 @@ You should have received a copy of the license along with Natro Macro. If not, p
 #Include "Gdip_ImageSearch.ahk"
 #Include "Roblox.ahk"
 #Include "DurationFromSeconds.ahk"
+#Include "Auxilliary.ahk"
 #Include "nowUnix.ahk"
+#Include "Discord.ahk"
 #Include "OCR.ahk"
 
 #Warn VarUnset, Off
@@ -2065,6 +2067,7 @@ SendHourlyReport(generateTemplate:=false, keepStats:=false) {
 			}
 		}
 	}
+	
 	; section 5: stats
 	if not renderDisabled("generalstats") {
 		pos := Gdip_TextToGraphics(G, "STATS", "s64 Center Bold cffffffff x" stat_regions["generalstats"][1]+stat_regions["generalstats"][3]//2 " y" stat_regions["generalstats"][2]+4, "Segoe UI")
@@ -2221,84 +2224,17 @@ SendHourlyReport(generateTemplate:=false, keepStats:=false) {
 		return
 	}
 
-	webhook := IniRead("settings\nm_config.ini", "Status", "webhook")
-	bottoken := IniRead("settings\nm_config.ini", "Status", "bottoken")
-	discordMode := IniRead("settings\nm_config.ini", "Status", "discordMode")
-	ReportChannelID := IniRead("settings\nm_config.ini", "Status", "ReportChannelID")
+	; load as global variables cause discord lib (yipe)
+	global webhook := IniRead("settings\nm_config.ini", "Status", "webhook")
+	global bottoken := IniRead("settings\nm_config.ini", "Status", "bottoken")
+	global discordMode := IniRead("settings\nm_config.ini", "Status", "discordMode")
+	global ReportChannelID := IniRead("settings\nm_config.ini", "Status", "ReportChannelID")
 	if (StrLen(ReportChannelID) < 17) {
 		ReportChannelID := IniRead("settings\nm_config.ini", "Status", "MainChannelID")
 	}
 
 	try {
-		chars := "0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z"
-		chars := Sort(chars, "D| Random")
-		boundary := SubStr(StrReplace(chars, "|"), 1, 12)
-		hData := DllCall("GlobalAlloc", "UInt", 0x2, "UPtr", 0, "Ptr")
-		DllCall("ole32\CreateStreamOnHGlobal", "Ptr", hData, "Int", 0, "PtrP", &pStream:=0, "UInt")
-
-		str :=
-		(
-		'
-		------------------------------' boundary '
-		Content-Disposition: form-data; name="payload_json"
-		Content-Type: application/json
-
-		{
-			"embeds": [{
-				"title": "**[' A_Hour ':' A_Min ':00] Hourly Report**",
-				"color": "14052794",
-				"image": {"url": "attachment://file.png"}
-			}]
-		}
-		------------------------------' boundary '
-		Content-Disposition: form-data; name="files[0]"; filename="file.png"
-		Content-Type: image/png
-
-		'
-		)
-
-		utf8 := Buffer(length := StrPut(str, "UTF-8") - 1), StrPut(str, utf8, length, "UTF-8")
-		DllCall("shlwapi\IStream_Write", "Ptr", pStream, "Ptr", utf8.Ptr, "UInt", length, "UInt")
-
-		pFileStream := Gdip_SaveBitmapToStream(pBMReport)
-		DllCall("shlwapi\IStream_Size", "Ptr", pFileStream, "UInt64P", &size:=0, "UInt")
-		DllCall("shlwapi\IStream_Reset", "Ptr", pFileStream, "UInt")
-		DllCall("shlwapi\IStream_Copy", "Ptr", pFileStream, "Ptr", pStream, "UInt", size, "UInt")
-		ObjRelease(pFileStream)
-
-		str :=
-		(
-		'
-
-		------------------------------' boundary '--
-		'
-		)
-
-		utf8 := Buffer(length := StrPut(str, "UTF-8") - 1), StrPut(str, utf8, length, "UTF-8")
-		DllCall("shlwapi\IStream_Write", "Ptr", pStream, "Ptr", utf8.Ptr, "UInt", length, "UInt")
-		ObjRelease(pStream)
-
-		pData := DllCall("GlobalLock", "Ptr", hData, "Ptr")
-		size := DllCall("GlobalSize", "Ptr", pData, "UPtr")
-
-		retData := ComObjArray(0x11, size)
-		pvData := NumGet(ComObjValue(retData), 8 + A_PtrSize, "Ptr")
-		DllCall("RtlMoveMemory", "Ptr", pvData, "Ptr", pData, "Ptr", size)
-
-		DllCall("GlobalUnlock", "Ptr", hData)
-		DllCall("GlobalFree", "Ptr", hData, "Ptr")
-		contentType := "multipart/form-data; boundary=----------------------------" boundary
-
-		wr := ComObject("WinHttp.WinHttpRequest.5.1")
-		wr.Option[9] := 2720
-		wr.Open("POST", (discordMode = 0) ? webhook : ("https://discord.com/api/v10/channels/" ReportChannelID "/messages"), 0)
-		if (discordMode = 1) {
-			wr.SetRequestHeader("User-Agent", "DiscordBot (AHK, " A_AhkVersion ")")
-			wr.SetRequestHeader("Authorization", "Bot " bottoken)
-		}
-		wr.SetRequestHeader("Content-Type", contentType)
-		wr.SetTimeouts(0, 60000, 120000, 30000)
-		wr.Send(retData)
+		discord.SendEmbed("", 14052794,, pBMReport,ReportChannelID,,'**[' A_Hour ':' A_Min ':00] Hourly Report**')
 	} catch as e {
 		message := "**[" A_Hour ":" A_Min ":" A_Sec "]**`n"
 		. "**Failed to send Hourly Report!**`n"
@@ -2366,26 +2302,6 @@ SendHourlyReport(generateTemplate:=false, keepStats:=false) {
 	}
 }
 
-/*************************************************************************************************************
-* @description: rounds a number (integer/float) to 4 s.f. and abbreviates it with common large number prefixes
-* @returns: (string) result
-* @author SP
-*************************************************************************************************************/
-FormatNumber(n) {
-	static numnames := ["M","B","T","Qa","Qi"]
-	digit := floor(log(abs(n)))+1
-	if (digit > 6) {
-		numname := (digit-4)//3
-		numstring := SubStr((round(n,4-digit)) / 10**(3*numname+3), 1, 5)
-		numformat := (SubStr(numstring, 0) = ".") ? 1.000 : numstring, numname += (SubStr(numstring, 0) = ".") ? 1 : 0
-		num := SubStr((round(n,4-digit)) / 10**(3*numname+3), 1, 5) " " numnames[numname]
-	} else {
-		num := Buffer(32), DllCall("GetNumberFormatEx","str","!x-sys-default-locale","uint",0,"str",n,"ptr",0,"Ptr",num.Ptr,"int",32)
-		num := SubStr(StrGet(num), 1, -3)
-	}
-	return num
-}
-
 /**************************************************************************************************
 * @description: responsible for receiving messages from the main macro script to set current status
 * @param: wParam is the status number, lParam is the second of the hour when status started
@@ -2432,26 +2348,6 @@ SetBackpack(wParam, lParam, *){
 			return 0
 	backpack_values[lParam] := wParam
 	return 0
-}
-
-/***************************************************************************************
-* @description: these functions return the minimum and maximum values in maps and arrays
-* @author modified versions of functions by FanaticGuru
-* @url https://www.autohotkey.com/boards/viewtopic.php?t=40898
-***************************************************************************************/
-minX(List) {
-	List.__Enum().Call(, &X)
-	for key, element in List
-		if (IsNumber(element) && (element < X))
-			X := element
-	return X
-}
-maxX(List) {
-	List.__Enum().Call(, &X)
-	for key, element in List
-		if (IsNumber(element) && (element > X))
-			X := element
-	return X
 }
 
 Send_WM_COPYDATA(StringToSend, TargetScriptTitle, wParam:=0) {
