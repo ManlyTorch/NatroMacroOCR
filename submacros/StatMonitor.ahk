@@ -1508,20 +1508,14 @@ buffActivated(wParam, lParam:=150, *) {
 	endI := Max(i + duration + 1, 600)
 
 	if remainder > 0 { ; update the future buff map.
-		loop remainder {
-			future_buff_values[buff][A_Index] := 1
-		}
-
+		future_buff_values[buff][1] := 1
 		future_buff_values[buff][remainder+1] := 0
+		future_buff_values[buff][remainder+2] := 0
 	}
 	
-	loop duration - remainder {
-		buff_values[buff][i + (A_Index - 1)] := 1
-	}
-	
-	if remainder < duration {
-		buff_values[buff][endI] := endI == 600 ? 1 : 0
-	}
+	buff_values[buff][i] := 1
+	buff_values[buff][endI] := endI == 600 ? 1 : 0
+	buff_values[buff][endI+1] := 0
 }
 
 ; ▰▰▰▰▰▰▰▰
