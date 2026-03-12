@@ -12122,8 +12122,9 @@ nm_StickerStack(){
         				loop 2 {
 							txt .= StrLower(words[idx + A_Index].Text)
         				}
-        				if RegExMatch(txt, "stackboost.*(\d+)", &matches) {
+        				if RegExMatch(txt, "stackboost\(x(\d+)", &matches) {
 							stackTime := 900 + 10 * Integer(match[1])
+							nm_setStatus("Detected", "Stack Boost Time: " hmsFromSeconds(stackTime))
 							detected := true
         				}
 					}
