@@ -12268,7 +12268,6 @@ nm_StickerStack(){
 				resizedScreen := Gdip_ResizeBitmap(pBMScreen, 1100, 440)
 				ocrResult := OCR.FromBitmap(resizedScreen)
 				words := ocrResult.Words
-				detected := false
 				stackTime := 0
 				for idx, word in words {
 					txt := StrLower(word.Text)
@@ -12276,15 +12275,18 @@ nm_StickerStack(){
         				loop 2 {
 							txt .= StrLower(words[idx + A_Index].Text)
         				}
-        				if RegExMatch(txt, "stackboost\(x(\d+)", &matches) {
+        				if RegExMatch(txt, "stackboost\(x(\d+)", &match) {
+							if !match.Count {
+								break
+							}
+							
 							stackTime := 900 + 10 * Integer(match[1])
 							nm_setStatus("Detected", "Stack Boost Time: " hmsFromSeconds(stackTime))
-							detected := true
         				}
 					}
 				}
 
-				if !detected {
+				if !stackTime {
 					nm_setStatus("Error", "Unable to detect Stack Boost time!")
 				} else if StickerStackMode == 0 {
 					StickerStackTimer := stackTime
@@ -12356,7 +12358,7 @@ nm_StickerStack(){
 				}
 				Sleep 2000
 				nm_SetStatus("Collected", "Sticker Stack")
-				if stackTime != 0 {
+				if !stackTime {
 					nm_PostBuff("StickerStack", stackTime)
 				}
 				break
