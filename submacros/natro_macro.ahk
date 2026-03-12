@@ -12061,19 +12061,19 @@ nm_StickerPrinter(){
 	}
 }
 
-nm_PostFieldBoost(field) {
-	fieldBoosts := ["Pine Tree", "Bamboo", "Blue Flower", "Stump", "Rose", "Strawberry", "Mushroom", "Pepper", "Cactus", "Pumpkin", "Pineapple", "Spider", "Clover", "Dandelion", "Sunflower", "Coconut"]
+nm_PostBuff(buff, duration:=150) {
+	buffs := ["Pine Tree", "Bamboo", "Blue Flower", "Stump", "Rose", "Strawberry", "Mushroom", "Pepper", "Cactus", "Pumpkin", "Pineapple", "Spider", "Clover", "Dandelion", "Sunflower", "Coconut", "StickerStack"]
 
-	boostIdx := 0
+	buffIdx := 0
 
-	for idx, curField in fieldBoosts {
-		if curField == field {
-			boostIdx := idx
+	for idx, curBuff in buffs {
+		if curBuff == buff {
+			buffIdx := idx
 			break
 		}
 	}
 
-	PostSubmacroMessage("StatMonitor", 0x5559, boostIdx)
+	PostSubmacroMessage("StatMonitor", 0x5559, buffIdx, duration)
 }
 
 ;//todo: pending rewrite of detections?
@@ -12111,31 +12111,31 @@ nm_StickerStack(){
 
 				; detect stack boost time
 				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-275 "|" windowY+4*windowHeight//10 "|550|220")
-				Loop 1 {
-					if (Gdip_ImageSearch(pBMScreen, bitmaps["stickerstackdigits"][")"], &pos, 275, , , 45, 20) = 1) {
-						x := SubStr(pos, 1, InStr(pos, ",")-1)
-						(digits := Map()).Default := ""
-						Loop 10 {
-							n := 10-A_Index
-							Gdip_ImageSearch(pBMScreen, bitmaps["stickerstackdigits"][n], &pos, x, , , 45, 20, , , 4, , "`n")
-							Loop Parse pos, "`n"
-								if (A_Index & 1)
-									digits[Integer(A_LoopField)] := n
-						}
-
-						num := ""
-						for x,y in digits
-							num .= y
-
-						if ((StrLen(num) = 4) && (SubStr(num, 4) = "0")) { ; check valid time before updating
-							nm_setStatus("Detected", "Stack Boost Time: " hmsFromSeconds(time := 60 * SubStr(num, 1, 2) + SubStr(num, 3)))
-							if (StickerStackMode = 0)
-								StickerStackTimer := time
-							break
-						}
+				resizedScreen := Gdip_ResizeBitmap(pBMScreen, 1100, 440)
+				ocrResult := OCR.FromBitmap(resizedScreen)
+				words := ocrResult.Words
+				detected := false
+				stackTime := 0
+				for idx, word in words {
+					txt := StrLower(word.Text)
+					if txt == "stack" {
+        				loop 2 {
+							txt .= StrLower(words[idx + A_Index].Text)
+        				}
+        				if RegExMatch(txt, "stackboost.*(\d+)", &matches) {
+							stackTime := 900 + 10 * Integer(match[1])
+							detected := true
+        				}
 					}
-					nm_setStatus("Error", "Unable to detect Stack Boost time!")
 				}
+
+				if !detected {
+					nm_setStatus("Error", "Unable to detect Stack Boost time!")
+				} else if StickerStackMode == 0 {
+					StickerStackTimer := stackTime
+				}
+
+				Gdip_DisposeImage(resizedScreen)
 
 				; check if sticker is available to donate
 				if (InStr(StickerStackItem, "Sticker") && (((Gdip_ImageSearch(pBMScreen, bitmaps["stickernormal"], &pos, , , 275, , 25) = 1) && (stack := "Sticker"))
@@ -12145,8 +12145,10 @@ nm_StickerStack(){
 					|| ((StickerStackVoucher = 1) && (Gdip_ImageSearch(pBMScreen, bitmaps["stickervoucher"], &pos, , , 275, , 25) = 1) && (stack := "Voucher")))) {
 					nm_setStatus("Stacking", stack)
 					MouseMove windowX+windowWidth//2-275+SubStr(pos, 1, InStr(pos, ",")-1)+26, windowY+4*windowHeight//10+SubStr(pos, InStr(pos, ",")+1)-10 ; select sticker
-					if (StickerStackMode = 0)
-						StickerStackTimer += 10
+					stackTime += 10
+					if StickerStackMode == 0 {
+						StickerStackTimer := stackTime
+					}
 				} else if InStr(StickerStackItem, "Tickets") {
 					nm_setStatus("Stacking", stack := "Tickets")
 					MouseMove windowX+windowWidth//2+105, windowY+4*windowHeight//10-78 ; select tickets
@@ -12199,6 +12201,9 @@ nm_StickerStack(){
 				}
 				Sleep 2000
 				nm_SetStatus("Collected", "Sticker Stack")
+				if stackTime != 0 {
+					nm_PostBuff("StickerStack", stackTime)
+				}
 				break
 			}
 		}
@@ -12438,7 +12443,7 @@ nm_toBooster(location){
 				for k,v in %location%BoosterFields {
 					if nm_fieldBoostCheck(v, 1) {
 						nm_setStatus("Boosted", v), RecentFBoost := v
-						nm_PostFieldBoost(v)
+						nm_PostBuff(v)
 						break 2
 					}
 
@@ -12604,7 +12609,7 @@ nm_fieldBoostDice(){
 	} else {
 		AFBrollingDice:=0
 		nm_setStatus(0, "Field was Boosted: Dice")
-		nm_PostFieldBoost(CurrentField)
+		nm_PostBuff(CurrentField)
 		if(FieldLastBoostedBy!="dice" || FieldBoostStacks=0) {
 			FieldBoostStacks:=FieldBoostStacks+1
 			FieldLastBoostedBy:="dice"
@@ -12654,7 +12659,7 @@ nm_fieldBoostGlitter(){
 	;check if gathering field was boosted
 	if(nm_fieldBoostCheck(CurrentField)) {
 		nm_setStatus(0, "Field was Boosted: Glitter")
-		nm_PostFieldBoost(CurrentField)
+		nm_PostBuff(CurrentField)
 		AFBglitterUsed:=AFBglitterUsed+1
 		IniWrite AFBglitterUsed, "settings\nm_config.ini", "Boost", "AFBglitterUsed"
 		if(AFBGlitterLimitEnable && AFBglitterUsed >= AFBglitterLimit) {
