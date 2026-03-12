@@ -39,7 +39,7 @@ You should have received a copy of the license along with Natro Macro. If not, p
 SetWorkingDir A_ScriptDir "\.."
 Updater := AutoUpdater("ManlyTorch", "NatroMacroOCR", "main", "settings\natro_version")
 
-if Updater.newVersion {
+if Updater.newVersion && not (A_Args.Has(1) && A_Args[1] = 1) {
 	Response := MsgBox("There's a new update! would you like to download it?`n" . Updater.GetCommitMessages(), "AutoUpdater", "YesNo")
 	if Response == "Yes" {
 		if not FileExist("settings") {
@@ -2573,8 +2573,13 @@ TabArr := ["Gather","Collect/Kill","Boost","Quests","Planters","Status","Setting
 (TabCtrl := MainGui.Add("Tab", "x0 y-1 w500 h240 -Wrap", TabArr)).OnEvent("Change", (*) => TabCtrl.Focus())
 SendMessage 0x1331, 0, 20, , TabCtrl ; set minimum tab width
 ; check for update
-try AsyncHttpRequest("GET", "https://api.github.com/repos/NatroTeam/NatroMacro/releases", nm_AutoUpdateHandler
-, Map("accept", "application/vnd.github+json", "X-GitHub-Api-Version", "2022-11-28"))
+try {
+	if A_Args.Has(1) && A_Args[1] = 1 {
+		return
+	}
+	AsyncHttpRequest("GET", "https://api.github.com/repos/NatroTeam/NatroMacro/releases", nm_AutoUpdateHandler
+	, Map("accept", "application/vnd.github+json", "X-GitHub-Api-Version", "2022-11-28"))
+}
 ; open Timers
 if (TimersOpen = 1)
 	run '"' exe_path32 '" /script "' A_WorkingDir '\submacros\PlanterTimers.ahk"'
