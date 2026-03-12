@@ -130,6 +130,8 @@ loop files, A_ScriptDir "/../nm_image_assets/statmonitor/*.png" {
 	future_buff_values[fieldName] := Map()
 }
 
+future_buff_values["StickerStack"] := Map()
+
 ; INFO FROM MAIN SCRIPT
 ; status_changes format: (A_Min*60+A_Sec+1):status_number (0 = other, 1 = gathering, 2 = converting)
 status_changes := Map()
@@ -146,7 +148,7 @@ OnMessage(0x5555, IncrementStat, 255)
 OnMessage(0x5556, SetAbility, 255)
 OnMessage(0x5557, SetBackpack, 255)
 OnMessage(0x5558, forceReport, 255)
-OnMessage(0x5559, fieldBoosted, 255)
+OnMessage(0x5559, buffActivated, 255)
 
 
 
@@ -327,9 +329,10 @@ defaultConfig.Push("BuffOrder", "You can change the order of buffs here`n"
 		"puppylove", "",
 		"fieldcorruption", "",
 		"cloudbuff", "",
+		"StickerStack", "",
 		"PineTree", "",
 		"Bamboo", "",
-		"BlueFlower", "",
+		"; BlueFlower", "",
 		"; Stump", "",
 		"; Rose", "",
 		"; Strawberry", "",
@@ -451,6 +454,7 @@ buff_Data := Map(
 	, "Dandelion",			[110, 0xffffffff]
 	, "Sunflower",			[110, 0xffffffff]
 	, "Coconut",			[110, 0xffffffff]
+	, "StickerStack",		[110, 0xffffffff]
 )
 
 buffXPos := regions["buffsRegion"][1]+320
@@ -1354,7 +1358,7 @@ nm_ReadIni(path) {
 				isArray := false
 				for idx, entry in %curArrayName% {
 					if not ArrayHasEntry(curArray, StrReplace(entry, "; ", "")) {
-						curArray.Push("; " entry)
+						curArray.Push(entry)
 					}
 				}
 				%curArrayName% := curArray
@@ -1485,29 +1489,38 @@ forceReport(*) {
 	SendHourlyReport(,true)
 }
 
-/****************************************************************
-* @description: Registers the boosted field in the hourly report.
-* @param: wParam is the field idx
+/*************************************************************
+* @description: Registers the given buff in the hourly report.
+* @param: wParam is the item idx, lParam is duration.
 * @returns: ()
 * @author ManlyTorch
-****************************************************************/
-fieldBoosted(wParam, lParam, *) {
-	fieldBoosts := ["Pine Tree", "Bamboo", "Blue Flower", "Stump", "Rose", "Strawberry", "Mushroom", "Pepper", "Cactus", "Pumpkin", "Pineapple", "Spider", "Clover", "Dandelion", "Sunflower", "Coconut"]
-	field := StrReplace(fieldBoosts[wParam], " ", "")
+*************************************************************/
+buffActivated(wParam, lParam:=150, *) {
+	buffs := ["PineTree", "Bamboo", "BlueFlower", "Stump", "Rose", "Strawberry", "Mushroom", "Pepper", "Cactus", "Pumpkin", "Pineapple", "Spider", "Clover", "Dandelion", "Sunflower", "Coconut", "StickerStack"]
+	buff := buffs[wParam]
+	duration := lParam
 
 	time_value := (60*A_Min+A_Sec)//6
 	i := (time_value = 0) ? 600 : time_value
 
-	remainder := Max(0, i + 150 - 600)
-	endI := Max(i + 150, 600)
+	remainder := Max(0, i + duration - 600)
+	endI := Max(i + duration + 1, 600)
 
 	if remainder > 0 { ; update the future buff map.
-		future_buff_values[field][1] := 1
-		future_buff_values[field][remainder+1] := 0
-	}
+		loop remainder {
+			future_buff_values[buff][A_Index] := 1
+		}
 
-	buff_values[field][i] := 1
-	buff_values[field][endI] := endI == 600 ? 1 : 0
+		future_buff_values[buff][remainder+1] := 0
+	}
+	
+	loop duration - remainder {
+		buff_values[buff][i + (A_Index - 1)] := 1
+	}
+	
+	if remainder < duration {
+		buff_values[buff][endI] := endI == 600 ? 1 : 0
+	}
 }
 
 ; ▰▰▰▰▰▰▰▰
