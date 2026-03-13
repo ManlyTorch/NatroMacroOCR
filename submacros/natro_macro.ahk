@@ -12358,7 +12358,7 @@ nm_StickerStack(){
 				}
 				Sleep 2000
 				nm_SetStatus("Collected", "Sticker Stack")
-				if !stackTime {
+				if stackTime {
 					nm_PostBuff("StickerStack", stackTime / 6)
 				}
 				break
