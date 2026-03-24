@@ -2354,179 +2354,6 @@ nm_MsgBoxIncorrectRobloxSettings() {
 	}
 	return 0
 }
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; AUTO-UPDATE
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-nm_AutoUpdateHandler(req) {
-	global
-	local release, releases
-
-	if (req.readyState != 4)
-		return
-
-	if (req.status = 200) {
-		; determine release channel
-
-		releases := JSON.parse(req.responseText)
-		for , release in releases {
-			if (
-				release["prerelease"] = true && ReleaseChannel = "Beta"
-				|| release["prerelease"] = false
-			) && (
-				IsObject(release["assets"]) && release["assets"].Length > 0
-			) {
-				latest_release := release
-				break
-			}
-			; should only be here if latest is pre release + on stable channel
-		}
-		if !IsSet(latest_release)
-			latest_release := releases[1] ; should never happen unless we publish 30+ betas
-
-		LatestVer := Trim(latest_release["tag_name"], "v")
-		if (VerCompare(VersionID, LatestVer) < 0) {
-			MainGui["ImageUpdateLink"].Visible := 1
-			VersionWidth += 16
-			MainGui["VersionText"].Move(494 - VersionWidth), MainGui["VersionText"].Redraw()
-			MainGui["ImageGitHubLink"].Move(494 - VersionWidth - 23), MainGui["ImageGitHubLink"].Redraw()
-			MainGui["ImageDiscordLink"].Move(494 - VersionWidth - 48), MainGui["ImageDiscordLink"].Redraw()
-			try MainGui["SecretButton"].Move(494-VersionWidth-104), MainGui["SecretButton"].Redraw()
-
-			if (LatestVer != IgnoreUpdateVersion)
-				nm_AutoUpdateGUI()
-		}
-	}
-}
-nm_AutoUpdateGUI(*) {
-	global
-	local size, downloads, posW, hBM, UpdateText, GuiCtrl
-	GuiClose(*){
-		if (IsSet(UpdateGui) && IsObject(UpdateGui))
-			UpdateGui.Destroy(), UpdateGui := ""
-	}
-	GuiClose()
-	UpdateGui := Gui("+AlwaysOnTop -MinimizeBox +Owner" MainGui.Hwnd, "Natro Macro Update")
-	UpdateGui.OnEvent("Close", GuiClose), UpdateGui.OnEvent("Escape", GuiClose)
-	UpdateGui.SetFont("s9 cDefault Norm", "Tahoma")
-	UpdateText := UpdateGui.Add("Text", "x20 w260 +Center +BackgroundTrans", "A newer version of Natro Macro was found!`nDo you want to update now?")
-
-	posW := TextExtent("Natro Macro v" VersionID " ⮕ v" LatestVer, UpdateText)
-	UpdateGui.Add("Text", "x" 149-posW//2 " y40 +BackgroundTrans", "Natro Macro v" VersionID " ⮕ ")
-	UpdateGui.Add("Text", "x+0 yp +c379e37 +BackgroundTrans", "v" LatestVer)
-
-	posW := TextExtent((size := Round(latest_release["assets"][1]["size"]/1048576, 2)) " MB // Downloads: " (downloads := latest_release["assets"][1]["download_count"]), UpdateText)
-	UpdateGui.Add("Text", "x" 150-posW//2 " y54 +BackgroundTrans", size " MB // Downloads: " downloads)
-
-	hBM := Gdip_CreateHBITMAPFromBitmap(bitmaps["githubgui"]), UpdateGui.Add("Picture", "x76 y+1 w16 h16 +BackgroundTrans", "HBITMAP:*" hBM).OnEvent("Click", GitHubRepoLink), DllCall("DeleteObject", "ptr", hBM)
-	UpdateGui.Add("Text", "x+4 yp+1 c0046ee +BackgroundTrans", "Patch Notes && Updates").OnEvent("Click", GitHubReleaseLink)
-
-	UpdateGui.SetFont("s8 w700")
-	local MajorUpdate := (StrSplit(VersionID, ".")[1] < StrSplit(LatestVer, ".")[1])
-	UpdateGui.Add("GroupBox", "x50 y+4 w200 h" (MajorUpdate ? 74 : 50), "Options")
-	UpdateGui.SetFont("Norm")
-	UpdateGui.Add("CheckBox", "xp+8 yp+16 Checked vCopySettings", "Copy Settings")
-	UpdateGui.Add("CheckBox", "xp+92 yp vCopyPatterns Checked" (!MajorUpdate) " Disabled" MajorUpdate, "Copy Patterns")
-	UpdateGui.Add("CheckBox", "xp-92 yp+16 vCopyPaths Checked" (!MajorUpdate) " Disabled" MajorUpdate, "Copy Paths")
-	UpdateGui.Add("CheckBox", "xp+92 yp vDeleteOld", "Delete v" VersionID)
-	if MajorUpdate
-		UpdateGui.Add("Button", "x60 y+5 w180 h18", "Why are some options disabled?").OnEvent("Click", nm_MajorUpdateHelp)
-
-	UpdateGui.SetFont("s9")
-	UpdateGui.Add("Button", "x8 y+12 w92 h26", "Never").OnEvent("Click", nm_NeverButton)
-	UpdateGui.Add("Button", "xp+96 yp wp hp vDismissButton", "Dismiss (120)").OnEvent("Click", nm_DismissButton)
-	SetTimer nm_DismissLabel, -1000
-
-	UpdateGui.SetFont("Bold")
-	(GuiCtrl := UpdateGui.Add("Button", "xp+96 yp wp hp", "Update")).OnEvent("Click", nm_UpdateButton)
-	UpdateGui.Show("w290 h168")
-	GuiCtrl.Focus()
-	WinWaitClose "ahk_id " UpdateGui.Hwnd, , 125
-	GuiClose()
-}
-nm_DismissLabel() {
-	static countdown := unset
-	global UpdateGUI
-	if !IsSet(countdown)
-		countdown := 120
-
-	if UpdateGui {
-		if (--countdown <= 0) {
-			countdown := unset
-			UpdateGui.Destroy()
-		} else {
-			UpdateGui["DismissButton"].Text := "Dismiss (" countdown ")"
-			SetTimer nm_DismissLabel, -1000
-		}
-	}
-	else
-		countdown := unset
-}
-nm_DismissButton(*) {
-	global UpdateGui
-	UpdateGui.Destroy(), UpdateGui := ""
-}
-nm_NeverButton(*) {
-	global UpdateGui
-	if (MsgBox(
-	(
-	"Are you sure you want to disable prompts for v" LatestVer "?
-	You can still update manually, or by clicking the red symbol in the bottom right corner of the GUI."
-	), "Disable Automatic Update", 0x1044 " Owner" UpdateGui.Hwnd) = "Yes") {
-		IniWrite (IgnoreUpdateVersion := LatestVer), "settings\nm_config.ini", "Settings", "IgnoreUpdateVersion"
-		UpdateGui.Destroy(), UpdateGui := ""
-	}
-}
-nm_UpdateButton(*) {
-	global latest_release, VersionID, UpdateGui
-	url := latest_release["assets"][1]["browser_download_url"]
-	olddir := A_WorkingDir
-	CopySettings := UpdateGui["CopySettings"].Value
-	CopyPatterns := UpdateGui["CopyPatterns"].Value
-	CopyPaths := UpdateGui["CopyPaths"].Value
-	DeleteOld := UpdateGui["DeleteOld"].Value
-	changedpaths := ""
-	UpdateGui.Destroy(), UpdateGui := ""
-
-	if (CopyPaths = 1) {
-		try {
-			wr := ComObject("WinHttp.WinHttpRequest.5.1")
-			wr.Open("GET", "https://api.github.com/repos/NatroTeam/NatroMacro/tags?per_page=100", 1)
-			wr.SetRequestHeader("accept", "application/vnd.github+json")
-			wr.SetRequestHeader("X-GitHub-Api-Version", "2022-11-28")
-			wr.Send()
-			wr.WaitForResponse()
-			for k,v in (tags := JSON.parse(wr.ResponseText))
-				if ((VerCompare(Trim(v["name"], "v"), VersionID) <= 0) && (base := v["name"]))
-					break
-			if !base
-				throw
-
-			wr := ComObject("WinHttp.WinHttpRequest.5.1")
-			wr.Open("GET", "https://api.github.com/repos/NatroTeam/NatroMacro/compare/" base "..." latest_release["tag_name"] , 1)
-			wr.SetRequestHeader("accept", "application/vnd.github+json")
-			wr.SetRequestHeader("X-GitHub-Api-Version", "2022-11-28")
-			wr.Send()
-			wr.WaitForResponse()
-			for k,v in (files := JSON.parse(wr.ResponseText)["files"])
-				if (SubStr(v["filename"], 1, 6) = "paths/")
-					changedpaths .= '"' SubStr(v["filename"], 7) '" '
-			changedpaths := RTrim(changedpaths)
-		}
-		catch {
-			MsgBox "Unable to fetch changed paths from GitHub!`nIf you still want to update, disable 'Copy Paths' (and copy them manually) or try again later.", "Error", 0x1010 " T30"
-			return
-		}
-	}
-
-	Run '"' A_WorkingDir '\submacros\update.bat" "' url '" "' olddir '" "' CopySettings '" "' CopyPatterns '" "' CopyPaths '" "' DeleteOld '" "' changedpaths '"'
-	ExitApp
-}
-nm_MajorUpdateHelp(*) {
-	MsgBox "v" VersionID " to v" LatestVer " is a major version update.`n`n"
-	. "This means that backward compatibility of Paths and Patterns cannot be guaranteed, so they cannot be automatically copied.`n"
-	. "However, in Natro Macro, your Settings are guaranteed to be transferable to any new version, so that option remains enabled.`n`n"
-	. "For more information, you can review the convention at https://semver.org/", "Major Update", 0x1040
-}
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; CREATE GUI
@@ -2549,9 +2376,6 @@ MainGui.Add("Text", "x220 y240 w275 +BackgroundTrans +border vstate", "Startup: 
 
 ; version label and links
 (GuiCtrl := MainGui.Add("Text", "x435 y264 vVersionText", "v" versionID)).OnEvent("Click", nm_showAdvancedSettings), GuiCtrl.Move(494 - (VersionWidth := TextExtent("v" VersionID, GuiCtrl)))
-hBM := Gdip_CreateHBITMAPFromBitmap(bitmaps["warninggui"])
-MainGui.Add("Picture", "+BackgroundTrans x482 y264 w14 h14 Hidden vImageUpdateLink", "HBITMAP:*" hBM).OnEvent("Click", nm_AutoUpdateGUI)
-DllCall("DeleteObject", "Ptr", hBM)
 hBM := Gdip_CreateHBITMAPFromBitmap(bitmaps["githubgui"])
 MainGui.Add("Picture", "+BackgroundTrans x" 494-VersionWidth-23 " y262 w18 h18 vImageGitHubLink", "HBITMAP:*" hBM)
 DllCall("DeleteObject", "Ptr", hBM)
@@ -2572,13 +2396,6 @@ for k,v in ["PMondoGuid","PMondoGuidComplete","PFieldBoosted","PFieldGuidExtend"
 TabArr := ["Gather","Collect/Kill","Boost","Quests","Planters","Status","Settings","Misc","Credits"], (BuffDetectReset = 1) && TabArr.Push("Advanced")
 (TabCtrl := MainGui.Add("Tab", "x0 y-1 w500 h240 -Wrap", TabArr)).OnEvent("Change", (*) => TabCtrl.Focus())
 SendMessage 0x1331, 0, 20, , TabCtrl ; set minimum tab width
-; check for update
-try {
-	if !A_Args.Has(1) or A_Args[1] = 1 {
-		AsyncHttpRequest("GET", "https://api.github.com/repos/NatroTeam/NatroMacro/releases", nm_AutoUpdateHandler
-		, Map("accept", "application/vnd.github+json", "X-GitHub-Api-Version", "2022-11-28"))
-	}
-}
 ; open Timers
 if (TimersOpen = 1)
 	run '"' exe_path32 '" /script "' A_WorkingDir '\submacros\PlanterTimers.ahk"'
