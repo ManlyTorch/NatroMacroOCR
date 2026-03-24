@@ -2572,11 +2572,10 @@ TabArr := ["Gather","Collect/Kill","Boost","Quests","Planters","Status","Setting
 SendMessage 0x1331, 0, 20, , TabCtrl ; set minimum tab width
 ; check for update
 try {
-	if A_Args.Has(1) && A_Args[1] = 1 {
-		return
+	if !A_Args.Has(1) or A_Args[1] = 1 {
+		AsyncHttpRequest("GET", "https://api.github.com/repos/NatroTeam/NatroMacro/releases", nm_AutoUpdateHandler
+		, Map("accept", "application/vnd.github+json", "X-GitHub-Api-Version", "2022-11-28"))
 	}
-	AsyncHttpRequest("GET", "https://api.github.com/repos/NatroTeam/NatroMacro/releases", nm_AutoUpdateHandler
-	, Map("accept", "application/vnd.github+json", "X-GitHub-Api-Version", "2022-11-28"))
 }
 ; open Timers
 if (TimersOpen = 1)
