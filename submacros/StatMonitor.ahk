@@ -1388,24 +1388,21 @@ nm_ReadIni(path) {
 tryExt(path) {
 	global extArray
 	local ext := ""
-	try {
-		FileExist(path) ; register refs
-		for ext in extArray {
-			if FileExist(path "." StrLower(ext)) {
-				return true
-			}
-		}
-	} catch { ; Is a reference variable
-		doRef(&path) {
-			for ext in extArray{
-				if FileExist(path "." StrLower(ext)) {
-					path .= "." StrLower(ext)
-					return true
-				}
-			}
-		}
-		return doRef(path)
+
+	truePath := path
+	if path is VarRef {
+		truePath := %path%
 	}
+
+	for ext in extArray{
+		if FileExist(truePath "." StrLower(ext)) {
+			if path is VarRef {
+				%path% .= "." StrLower(ext)
+			}
+			return true
+		}
+	}
+
 	return
 }
 
@@ -1509,10 +1506,20 @@ buffActivated(wParam, lParam:=150, *) {
 
 	if remainder > 0 { ; update the future buff map.
 		future_buff_values[buff][1] := 1
-		future_buff_values[buff][remainder+1] := 0
+		for idx, active in future_buff_values[buff] {
+			if !active and (idx > i and idx < remainder) {
+				future_buff_values[buff][idx] := 1
+			}
+		}
+		future_buff_values[buff][remainder] := 0
 	}
 	
 	buff_values[buff][i] := 1
+	for idx, active in buff_values[buff] {
+		if !active and (idx > i and idx < endI) {
+			buff_values[buff][idx] := 1
+		}
+	}
 	buff_values[buff][endI] := endI == 600 ? 1 : 0
 }
 
