@@ -2141,6 +2141,7 @@ Run
 ; GDIP BITMAPS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 bitmaps := Map(), bitmaps.CaseSense := 0
+bitmaps["whirligigslot"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAK1JREFUKFM9jT0KQkEMhCf79i1YWXsYO0W8iq2Fll7BA1jpBTyZoDz3L5vIBnnFhIHMfEPXw1pHP6AyQ0ShCqgqxORAt+NGAaAfFUVhRi51Ds8Bbg25MpgF3UsTo1igm+mbwE3QRDoQYfQY3H+iN2PMNhOCxyKMcM5ZkO6nrabSmw1EDoMjgMieIgJ6Xvb6iWztTm+iplQqcq2gx3mnq6W3RqqC19TwiQXvKRrhB6Cof45TNg6LAAAAAElFTkSuQmCC")
 shrine := Map(), shrine.CaseSense := 0
 hBitmapsSBT := Map(), hBitmapsSBT.CaseSense := 0
 #Include "%A_ScriptDir%\..\nm_image_assets"
