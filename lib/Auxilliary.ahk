@@ -73,16 +73,46 @@ ObjStrJoin(delim, arr) {
 	} catch
 		return 0
 }
-QuickSort(arr, prop := "", low := 1, high := 0) {
-    high := high ? high : arr.Length
-    if (low < high)
-        p := Partition(arr, prop, low, high), (p > low) ? QuickSort(arr, prop, low, p - 1) : 0, (p < high) ? QuickSort(arr, prop, p + 1, high) : 0
+DeepQuickSort(arr, compareFn, low, high) {
+    if (low < high) {
+        p := Partition(arr, compareFn, low, high)
+		if p > low {
+			DeepQuickSort(arr, compareFn, low, p - 1)
+		}
+		if p < high {
+			DeepQuickSort(arr, compareFn, p + 1, high)
+		}
+	}
     return arr
 }
-Partition(arr, prop, low, high) {
-    pivot := prop ? arr[high].%prop% : arr[high], i := low - 1
-    Loop high - low
-        j := low + A_Index - 1, val := prop ? arr[j].%prop% : arr[j], (val > pivot) ? (i++, temp := arr[i], arr[i] := arr[j], arr[j] := temp) : 0
-    (i + 1 != high) ? (i++, temp := arr[i], arr[i] := arr[high], arr[high] := temp) : i++
-    return i
+QuickSort(arr, compareFn := (a, b) => a > b, low := 1, high := 0) {
+    high := high ? high : arr.Length
+	if compareFn is String{
+		str := compareFn
+		compareFn := (a, b) => a.%str% > b.%str%
+	} else if !(compareFn is Func) {
+		compareFn := (a, b) => a > b
+	}
+	DeepQuickSort(arr, compareFn, low, high)
+    return arr
+}
+Partition(arr, compareFn, low, high) {
+    pivot := arr[high]
+	lastIdx := low - 1
+    Loop high - low {
+        idx := low + A_Index - 1
+		if compareFn(arr[idx], pivot) {
+			lastIdx++
+			temp := arr[lastIdx]
+			arr[lastIdx] := arr[idx]
+			arr[idx] := temp
+		}
+	}
+	lastIdx++
+	if (lastIdx != high) {
+		temp := arr[lastIdx]
+		arr[lastIdx] := arr[high]
+		arr[high] := temp
+	}
+    return lastIdx
 }
