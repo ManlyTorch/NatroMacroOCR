@@ -2200,7 +2200,6 @@ hBitmapsSBT := Map(), hBitmapsSBT.CaseSense := 0
 #Include "gui\bitmaps.ahk"
 #Include "beemenu\bitmaps.ahk"
 #Include "buffs\bitmaps.ahk"
-#Include "convert\bitmaps.ahk"
 #Include "collect\bitmaps.ahk"
 #Include "kill\bitmaps.ahk"
 #Include "boost\bitmaps.ahk"
@@ -10051,11 +10050,7 @@ nm_Reset(checkAll:=1, wait:=2000, convert:=1, force:=0){
 	atHive() {
 		ActivateRoblox()
 		GetRobloxClientPos()
-		pBMScreen := Gdip_BitmapFromScreen(windowX + windowWidth // 2 - 150 "|" windowY + GetYOffset() + 40 "|350|60")
-		success := (Gdip_ImageSearch(pBMScreen, bitmaps["colhey"],,,,,,5) = 1)
-		Gdip_DisposeImage(pBMScreen)
-
-		return success
+		return findTextInRegion("make",, windowX + windowWidth // 2 - 150, windowY + GetYOffset() + 40, 350, 60).Has("Word")
 	}
 }
 nm_HealthBar() { 
@@ -10071,13 +10066,7 @@ nm_HealthBar() {
 	return detection
 }
 nm_ConfirmAtHive(){
-	pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY "|400|125")
-	if ((Gdip_ImageSearch(pBMScreen, bitmaps["makehoney"], , , , , , 2, , 2) = 1) || (Gdip_ImageSearch(pBMScreen, bitmaps["collectpollen"], , , , , , 2, , 2) = 1)){
-		Gdip_DisposeImage(pBMScreen)
-		return 1
-	}
-	Gdip_DisposeImage(pBMScreen)
-	return 0
+	return findTextInRegion("make",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word")
 }
 nm_DetectSpawn() { ; some of the code was from hive check, repurposing it here since it seems to reliably detect hive slots even when the stuff is really bad
     ActivateRoblox()
@@ -10353,12 +10342,10 @@ nm_gotoCannon(){
 		DllCall("GetSystemTimeAsFileTime","int64p",&s:=0)
 		n := s, f := s+200000000
 		while (n < f) {
-			pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY "|400|125")
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["redcannon"], , , , , , 2, , 2) = 1) {
-				success := 1, Gdip_DisposeImage(pBMScreen)
+			if findTextInRegion("cannon",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
+				success := 1
 				break
 			}
-			Gdip_DisposeImage(pBMScreen)
 			DllCall("GetSystemTimeAsFileTime","int64p",&n)
 		}
 		nm_endWalk()
@@ -10370,9 +10357,7 @@ nm_gotoCannon(){
 					break
 				}
 				Sleep 500
-				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY "|400|125")
-				if (Gdip_ImageSearch(pBMScreen, bitmaps["redcannon"], , , , , , 2, , 2) = 1) {
-					Gdip_DisposeImage(pBMScreen)
+				if findTextInRegion("cannon",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
 					break 2
 				}
 				else {
@@ -10382,7 +10367,6 @@ nm_gotoCannon(){
 					KeyWait "F14", "T5 L"
 					nm_endWalk()
 				}
-				Gdip_DisposeImage(pBMScreen)
 			}
 		}
 
@@ -15853,12 +15837,12 @@ nm_convert(){
 		Gdip_DisposeImage(pBMScreen)
 		return
 	}
-	if (Gdip_ImageSearch(pBMScreen, bitmaps["makehoney"], , , , , , 2, , 2) = 1) {
+	Gdip_DisposeImage(pBMScreen)
+	if findTextInRegion("make",, windowX+windowWidth//2-200, windowY+offsetY+36, 400, 120, true).Has("Word") {
 		SendInput "{" SC_E " down}"
 		Sleep 100
 		SendInput "{" SC_E " up}"
 	}
-	Gdip_DisposeImage(pBMScreen)
 	ConvertStartTime:=nowUnix()
 	inactiveHoney:=0
 	ballooncomplete:=0
@@ -15887,12 +15871,12 @@ nm_convert(){
 				return
 			}
 			GetRobloxClientPos(hwnd)
-			pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY+36 "|" windowWidth//2+200 "|" windowHeight-offsetY-36)
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["makehoney"], , , , 400, 120, 2, , 2) = 1) {
+			if findTextInRegion("make",, windowX+windowWidth//2-200, windowY+offsetY+36, windowWidth//2+200, windowHeight-offsetY-36, true).Has("Word") {
 				SendInput "{" SC_E " down}"
 				Sleep 100
 				SendInput "{" SC_E " up}"
 			}
+			pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY+36 "|" windowWidth//2+200 "|" windowHeight-offsetY-36)
 			if ((Gdip_ImageSearch(pBMScreen, bitmaps["e_button"], , , , 400, 120, 2, , 6) = 0)
 				|| ((Gdip_ImageSearch(pBMScreen, bitmaps["hiveballoon"], , windowWidth//2, windowHeight-offsetY-36-400, , , 40, , 3) = 1) && (ballooncomplete:=1))) {
 				Gdip_DisposeImage(pBMScreen)
@@ -15957,12 +15941,12 @@ nm_convert(){
 					MouseMove windowX+windowWidth-30, windowY+offsetY+16
 					click
 				}
-				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY+36 "|" windowWidth//2+200 "|" windowHeight-offsetY-36)
-				if (Gdip_ImageSearch(pBMScreen, bitmaps["makehoney"], , , , 400, 120, 2, , 2) = 1) {
+				if findTextInRegion("make",, windowX+windowWidth//2-200, windowY+offsetY+36, windowWidth//2+200, windowHeight-offsetY-36, true).Has("Word") {
 					SendInput "{" SC_E " down}"
 					Sleep 100
 					SendInput "{" SC_E " up}"
 				}
+				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY+36 "|" windowWidth//2+200 "|" windowHeight-offsetY-36)
 				if ((Gdip_ImageSearch(pBMScreen, bitmaps["e_button"], , , , 400, 120, 2, , 6) = 0)
 					|| (Gdip_ImageSearch(pBMScreen, bitmaps["hiveballoon"], , windowWidth//2, windowHeight-offsetY-36-400, , , 40, , 3) = 1)) {
 					Gdip_DisposeImage(pBMScreen)
@@ -16626,21 +16610,20 @@ ShellRun(prms*) {
 }
 nm_claimHiveSlot(){
 	global KeyDelay, FwdKey, RightKey, LeftKey, BackKey, ZoomOut, HiveSlot, HiveConfirmed, SC_E, SC_Esc, SC_R, SC_Enter, bitmaps
-	GetBitmap() {
-		pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY "|400|125")
+	RemoveFriendJoin() {
 		loop 20 {
+			pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY "|400|125")
 			for , bitmap in bitmaps["FriendJoin"] {
 				if (Gdip_ImageSearch(pBMScreen, bitmap, , , , , , 6) = 1) {
-					Gdip_DisposeImage(pBMScreen)
 					MouseMove windowX+windowWidth//2-3, windowY+24
 					Click
 					MouseMove windowX+350, windowY+offsetY+100
 					Sleep 500
-					pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY "|400|125")
 				}
 			}
+			Gdip_DisposeImage(pBMScreen)
 		}
-		return pBMScreen
+		return
 	}
 
 	DetectHiveslots := 1
@@ -16699,8 +16682,8 @@ nm_claimHiveSlot(){
 				KeyWait "F14", "T20 L"
 				nm_endWalk()
 				sleep 500
-				pBMScreen := GetBitmap()
-				if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"], , , , , , 2, , 6) = 1) {
+				RemoveFriendJoin()
+				if findTextInRegion("claim",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
 					Gdip_DisposeImage(pBMScreen)
 					Send "{" SC_E " down}"
 					sleep 100
@@ -16752,10 +16735,10 @@ nm_claimHiveSlot(){
 			}
 
 			Sleep 500
-			pBMScreen := GetBitmap()
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"], , , , , , 2, , 6) = 1)
+			RemoveFriendJoin()
+			if findTextInRegion("claim",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
 				slots[A_Index] := 1
-			Gdip_DisposeImage(pBMScreen)
+			}
 		}
 
 		if (slots.Has(HiveSlot) && (slots[HiveSlot] = 1))
@@ -16769,13 +16752,11 @@ nm_claimHiveSlot(){
 				nm_endWalk()
 
 				Sleep 500
-				pBMScreen := GetBitmap()
-				if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"], , , , , , 2, , 6) = 1) {
-					Gdip_DisposeImage(pBMScreen)
+				RemoveFriendJoin()
+				if findTextInRegion("claim",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
 					HiveSlot := slot
 					break
 				}
-				Gdip_DisposeImage(pBMScreen)
 			}
 			else {
 				Loop (6 - HiveSlot) {
@@ -16785,13 +16766,11 @@ nm_claimHiveSlot(){
 					nm_endWalk()
 
 					Sleep 500
-					pBMScreen := GetBitmap()
-					if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"], , , , , , 2, , 6) = 1) {
-						Gdip_DisposeImage(pBMScreen)
+					RemoveFriendJoin()
+					if findTextInRegion("claim",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
 						HiveSlot += A_Index
 						break 2
 					}
-					Gdip_DisposeImage(pBMScreen)
 				}
 			}
 		}
