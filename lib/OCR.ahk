@@ -131,17 +131,20 @@ LevenshteinDistance(s1, s2) {
 }
 
 isCorrectWord(items, wordsList, idx) {
+    if items.Length <= 1 {
+        return true
+    }
     word := wordsList.Words.Get(idx)
     itemName := StrLower(items[1])
     if wordsList.Words.Length > idx {
 	    nextWord := wordsList.Words.Get(idx + 1)
-	    if (items.Length <= 1 ? nextWord.BoundingRect.y == word.BoundingRect.y : StrLower(nextWord.Text) != StrLower(items[2])) {
-	    	return
+	    if StrLower(nextWord.Text) != StrLower(items[2]) {
+	    	return false
 	    }
     } else {
         return StrLower(itemName) == StrLower(word.Text)
     }
-    return True
+    return true
 }
 
 isUnspacedWord(items, wordsList, idx, max:=4) {
@@ -168,7 +171,9 @@ isUnspacedWord(items, wordsList, idx, max:=4) {
 
 findTextInRegion(item, img:="", x:=0, y:=0, w:=0, h:=0, absolute:=False) {
 	wordsList := {}
-	if img != "" {
+	if img is Integer {
+        wordsList := OCR.FromBitmap(img)
+    } else if img != "" {
 		wordsList := OCR.FromFile(img)
 	} else {
 		wordsList := OCR.FromRect(x, y, w, h)
@@ -181,6 +186,7 @@ findTextInRegion(item, img:="", x:=0, y:=0, w:=0, h:=0, absolute:=False) {
     bestDist := [9999999999]
 	TextRegion := Map()
 	TextRegion["Words"] := wordsList.Words
+    TextRegion["Obj"] := wordsList
 	if absolute {
 		for idx, word in wordsList.Words {
 			if itemName == StrLower(word.Text) and isCorrectWord(items, wordsList, idx) {
