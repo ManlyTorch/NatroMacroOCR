@@ -665,9 +665,6 @@ Loop {
 }
 
 nm_status(status) {
-	if true {
-		return
-	}
 	stateString := SubStr(status, InStr(status, "] ")+2)
 	state := SubStr(stateString, 1, InStr(stateString, ": ")-1), objective := SubStr(stateString, InStr(stateString, ": ")+2)
 
@@ -676,8 +673,36 @@ nm_status(status) {
 	if (DebugLogEnabled = 1)
 		try log := FileOpen("settings\debug_log.txt", "a-d"), log.WriteLine(StrReplace(status, "`n", " - ")), logsize := log.Length, log.Close()
 
+	status_buffer.RemoveAt(1)
+	; extra: night detection announcement
+	if ((NightAnnouncementCheck = 1) && (PublicJoined = 0) && (stateString = "Detected: Night") && (StrLen(NightAnnouncementWebhook) > 0)) {
+		payload_json :=
+		(
+		' {
+			' (NightAnnouncementPingID ? ('"content": "<@' NightAnnouncementPingID '>",') : '') '
+			"embeds": [{
+				"author": {
+					"name": "Night Detected in ' (NightAnnouncementName ? (NightAnnouncementName "'s ") : "") 'Server",
+					"url": "' PrivServer '",
+					"icon_url": "attachment://moon.png"
+				},
+				"description": "A Vicious Bee **may** be found in [this server](' PrivServer ')!",
+				"color": "0",
+				"timestamp": "' FormatTime(A_NowUTC, "yyyy-MM-ddTHH:mm:ssZ") '"
+			}]
+		}
+		'
+		)
+
+		discord.CreateFormData(&postdata, &contentType, [Map("name","payload_json", "content-type","application/json", "content",payload_json), Map("name","files[0]","filename","moon.png","content-type","image/png","pBitmap",bitmaps["moon"])])
+		discord.SendMessageAPI(postdata, contentType, , NightAnnouncementWebhook)
+	}
+	
 	; send to discord
 	if (discordCheck = 1) {
+		if true {
+			return
+		}
 		; set colour based on state string
 		static colorIndex := 0, colors := [16711680, 16744192, 16776960, 65280, 255, 4915330, 9699539]
 		if (WebhookEasterEgg = 1)
@@ -728,7 +753,6 @@ nm_status(status) {
 				hwnd := GetRobloxHWND(), GetRobloxClientPos(hwnd), pBM := Gdip_BitmapFromScreen((windowWidth > 0) ? (windowX "|" windowY "|" windowWidth "|" windowHeight) : 0)
 		}
 
-		status_buffer.RemoveAt(1)
 		discord.SendEmbed(message, color, content, pBM?, channel?), IsSet(pBM) && pBM > 0 && Gdip_DisposeImage(pBM)
 
 		; extra: honey update
@@ -739,32 +763,6 @@ nm_status(status) {
 			else if (state != "Detected")
 				HoneyUpdate := 0
 		}
-	}
-	else
-		status_buffer.RemoveAt(1)
-
-	; extra: night detection announcement
-	if ((NightAnnouncementCheck = 1) && (PublicJoined = 0) && (stateString = "Detected: Night") && (StrLen(NightAnnouncementWebhook) > 0)) {
-		payload_json :=
-		(
-		' {
-			' (NightAnnouncementPingID ? ('"content": "<@' NightAnnouncementPingID '>",') : '') '
-			"embeds": [{
-				"author": {
-					"name": "Night Detected in ' (NightAnnouncementName ? (NightAnnouncementName "'s ") : "") 'Server",
-					"url": "' PrivServer '",
-					"icon_url": "attachment://moon.png"
-				},
-				"description": "A Vicious Bee **may** be found in [this server](' PrivServer ')!",
-				"color": "0",
-				"timestamp": "' FormatTime(A_NowUTC, "yyyy-MM-ddTHH:mm:ssZ") '"
-			}]
-		}
-		'
-		)
-
-		discord.CreateFormData(&postdata, &contentType, [Map("name","payload_json", "content-type","application/json", "content",payload_json), Map("name","files[0]","filename","moon.png","content-type","image/png","pBitmap",bitmaps["moon"])])
-		discord.SendMessageAPI(postdata, contentType, , NightAnnouncementWebhook)
 	}
 }
 
