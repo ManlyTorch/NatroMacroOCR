@@ -10050,7 +10050,7 @@ nm_Reset(checkAll:=1, wait:=2000, convert:=1, force:=0){
 	atHive() {
 		ActivateRoblox()
 		GetRobloxClientPos()
-		return findTextInRegion("make",, windowX + windowWidth // 2 - 150, windowY + GetYOffset() + 40, 350, 60).Has("Word")
+		return findTextInRegion("make",, windowX + windowWidth // 2 - 150, windowY + GetYOffset() + 40, 350, 60, true).Has("Word")
 	}
 }
 nm_HealthBar() { 
