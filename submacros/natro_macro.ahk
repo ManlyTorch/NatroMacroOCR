@@ -20151,8 +20151,8 @@ ba_placePlanter(fieldName, planter, planterNum, atField:=0){
 	nm_setStatus("Placing", planterName)
 	hwnd := GetRobloxHWND()
 	offsetY := GetYOffset(hwnd)
-	placePlanter(planterName)
-	return 1
+	res := placePlanter(planterName)
+	return IsInteger(res) ? res : 1
 }
 ba_harvestPlanter(planterNum){
 	global PlanterName1, PlanterName2, PlanterName3, PlanterField1, PlanterField2, PlanterField3, PlanterHarvestTime1, PlanterHarvestTime2, PlanterHarvestTime3, PlanterNectar1, PlanterNectar2, PlanterNectar3, PlanterEstPercent1, PlanterEstPercent2, PlanterEstPercent3, PlanterGlitterC1, PlanterGlitterC2, PlanterGlitterC3, PlanterGlitter1, PlanterGlitter2, PlanterGlitter3, BackKey, RightKey, objective, TotalPlantersCollected, SessionPlantersCollected, HarvestFullGrown, ConvertFullBagHarvest, GatherPlanterLoot, BackpackPercent, bitmaps, SC_E, HiveBees, PlanterHarvestNow1, PlanterHarvestNow2, PlanterHarvestNow3
