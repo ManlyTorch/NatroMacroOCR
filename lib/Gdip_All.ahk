@@ -3142,6 +3142,22 @@ GenerateColorMatrix(modus, bright:=1, contrast:=0, saturation:=1, alph:=1, chnRd
 	Return matrix
 }
 
+Gdip_CreateLinearGrAngledBrushFromRect(x, y, w, h, gradient, LinearGradientMode:=1, WrapMode:=1) {
+	CreateRectF(&RectF, x, y, w, h)
+	DllCall(
+		"gdiplus\GdipCreateLineBrushFromRectWithAngle",
+		"Ptr", RectF,
+		"UInt", 0,
+		"UInt", 0,
+		"float", gradient.Rotation + 90,
+		"int", LinearGradientMode,
+		"int", WrapMode,
+		"Ptr*", &pBrush:=0 ; brush ref
+	)
+	Gdip_SetLinearGrBrushPresetBlend(pBrush, gradient.Times, gradient.Colors)
+	return pBrush
+}
+
 Gdip_CreateLinearGrBrushFromRect(x, y, w, h, ARGB1, ARGB2, LinearGradientMode:=1, WrapMode:=1) {
 	; WrapMode options [LinearGradientMode]:
 	; Horizontal = 0
