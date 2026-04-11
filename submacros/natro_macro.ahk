@@ -18746,6 +18746,7 @@ nm_PathVars(){
 	return
 	(
 	'
+	#Include "OCR.ahk"
 	HiveSlot:=' HiveSlot '
 	MoveMethod:="' MoveMethod '"
 	HiveBees:=' HiveBees '
@@ -18760,8 +18761,6 @@ nm_PathVars(){
 	}
 
 	nm_gotoCannon() {
-		static pBMCannon := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABsAAAAMAQMAAACpyVQ1AAAABlBMVEUAAAD3//lCqWtQAAAAAXRSTlMAQObYZgAAAEdJREFUeAEBPADD/wDAAGBgAMAAYGAA/gBgYAD+AGBgAMAAYGAAwABgYADAAGBgAMAAYGAAwABgYADAAGBgAMAAYGAAwABgYDdgEn1l8cC/AAAAAElFTkSuQmCC")
-
 		hwnd := GetRobloxHWND()
 		GetRobloxClientPos(hwnd)
 		SendEvent "{Click " windowX+350 " " windowY+offsetY+100 " 0}"
@@ -18778,12 +18777,10 @@ nm_PathVars(){
 			DllCall("GetSystemTimeAsFileTime","int64p",&s:=0)
 			n := s, f := s+100000000
 			while (n < f) {
-				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY "|400|125")
-				if (Gdip_ImageSearch(pBMScreen, pBMCannon, , , , , , 2, , 2) = 1) {
-					success := 1, Gdip_DisposeImage(pBMScreen)
+				if findTextInRegion("cannon",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
+					success := 1
 					break
 				}
-				Gdip_DisposeImage(pBMScreen)
 				DllCall("GetSystemTimeAsFileTime","int64p",&n)
 			}
 			Send "{" RightKey " up}"
@@ -18795,14 +18792,12 @@ nm_PathVars(){
 						break
 					}
 					Sleep 500
-					pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-200 "|" windowY+offsetY "|400|125")
-					if (Gdip_ImageSearch(pBMScreen, pBMCannon, , , , , , 2, , 2) = 1) {
-						Gdip_DisposeImage(pBMScreen)
+					if findTextInRegion("cannon",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
 						break 2
 					}
-					else
+					else {
 						nm_Walk(1.5, LeftKey)
-					Gdip_DisposeImage(pBMScreen)
+					}
 				}
 			}
 
