@@ -19930,25 +19930,25 @@ ba_harvestPlanter(planterNum){
 		GetRobloxClientPos(hwnd)
 		if ((HarvestFullGrown = 1) && !PlanterHarvestNow%planterNum%) {
 			loop 3 {
-				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY+windowHeight//2-52 "|500|150")
-				if (Gdip_ImageSearch(pBMScreen, bitmaps["no"], &pos, , , , , 2, , 3) = 1) {
-					MouseMove windowX+windowWidth//2-250+SubStr(pos, 1, InStr(pos, ",")-1), windowY+windowHeight//2-52+SubStr(pos, InStr(pos, ",")+1)
+				result := findTextInRegion("no",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				if result.Has("Word") {
+					pos := result["Word"].Text
+					MouseMove windowX+windowWidth//2-250+pos.x, windowY+windowHeight//2-52+pos.y
 					Sleep 150
 					Click
 					sleep 100
 					MouseMove windowX+350, windowY+offsetY+100
-					Gdip_DisposeImage(pBMScreen)
 					nm_PlanterTimeUpdate(FieldName)
 					return 1
 				}
-				Gdip_DisposeImage(pBMScreen)
 			}
 		}
 		else {
 			loop 3 {
-				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY+windowHeight//2-52 "|500|150")
-				if (Gdip_ImageSearch(pBMScreen, bitmaps["yes"], &pos, , , , , 2, , 2) = 1) {
-					MouseMove windowX+windowWidth//2-250+SubStr(pos, 1, InStr(pos, ",")-1), windowY+windowHeight//2-52+SubStr(pos, InStr(pos, ",")+1)
+				result := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				if result.Has("Word") {
+					pos := result["Word"].Text
+					MouseMove windowX+windowWidth//2-250+pos.x, windowY+windowHeight//2-52+pos.y
 					Sleep 150
 					Click
 					sleep 100
@@ -20477,9 +20477,10 @@ mp_HarvestPlanter(PlanterIndex) {
 		GetRobloxClientPos(hwnd)
 		if ((PlanterHarvestFull%PlanterIndex% == "Full") && !PlanterHarvestNow%PlanterIndex%) {
 			loop 3 {
-				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY+windowHeight//2-52 "|500|150")
-				if (Gdip_ImageSearch(pBMScreen, bitmaps["no"], &pos, , , , , 2, , 3) = 1) {
-					MouseMove windowX+windowWidth//2-250+SubStr(pos, 1, InStr(pos, ",")-1), windowY+windowHeight//2-52+SubStr(pos, InStr(pos, ",")+1)
+				result := findTextInRegion("no",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				if result.Has("Word") {
+					pos := result["Word"].Text
+					MouseMove windowX+windowWidth//2-250+pos.x, windowY+windowHeight//2-52+pos.y
 					Sleep 150
 					Click
 					sleep 100
@@ -20496,9 +20497,10 @@ mp_HarvestPlanter(PlanterIndex) {
 		}
 		else {
 			loop 3 {
-				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY+windowHeight//2-52 "|500|150")
-				if (Gdip_ImageSearch(pBMScreen, bitmaps["yes"], &pos, , , , , 2, , 2) = 1) {
-					MouseMove windowX+windowWidth//2-250+SubStr(pos, 1, InStr(pos, ",")-1), windowY+windowHeight//2-52+SubStr(pos, InStr(pos, ",")+1)
+				result := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				if result.Has("Word") {
+					pos := result["Word"].Text
+					MouseMove windowX+windowWidth//2-250+pos.x, windowY+windowHeight//2-52+pos.y
 					Sleep 150
 					Click
 					sleep 100
