@@ -87,7 +87,7 @@ Loop {
     Send "{Click Up}"
     Loop 10 {
         Sleep 100
-        res := findTextInRegion(windowX+(54*windowWidth)//100-300, windowY+offsetY+(46*windowHeight)//100-59, 250, 100, true)
+        res := findTextInRegion("feed",, windowX+(54*windowWidth)//100-300, windowY+offsetY+(46*windowHeight)//100-59, 250, 100, true)
         if res.Has("Word") {
             rect := res["Word"].BoundingRect
             SendEvent "{Click " rect.X + 140 " " rect.Y + 5 "}" ; Click Number
