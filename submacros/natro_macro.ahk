@@ -19970,7 +19970,7 @@ ba_harvestPlanter(planterNum){
 			loop 3 {
 				result := findTextInRegion("no",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
 				if result.Has("Word") {
-					pos := result["Word"].Text
+					pos := result["Word"].BoundingRect
 					MouseMove windowX+windowWidth//2-250+pos.x, windowY+windowHeight//2-52+pos.y
 					Sleep 150
 					Click
@@ -19985,7 +19985,7 @@ ba_harvestPlanter(planterNum){
 			loop 3 {
 				result := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
 				if result.Has("Word") {
-					pos := result["Word"].Text
+					pos := result["Word"].BoundingRect
 					MouseMove windowX+windowWidth//2-250+pos.x, windowY+windowHeight//2-52+pos.y
 					Sleep 150
 					Click
@@ -20517,7 +20517,7 @@ mp_HarvestPlanter(PlanterIndex) {
 			loop 3 {
 				result := findTextInRegion("no",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
 				if result.Has("Word") {
-					pos := result["Word"].Text
+					pos := result["Word"].BoundingRect
 					MouseMove windowX+windowWidth//2-250+pos.x, windowY+windowHeight//2-52+pos.y
 					Sleep 150
 					Click
@@ -20537,7 +20537,7 @@ mp_HarvestPlanter(PlanterIndex) {
 			loop 3 {
 				result := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
 				if result.Has("Word") {
-					pos := result["Word"].Text
+					pos := result["Word"].BoundingRect
 					MouseMove windowX+windowWidth//2-250+pos.x, windowY+windowHeight//2-52+pos.y
 					Sleep 150
 					Click
