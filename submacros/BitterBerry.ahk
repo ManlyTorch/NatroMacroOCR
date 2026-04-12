@@ -7,6 +7,7 @@
 #Include "Roblox.ahk"
 #Include "nm_OpenMenu.ahk"
 #Include "nm_InventorySearch.ahk"
+#Include "OCR.ahk"
 
 CoordMode "Mouse", "Screen"
 OnExit(ExitFunc)
@@ -86,19 +87,18 @@ Loop {
     Send "{Click Up}"
     Loop 10 {
         Sleep 100
-        pBMScreen := Gdip_BitmapFromScreen(windowX+(54*windowWidth)//100-300 "|" windowY+offsetY+(46*windowHeight)//100-59 "|250|100")
-        if (Gdip_ImageSearch(pBMScreen, bitmaps["feed"], &pos, , , , , 2, , 2) = 1) {
-            Gdip_DisposeImage(pBMScreen)
-            SendEvent "{Click " windowX+(54*windowWidth)//100-300+SubStr(pos, 1, InStr(pos, ",")-1)+140 " " windowY+offsetY+(46*windowHeight)//100-59+SubStr(pos, InStr(pos, ",")+1)+5 "}" ; Click Number
+        res := findTextInRegion(windowX+(54*windowWidth)//100-300, windowY+offsetY+(46*windowHeight)//100-59, 250, 100, true)
+        if res.Has("Word") {
+            rect := res["Word"].BoundingRect
+            SendEvent "{Click " rect.X + 140 " " rect.Y + 5 "}" ; Click Number
             Sleep 100
             Loop StrLen(bitterberrynos) {
                 SendEvent "{Text}" SubStr(bitterberrynos, A_Index, 1)
                 Sleep 100
             }
-            SendEvent "{Click " windowX+(54*windowWidth)//100-300+SubStr(pos, 1, InStr(pos, ",")-1) " " windowY+offsetY+(46*windowHeight)//100-59+SubStr(pos, InStr(pos, ",")+1) "}" ; Click Feed
+            SendEvent "{Click " rect.X " " rect.Y "}" ; Click Feed
             break
         }
-        Gdip_DisposeImage(pBMScreen)
         if (A_Index = 10) {
             continue 2
         }
