@@ -9780,13 +9780,13 @@ nm_Reset(checkAll:=1, wait:=2000, convert:=1, force:=0){
 		MouseMove windowX+350, windowY+offsetY+100
 		;check to make sure you are not in a yes/no prompt
 		GetRobloxClientPos(hwnd)
-		pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY+windowHeight//2-52 "|500|150")
-		if (Gdip_ImageSearch(pBMScreen, bitmaps["no"], &pos, , , , , 2, , 3) = 1) {
-			MouseMove windowX+windowWidth//2-250+SubStr(pos, 1, InStr(pos, ",")-1), windowY+windowHeight//2-52+SubStr(pos, InStr(pos, ",")+1)
+		TextInRegion := findTextInRegion("no",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+		if TextInRegion.Has("Word") {
+			rect := TextInRegion["Word"].BoundingRect
+			MouseMove rect.x, rect.y
 			Click
 			MouseMove windowX+350, windowY+offsetY+100
 		}
-		Gdip_DisposeImage(pBMScreen)
 		;check to make sure you are not in feed window on accident
 		imgPos := nm_imgSearch("cancel.png",30)
 		If (imgPos[1] = 0){
@@ -10081,14 +10081,13 @@ nm_AmuletPrompt(decision:=0, type:=0, *){
 			Click
 			Gdip_DisposeImage(pBMScreen)
 			Loop 25 {
-				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY "|500|" windowHeight)
-				if (Gdip_ImageSearch(pBMScreen, bitmaps["yes"], &pos, , , , , 2, , 2) = 1) {
-					MouseMove windowX+windowWidth//2-250+SubStr(pos, 1, InStr(pos, ",")-1), windowY+SubStr(pos, InStr(pos, ",")+1), 5
+				TextInRegion := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				if TextInRegion.Has("Word") {
+					rect := TextInRegion["Word"].BoundingRect
+					MouseMove rect.x, rect.y
 					Click
-					Gdip_DisposeImage(pBMScreen)
 					break
 				}
-				Gdip_DisposeImage(pBMScreen)
 				Sleep 100
 			}
 			nm_setShiftLock(Prev_ShiftLock)
@@ -11835,18 +11834,17 @@ nm_StickerPrinter(){
 				i := 0
 				loop 16 {
 					sleep 250
-					pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY+windowHeight//2-52 "|500|150")
-					if (Gdip_ImageSearch(pBMScreen, bitmaps["yes"], &pos, , , , , 2, , 2) = 1) {
-						MouseMove windowX+windowWidth//2-250+SubStr(pos, 1, InStr(pos, ",")-1)-50, windowY+windowHeight//2-52+SubStr(pos, InStr(pos, ",")+1)
+					TextInRegion := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+					if TextInRegion.Has("Word") {
+						rect := TextInRegion["Word"].BoundingRect
+						MouseMove rect.x, rect.y
 						sleep 150
 						Click
 						sleep 100
 						i++
 					} else if (i > 0) {
-						Gdip_DisposeImage(pBMScreen)
 						break
 					}
-					Gdip_DisposeImage(pBMScreen)
 					if (A_Index = 16)
 						break
 				}
@@ -11973,8 +11971,10 @@ nm_StickerStack(){
 				loop 16 {
 					sleep 250
 					pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY+windowHeight//2-52 "|500|150")
-					if (Gdip_ImageSearch(pBMScreen, bitmaps["yes"], &pos, , , , , 2, , 2) = 1) {
-						MouseMove windowX+windowWidth//2-250+SubStr(pos, 1, InStr(pos, ",")-1)-50, windowY+windowHeight//2-52+SubStr(pos, InStr(pos, ",")+1)
+					TextInRegion := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+					if TextInRegion.Has("Word") {
+						rect := TextInRegion["Word"].BoundingRect
+						MouseMove rect.x, rect.y
 						sleep 150
 						Click
 						sleep 100
@@ -19742,25 +19742,18 @@ ba_getNextPlanter(nextfield){
 }
 
 placePlanter(planterName) {
-	if planterName == "HeatTreatedPlanter" {
-		planterName := "Heat-TreatedPlanter"
-	}
 	Loop 10 {
 		GetRobloxClientPos(hwnd)
 
-		TextInRegion := findTextInRegion(planterName,, windowX, windowY, 360, windowHeight, true)
-		if TextInRegion.Has("Word") {
-			word := TextInRegion["Word"]
-			planterPos := [30, word.BoundingRect.y + word.BoundingRect.h // 2]
+		result := nm_InventorySearch(planterName, "up", 4)
+		if result {
+			planterPos := [30, result[3] + result[4] // 2]
 		}
-		
+
 		MouseClickDrag "Left", windowX+30, windowY + planterPos[2], windowX+windowWidth//2, windowY+windowHeight//2, 5
 		Sleep 200
 		
-		TextInRegion := findTextInRegion("Yes",, windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2, true)
-		if TextInRegion.Has("Word") {
-			word := TextInRegion["Word"]
-			yesPos := [word.BoundingRect.x, word.BoundingRect.y]
+		if findTextInRegion("yes",, windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2, true).Has("Word") {
 			break ; yes detected.
 		}
 	}
@@ -19769,11 +19762,10 @@ placePlanter(planterName) {
 	Loop 50 {
 		GetRobloxClientPos(hwnd)
 		loop 3 {
-			TextInRegion := findTextInRegion("Yes",, windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2, true)
+			TextInRegion := findTextInRegion("yes",, windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2, true)
 			if TextInRegion.Has("Word") {
-				word := TextInRegion["Word"]
-				yesPos := [word.BoundingRect.x, word.BoundingRect.y]
-				MouseMove yespos[1] + windowX, yespos[2] + windowY
+				rect := TextInRegion["Word"].BoundingRect
+				MouseMove rect.x, rect.y
 				Sleep 150
 				Click
 				Sleep 100
@@ -19930,10 +19922,10 @@ ba_harvestPlanter(planterNum){
 		GetRobloxClientPos(hwnd)
 		if ((HarvestFullGrown = 1) && !PlanterHarvestNow%planterNum%) {
 			loop 3 {
-				result := findTextInRegion("no",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
-				if result.Has("Word") {
-					pos := result["Word"].BoundingRect
-					MouseMove pos.x, pos.y
+				TextInRegion := findTextInRegion("no",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				if TextInRegion.Has("Word") {
+					rect := TextInRegion["Word"].BoundingRect
+					MouseMove rect.x, rect.y
 					Sleep 150
 					Click
 					sleep 100
@@ -19945,10 +19937,10 @@ ba_harvestPlanter(planterNum){
 		}
 		else {
 			loop 3 {
-				result := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
-				if result.Has("Word") {
-					pos := result["Word"].BoundingRect
-					MouseMove pos.x, pos.y
+				TextInRegion := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				if TextInRegion.Has("Word") {
+					rect := TextInRegion["Word"].BoundingRect
+					MouseMove rect.x, rect.y
 					Sleep 150
 					Click
 					sleep 100
@@ -20477,10 +20469,10 @@ mp_HarvestPlanter(PlanterIndex) {
 		GetRobloxClientPos(hwnd)
 		if ((PlanterHarvestFull%PlanterIndex% == "Full") && !PlanterHarvestNow%PlanterIndex%) {
 			loop 3 {
-				result := findTextInRegion("no",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
-				if result.Has("Word") {
-					pos := result["Word"].BoundingRect
-					MouseMove pos.x, pos.y
+				TextInRegion := findTextInRegion("no",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				if TextInRegion.Has("Word") {
+					rect := TextInRegion["Word"].BoundingRect
+					MouseMove rect.x, rect.y
 					Sleep 150
 					Click
 					sleep 100
@@ -20497,10 +20489,10 @@ mp_HarvestPlanter(PlanterIndex) {
 		}
 		else {
 			loop 3 {
-				result := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
-				if result.Has("Word") {
-					pos := result["Word"].BoundingRect
-					MouseMove pos.x, pos.y
+				TextInRegion := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				if TextInRegion.Has("Word") {
+					rect := TextInRegion["Word"].BoundingRect
+					MouseMove rect.x, rect.y
 					Sleep 150
 					Click
 					sleep 100

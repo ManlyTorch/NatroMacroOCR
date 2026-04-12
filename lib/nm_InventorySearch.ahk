@@ -54,8 +54,8 @@ nm_InventorySearch(item, direction:="down", prescroll:=0, prescrolldir:="", scro
 		}
 
 		if TextInRegion.Has("Word") {
-			word := TextInRegion["Word"]
-			pos := [word.BoundingRect.x, word.BoundingRect.w, word.BoundingRect.y, word.BoundingRect.h]
+			rect := TextInRegion["Word"].BoundingRect
+			pos := [rect.x, rect.w, rect.y, rect.h]
 			break ; item found
 		} else if TopEntry && TopEntry.Text == TopText && TopText != "" {
 			break ; at the top of inventory

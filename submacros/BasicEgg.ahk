@@ -78,11 +78,10 @@ Loop {
 	found := false
 	Loop 10 {
 		Sleep 100
-        TextInRegion := findTextInRegion("Yes",, windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2, true)
+        TextInRegion := findTextInRegion("yes",, windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2, true)
 		if TextInRegion.Has("Word") {
-			word := TextInRegion["Word"]
-			Click windowX + word.BoundingRect.x, windowY + word.BoundingRect.y
-			; Send "{Click " windowX + word.BoundingRect.x " " windowY + word.BoundingRect.y " 0}"
+			rect := TextInRegion["Word"].BoundingRect
+			Click rect.x, rect.y
 			found := true
 		} else if found {
 			break
