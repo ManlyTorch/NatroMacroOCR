@@ -11972,7 +11972,6 @@ nm_StickerStack(){
 				i := 0
 				loop 16 {
 					sleep 250
-					pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-250 "|" windowY+windowHeight//2-52 "|500|150")
 					TextInRegion := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
 					if TextInRegion.Has("Word") {
 						rect := TextInRegion["Word"].BoundingRect
@@ -11982,7 +11981,6 @@ nm_StickerStack(){
 						sleep 100
 						; voucher separate for aesthetic
 						if ((++i >= 4) && !InStr(stack, "Skin") && !(stack="Voucher")) { ; Yes/No prompt appeared too many times, assume this is not a regular sticker
-							Gdip_DisposeImage(pBMScreen)
 							nm_setStatus("Error", "Yes/No appeared too many times!")
 							Sleep 500
 							sendinput "{" SC_E " down}"
@@ -11991,10 +11989,8 @@ nm_StickerStack(){
 							break 2
 						}
 					} else if (i > 0) {
-						Gdip_DisposeImage(pBMScreen)
 						break
 					} else if (A_Index = 16) {
-						Gdip_DisposeImage(pBMScreen)
 						nm_setStatus("Error", "No Tickets left to use!`nSticker Stack has been disabled.")
 						StickerStackCheck := 0
 						Sleep 500
@@ -12003,7 +11999,6 @@ nm_StickerStack(){
 						sendinput "{" SC_E " up}"
 						break 2
 					}
-					Gdip_DisposeImage(pBMScreen)
 				}
 				Sleep 2000
 				nm_SetStatus("Collected", "Sticker Stack")
