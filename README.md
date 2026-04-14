@@ -1,27 +1,3 @@
-<!--
-  /\ \ \__ _| |_ _ __ ___     /\/\   __ _  ___ _ __ ___  
- /  \/ / _` | __| '__/ _ \   /    \ / _` |/ __| '__/ _ \ 
-/ /\  / (_| | |_| | | (_) | / /\/\ \ (_| | (__| | | (_) |
-\_\ \/ \__,_|\__|_|  \___/  \/    \/\__,_|\___|_|  \___/                                                    
-
-Thanks for downloading Natro Macro!
-
-To start the macro, just open 'START.bat'!
-
-If you need help or want to discuss, join our Discord server!
-
-Feel free to give us a Star on GitHub!
-
-IMPORTANT:
-Make sure you are only downloading from an official source!
-The only official sources are:
- - our GitHub page (https://github.com/NatroTeam/NatroMacro)
- - our Discord server (https://discord.gg/natromacro)
-
->>> IGNORE BELOW THIS LINE <<<
--->
-
-<!-- no official site warning -->
 > [!CAUTION]
 > We do **not** have a website. The only official place to download Natro Macro is this repository and [discord.gg/natromacro][discord-link].
 
@@ -34,10 +10,6 @@ The only official sources are:
 </picture>
 <br>
 
-<!-- shields and contents -->
-[![][latest-release-shield]][latest-release-link]
-[![][downloads-shield]][downloads-link]
-[![][discord-shield]][discord-link]
 <br>
 An open-source Bee Swarm Simulator macro written in AutoHotkey!<br>
 </div>
@@ -45,9 +17,10 @@ An open-source Bee Swarm Simulator macro written in AutoHotkey!<br>
 
 <a name="installation"><h2>🛠️ Installation</h2></a>
 
-1. Download `Natro_Macro_v#.#.#.zip` from the [latest release][latest-release-link]
-2. Open `Natro_Macro_v#.#.#` and double-click the folder inside
-3. Run `START.bat` and wait for the macro to load
+1. Press the green code button at the top or [**Click here**](https://github.com/ManlyTorch/NatroMacroOCR/archive/refs/heads/beta.zip)
+2. Click download zip
+3. Open `Natro_Macro_v#.#.#` and double-click the folder inside
+4. Run `START.bat` and wait for the macro to load
 
 
 <a name="community"><h2>🌎 Community</h2></a>
