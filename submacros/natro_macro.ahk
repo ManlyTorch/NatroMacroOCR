@@ -7901,8 +7901,6 @@ nm_BitterberryFeeder(*) {
 		return
 	}
 	
-	; if somebody has ahk open to vs code as default it'd open it in vs code
-	; so define A_AhkPath
 	global BitterBerryPID
 	try ProcessClose(BitterBerryPID)
 	
@@ -7920,9 +7918,6 @@ nm_BasicEggHatcher(*) {
 	
 	exec := ComObject("WScript.shell").Exec('"' A_AhkPath '" /force "' A_ScriptDir "\BasicEgg.ahk" '"')
 	return (EggHatcherPID := exec.ProcessID)
-	
-	; if somebody has ahk open to vs code as default it'd open it in vs code
-	; so define A_AhkPath
 }
 nm_GenerateBeeList(*) {
 	global bitmaps
@@ -9780,7 +9775,7 @@ nm_Reset(checkAll:=1, wait:=2000, convert:=1, force:=0){
 		MouseMove windowX+350, windowY+offsetY+100
 		;check to make sure you are not in a yes/no prompt
 		GetRobloxClientPos(hwnd)
-		TextInRegion := findTextInRegion("no",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+		TextInRegion := findTextInRegion("no", windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150)
 		if TextInRegion.Has("Word") {
 			rect := TextInRegion["Word"].BoundingRect
 			MouseMove rect.x, rect.y
@@ -9896,7 +9891,7 @@ nm_Reset(checkAll:=1, wait:=2000, convert:=1, force:=0){
 	atHive() {
 		ActivateRoblox()
 		GetRobloxClientPos()
-		return findTextInRegion("make",, windowX + windowWidth // 2 - 150, windowY + GetYOffset() + 40, 350, 60, true).Has("Word")
+		return findTextInRegion("make", windowX + windowWidth // 2 - 150, windowY + GetYOffset() + 40, 350, 60).Has("Word")
 	}
 }
 nm_HealthBar() { 
@@ -9912,7 +9907,7 @@ nm_HealthBar() {
 	return detection
 }
 nm_ConfirmAtHive(){
-	return findTextInRegion("make",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word")
+	return findTextInRegion("make", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word")
 }
 nm_DetectSpawn() { ; some of the code was from hive check, repurposing it here since it seems to reliably detect hive slots even when the stuff is really bad
     ActivateRoblox()
@@ -10081,7 +10076,7 @@ nm_AmuletPrompt(decision:=0, type:=0, *){
 			Click
 			Gdip_DisposeImage(pBMScreen)
 			Loop 25 {
-				TextInRegion := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				TextInRegion := findTextInRegion("yes", windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150)
 				if TextInRegion.Has("Word") {
 					rect := TextInRegion["Word"].BoundingRect
 					MouseMove rect.x, rect.y
@@ -10136,10 +10131,11 @@ nm_FindItem(chosenItem, *) {
 	MouseMove windowX+46, windowY+yOffset+219
 	itemPos := nm_InventorySearch(items[chosenItem])
 	DetectHiddenWindows 1
-	if !itemPos
+	if !itemPos {
 		WinExist("Status.ahk ahk_class AutoHotkey") ? SendMessage(0x5559, 0, 1, , , , , , 2000) : ""
-	else
-		WinExist("Status.ahk ahk_class AutoHotkey") ? SendMessage(0x5559, windowY+itemPos[3]-40, , , , , , , 2000) : ""
+	} else {
+		WinExist("Status.ahk ahk_class AutoHotkey") ? SendMessage(0x5559, itemPos[3]-itemPos[4]//2, , , , , , , 2000) : ""
+	}
 	sleep 1000
 	DetectHiddenWindows 0
 	nm_OpenMenu()
@@ -10160,7 +10156,7 @@ nm_gotoRamp(){
 	KeyWait "F14", "T60 L"
 	nm_endWalk()
 }
-nm_gotoCannon(){
+nm_gotoCannon() {
 	global LeftKey, RightKey, FwdKey, BackKey, currentWalk, objective, SC_Space, bitmaps
 
 	nm_setShiftLock(0)
@@ -10187,7 +10183,7 @@ nm_gotoCannon(){
 		DllCall("GetSystemTimeAsFileTime","int64p",&s:=0)
 		n := s, f := s+200000000
 		while (n < f) {
-			if findTextInRegion("cannon",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
+			if findTextInRegion("cannon", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word") {
 				success := 1
 				break
 			}
@@ -10195,17 +10191,16 @@ nm_gotoCannon(){
 		}
 		nm_endWalk()
 
-		if (success = 1) { ; check that cannon was not overrun, at the expense of a small delay
+		if (success = 1) { ; check that cannon was not overrun, at the expense of a small delay 
 			Loop 10 {
 				if (A_Index = 10) {
 					success := 0
 					break
 				}
 				Sleep 500
-				if findTextInRegion("cannon",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
+				if findTextInRegion("cannon", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word") {
 					break 2
-				}
-				else {
+				} else {
 					movement := nm_Walk(1.5, LeftKey)
 					nm_createWalk(movement)
 					KeyWait "F14", "D T5 L"
@@ -10914,7 +10909,7 @@ nm_GlueDis(){
 				nm_OpenMenu()
 				continue
 			}
-			windowYPos := windowY+gumdropPos[3]+gumdropPos[4]
+			windowYPos := gumdropPos[3]+gumdropPos[4]
 			MouseMove windowX+30, windowYPos
 			KeyWait "F14", "T120 L"
 			nm_endWalk()
@@ -11833,14 +11828,14 @@ nm_StickerPrinter(){
 				Click
 				i := 0
 				loop 16 {
-					sleep 250
-					TextInRegion := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+					Sleep 250
+					TextInRegion := findTextInRegion("yes", windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150)
 					if TextInRegion.Has("Word") {
 						rect := TextInRegion["Word"].BoundingRect
 						MouseMove rect.x, rect.y
-						sleep 150
+						Sleep 150
 						Click
-						sleep 100
+						Sleep 100
 						i++
 					} else if (i > 0) {
 						break
@@ -11909,35 +11904,38 @@ nm_StickerStack(){
 				sleep 500 ;//todo: wait for GUI with timeout instead of fixed time
 
 				; detect stack boost time
-				pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-275 "|" windowY+4*windowHeight//10 "|550|220")
-				resizedScreen := Gdip_ResizeBitmap(pBMScreen, 1100, 440)
-				ocrResult := OCR.FromBitmap(resizedScreen)
-				words := ocrResult.Words
 				stackTime := 0
-				for idx, word in words {
-					txt := StrLower(word.Text)
-					if txt == "stack" {
-        				loop 2 {
+				Loop 2 {
+					pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2-275 "|" windowY+4*windowHeight//10 "|550|220")
+					resizedScreen := Gdip_ResizeBitmap(pBMScreen, 1100, 440)
+					ocrResult := OCR.FromBitmap(resizedScreen)
+					
+					Gdip_DisposeImage(pBMScreen)
+					Gdip_DisposeImage(resizedScreen)
+					
+					words := ocrResult.Words
+					for idx, word in words {
+						txt := StrLower(word.Text)
+						if txt != "stack" {
+							continue
+						}
+						loop 2 {
 							txt .= StrLower(words[idx + A_Index].Text)
-        				}
-        				if RegExMatch(txt, "stackboost\(x(\d+)", &match) {
-							if !match.Count {
-								break
+						}
+						if RegExMatch(txt, "stackboost\(x(\d+)", &match) {
+							if match.Count {
+								stackTime := 900 + 10 * Integer(match[1])
+								nm_setStatus("Detected", "Stack Boost Time: " hmsFromSeconds(stackTime))
 							}
-							
-							stackTime := 900 + 10 * Integer(match[1])
-							nm_setStatus("Detected", "Stack Boost Time: " hmsFromSeconds(stackTime))
-        				}
+							Sleep 50
+							break
+						}
 					}
 				}
 
 				if !stackTime {
 					nm_setStatus("Error", "Unable to detect Stack Boost time!")
-				} else if StickerStackMode == 0 {
-					StickerStackTimer := stackTime
 				}
-
-				Gdip_DisposeImage(resizedScreen)
 
 				; check if sticker is available to donate
 				if (InStr(StickerStackItem, "Sticker") && (((Gdip_ImageSearch(pBMScreen, bitmaps["stickernormal"], &pos, , , 275, , 25) = 1) && (stack := "Sticker"))
@@ -11948,20 +11946,23 @@ nm_StickerStack(){
 					nm_setStatus("Stacking", stack)
 					MouseMove windowX+windowWidth//2-275+SubStr(pos, 1, InStr(pos, ",")-1)+26, windowY+4*windowHeight//10+SubStr(pos, InStr(pos, ",")+1)-10 ; select sticker
 					stackTime += 10
-					if StickerStackMode == 0 {
-						StickerStackTimer := stackTime
-					}
 				} else if InStr(StickerStackItem, "Tickets") {
 					nm_setStatus("Stacking", stack := "Tickets")
 					MouseMove windowX+windowWidth//2+105, windowY+4*windowHeight//10-78 ; select tickets
 				} else { ; StickerStackItem = "Sticker", and nosticker was found or error
 					nm_setStatus("Error", "No Stickers left to stack!`nSticker Stack has been disabled.")
 					StickerStackCheck := 0
+					if StickerStackMode == 0 {
+						StickerStackTimer := stackTime
+					}
 					Sleep 500
 					sendinput "{" SC_E " down}"
 					Sleep 100
 					sendinput "{" SC_E " up}"
 					break
+				}
+				if StickerStackMode == 0 {
+					StickerStackTimer := stackTime
 				}
 				Sleep 100
 				Click
@@ -11969,14 +11970,14 @@ nm_StickerStack(){
 
 				i := 0
 				loop 16 {
-					sleep 250
-					TextInRegion := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+					Sleep 250
+					TextInRegion := findTextInRegion("yes", windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150)
 					if TextInRegion.Has("Word") {
 						rect := TextInRegion["Word"].BoundingRect
 						MouseMove rect.x, rect.y
-						sleep 150
+						Sleep 150
 						Click
-						sleep 100
+						Sleep 100
 						; voucher separate for aesthetic
 						if ((++i >= 4) && !InStr(stack, "Skin") && !(stack="Voucher")) { ; Yes/No prompt appeared too many times, assume this is not a regular sticker
 							nm_setStatus("Error", "Yes/No appeared too many times!")
@@ -12217,7 +12218,7 @@ nm_toBooster(location){
 	static redBoosterFields:=["Rose", "Strawberry", "Mushroom", "Pepper"]
 	static mountainBoosterFields:=["Cactus", "Pumpkin", "Pineapple", "Spider", "Clover", "Dandelion", "Sunflower"]
 	static coconutBoosterFields:=["Coconut"]
-
+	
 	Loop 2 {
 		nm_Reset(0)
 		nm_setStatus("Traveling", ((location="Mountain") ? "Mountain Top Booster" : StrTitle(location) " Field Booster") . ((A_Index=2) ? " (Attempt 2)" : ""))
@@ -15602,7 +15603,7 @@ nm_convert(){
 		return
 	}
 	Gdip_DisposeImage(pBMScreen)
-	if findTextInRegion("make",, windowX+windowWidth//2-200, windowY+offsetY+36, 400, 120, true).Has("Word") {
+	if findTextInRegion("make", windowX+windowWidth//2-200, windowY+offsetY+36, 400, 120).Has("Word") {
 		SendInput "{" SC_E " down}"
 		Sleep 100
 		SendInput "{" SC_E " up}"
@@ -15634,7 +15635,7 @@ nm_convert(){
 				return
 			}
 			GetRobloxClientPos(hwnd)
-			if findTextInRegion("make",, windowX+windowWidth//2-200, windowY+offsetY+36, windowWidth//2+200, windowHeight-offsetY-36, true).Has("Word") {
+			if findTextInRegion("make", windowX+windowWidth//2-200, windowY+offsetY+36, windowWidth//2+200, windowHeight-offsetY-36).Has("Word") {
 				SendInput "{" SC_E " down}"
 				Sleep 100
 				SendInput "{" SC_E " up}"
@@ -15704,7 +15705,7 @@ nm_convert(){
 					MouseMove windowX+windowWidth-30, windowY+offsetY+16
 					click
 				}
-				if findTextInRegion("make",, windowX+windowWidth//2-200, windowY+offsetY+36, windowWidth//2+200, windowHeight-offsetY-36, true).Has("Word") {
+				if findTextInRegion("make", windowX+windowWidth//2-200, windowY+offsetY+36, windowWidth//2+200, windowHeight-offsetY-36).Has("Word") {
 					SendInput "{" SC_E " down}"
 					Sleep 100
 					SendInput "{" SC_E " up}"
@@ -16445,8 +16446,7 @@ nm_claimHiveSlot(){
 				nm_endWalk()
 				sleep 500
 				RemoveFriendJoin()
-				if findTextInRegion("claim",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
-					Gdip_DisposeImage(pBMScreen)
+				if findTextInRegion("claim", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word") {
 					Send "{" SC_E " down}"
 					sleep 100
 					Send "{" SC_E " up}"
@@ -16458,7 +16458,6 @@ nm_claimHiveSlot(){
 					MouseMove windowX+350, windowY+offsetY+100
 					return 1
 				}
-				Gdip_DisposeImage(pBMScreen)
 			}
 			DetectHiveslots := 0
 			continue
@@ -16498,14 +16497,14 @@ nm_claimHiveSlot(){
 
 			Sleep 500
 			RemoveFriendJoin()
-			if findTextInRegion("claim",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
+			if findTextInRegion("claim", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word") {
 				slots[A_Index] := 1
 			}
 		}
 
-		if (slots.Has(HiveSlot) && (slots[HiveSlot] = 1))
+		if (slots.Has(HiveSlot) && (slots[HiveSlot] = 1)) {
 			break
-		else {
+		} else {
 			if ((slot := ObjMinIndex(slots)) > 0) {
 				movement := nm_Walk((HiveSlot - slot) * 9.2, RightKey)
 				nm_createWalk(movement)
@@ -16515,12 +16514,11 @@ nm_claimHiveSlot(){
 
 				Sleep 500
 				RemoveFriendJoin()
-				if findTextInRegion("claim",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
+				if findTextInRegion("claim", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word") {
 					HiveSlot := slot
 					break
 				}
-			}
-			else {
+			} else {
 				Loop (6 - HiveSlot) {
 					nm_createWalk(movement)
 					KeyWait "F14", "D T5 L"
@@ -16529,7 +16527,7 @@ nm_claimHiveSlot(){
 
 					Sleep 500
 					RemoveFriendJoin()
-					if findTextInRegion("claim",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
+					if findTextInRegion("claim", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word") {
 						HiveSlot += A_Index
 						break 2
 					}
@@ -16538,8 +16536,9 @@ nm_claimHiveSlot(){
 		}
 
 		nm_setStatus("Failed", "Claim Hive Slot" ((A_Index > 1) ? (" (Attempt " A_Index ")") : ""))
-		if (A_Index = 5)
+		if (A_Index = 5) {
 			return 0
+		}
 	}
 
 	SendInput "{" SC_E " down}"
@@ -18770,7 +18769,7 @@ nm_PathVars(){
 			DllCall("GetSystemTimeAsFileTime","int64p",&s:=0)
 			n := s, f := s+100000000
 			while (n < f) {
-				if findTextInRegion("cannon",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
+				if findTextInRegion("cannon", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word") {
 					success := 1
 					break
 				}
@@ -18785,10 +18784,9 @@ nm_PathVars(){
 						break
 					}
 					Sleep 500
-					if findTextInRegion("cannon",, windowX+windowWidth//2-200, windowY+offsetY, 400, 125, true).Has("Word") {
+					if findTextInRegion("cannon", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word") {
 						break 2
-					}
-					else {
+					} else {
 						nm_Walk(1.5, LeftKey)
 					}
 				}
@@ -18799,8 +18797,9 @@ nm_PathVars(){
 				nm_gotoRamp()
 			}
 		}
-		if (success = 0)
+		if (success = 0) {
 			ExitApp
+		}
 	}
 
 	nm_Reset() {
@@ -19735,76 +19734,7 @@ ba_getNextPlanter(nextfield){
 	}
 	return [nextPlanterName, nextPlanterNectarBonus, nextPlanterGrowBonus, nextPlanterGrowTime]
 }
-
-placePlanter(planterName) {
-	Loop 10 {
-		GetRobloxClientPos(hwnd)
-
-		result := nm_InventorySearch(planterName, "up", 4)
-		if result {
-			planterPos := [30, result[3] + result[4] // 2]
-		}
-
-		MouseClickDrag "Left", windowX+30, windowY + planterPos[2], windowX+windowWidth//2, windowY+windowHeight//2, 5
-		Sleep 200
-		
-		if findTextInRegion("yes",, windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2, true).Has("Word") {
-			break ; yes detected.
-		}
-	}
-
-	Detected := false
-	Loop 50 {
-		GetRobloxClientPos(hwnd)
-		loop 3 {
-			TextInRegion := findTextInRegion("yes",, windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2, true)
-			if TextInRegion.Has("Word") {
-				rect := TextInRegion["Word"].BoundingRect
-				MouseMove rect.x, rect.y
-				Sleep 150
-				Click
-				Sleep 100
-				MouseMove windowX + 350, windowY + offsetY + 100
-				Detected := true
-			} else if Detected { ; ensurance
-				break 2
-			}
-			Sleep 50
-		}
-		
-		if (A_Index = 50) {
-			nm_setStatus("Missing", planterName)
-			LostPlanters.=planterName
-			ba_saveConfig_()
-			return 0
-		}
-
-		Sleep 100
-	}
-
-	Loop 10 {
-		Sleep 100
-		imgPos := nm_imgSearch("3Planters.png",30,"lowright")
-		If (imgPos[1] = 0){
-			MaxAllowedPlanters:=max(0, MaxAllowedPlanters-1)
-			MainGui["MaxAllowedPlanters"].Value := MaxAllowedPlanters
-			nm_setStatus("Error", "3 Planters already placed!`nMaxAllowedPlanters has been reduced.")
-			ba_saveConfig_()
-			Sleep 500
-			return 3
-		}
-		imgPos := nm_imgSearch("planteralready.png",30,"lowright")
-		If (imgPos[1] = 0){
-			return 2
-		}
-		imgPos := nm_imgSearch("standing.png",30,"lowright")
-		If (imgPos[1] = 0){
-			return 4
-		}
-	}
-}
-
-ba_placePlanter(fieldName, planter, planterNum, atField:=0){
+ba_placePlanter(fieldName, planter, planterNum, atField:=0, ba:=1){
 	global BambooFieldCheck, BlueFlowerFieldCheck, CactusFieldCheck, CloverFieldCheck, CoconutFieldCheck, DandelionFieldCheck, MountainTopFieldCheck, MushroomFieldCheck, PepperFieldCheck, PineTreeFieldCheck, PineappleFieldCheck, PumpkinFieldCheck, RoseFieldCheck, SpiderFieldCheck, StrawberryFieldCheck, StumpFieldCheck, SunflowerFieldCheck, MaxAllowedPlanters, LostPlanters, bitmaps
 
 	nm_updateAction("Planters")
@@ -19819,18 +19749,20 @@ ba_placePlanter(fieldName, planter, planterNum, atField:=0){
 		nm_gotoPlanter(fieldName, 0)
 	}
 
-	planterPos := nm_InventorySearch(planterName, "up", 4)
+	invResult := nm_InventorySearch(planterName, "up", 4)
 
-	if (planterPos = 0) { ; planter not in inventory
+	if (invResult = 0) { ; planter not in inventory
 		nm_setStatus("Missing", planterName)
-		LostPlanters.=planterName
-		ba_saveConfig_()
+		if ba {
+			LostPlanters.=planterName
+			ba_saveConfig_()
+		}
 		return 0
-	}
-	else {
+	} else {
 		GetRobloxClientPos()
-		MouseMove windowX+30, planterPos[3]+planterPos[4]
+		MouseMove windowX+30, invResult[3] + invResult[4]
 	}
+	yPos := invResult[3]+30
 
 	KeyWait "F14", "T120 L" ; wait for gotoPlanter finish
 	nm_endWalk()
@@ -19838,8 +19770,75 @@ ba_placePlanter(fieldName, planter, planterNum, atField:=0){
 	nm_setStatus("Placing", planterName)
 	hwnd := GetRobloxHWND()
 	offsetY := GetYOffset(hwnd)
-	res := placePlanter(planterName)
-	return IsInteger(res) ? res : 1
+	
+	Loop 10 {
+		GetRobloxClientPos(hwnd)
+
+		invResult := nm_InventorySearch(planterName, "up", 4)
+		if invResult {
+			yPos := invResult[3] + invResult[4]
+		}
+
+		MouseClickDrag "Left", windowX+30, yPos, windowX+windowWidth//2, windowY+windowHeight//2, 5
+		Sleep 200
+		
+		if findTextInRegion("yes", windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2).Has("Word") {
+			break ; yes detected.
+		}
+	}
+
+	Loop 50 {
+		GetRobloxClientPos(hwnd)
+		loop 3 {
+			TextInRegion := findTextInRegion("yes", windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2)
+			if TextInRegion.Has("Word") {
+				rect := TextInRegion["Word"].BoundingRect
+				MouseMove rect.x, rect.y
+				Sleep 150
+				Click
+				Sleep 100
+				MouseMove windowX + 350, windowY + offsetY + 100
+				break 2
+			}
+			Sleep 50
+		}
+		
+		if (A_Index = 50) {
+			nm_setStatus("Missing", planterName)
+			if ba {
+				LostPlanters.=planterName
+				ba_saveConfig_()
+			}
+			return 0
+		}
+
+		Sleep 100
+	}
+
+	Loop 10 {
+		Sleep 100
+		imgPos := nm_imgSearch("3Planters.png",30,"lowright")
+		If (imgPos[1] = 0){
+			nm_setStatus("Error", "3 Planters already placed!`nMaxAllowedPlanters has been reduced.")
+			if ba {
+				MaxAllowedPlanters:=max(0, MaxAllowedPlanters-1)
+				MainGui["MaxAllowedPlanters"].Value := MaxAllowedPlanters
+				ba_saveConfig_()
+			}
+			Sleep 500
+			return 3
+		}
+		imgPos := nm_imgSearch("planteralready.png",30,"lowright")
+		If (imgPos[1] = 0){
+			return 2
+		}
+		imgPos := nm_imgSearch("standing.png",30,"lowright")
+		If (imgPos[1] = 0){
+			return 4
+		}
+	}
+
+	return 1
 }
 ba_harvestPlanter(planterNum){
 	global PlanterName1, PlanterName2, PlanterName3, PlanterField1, PlanterField2, PlanterField3, PlanterHarvestTime1, PlanterHarvestTime2, PlanterHarvestTime3, PlanterNectar1, PlanterNectar2, PlanterNectar3, PlanterEstPercent1, PlanterEstPercent2, PlanterEstPercent3, PlanterGlitterC1, PlanterGlitterC2, PlanterGlitterC3, PlanterGlitter1, PlanterGlitter2, PlanterGlitter3, BackKey, RightKey, objective, TotalPlantersCollected, SessionPlantersCollected, HarvestFullGrown, ConvertFullBagHarvest, GatherPlanterLoot, BackpackPercent, bitmaps, SC_E, HiveBees, PlanterHarvestNow1, PlanterHarvestNow2, PlanterHarvestNow3
@@ -19866,9 +19865,7 @@ ba_harvestPlanter(planterNum){
 		GetRobloxClientPos()
 
 		nm_OpenMenu("itemmenu")
-		planterPos := nm_InventorySearch(planterName, "up", 4)
-
-		if (planterPos != 0) { ; found planter in inventory planter is a phantom
+		if (nm_InventorySearch(planterName, "up", 4) != 0) { ; found planter in inventory planter is a phantom
 			nm_setStatus("Found", planterName . ". Clearing Data.")
 			;reset values
 			PlanterName%planterNum% := "None"
@@ -19917,7 +19914,7 @@ ba_harvestPlanter(planterNum){
 		GetRobloxClientPos(hwnd)
 		if ((HarvestFullGrown = 1) && !PlanterHarvestNow%planterNum%) {
 			loop 3 {
-				TextInRegion := findTextInRegion("no",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				TextInRegion := findTextInRegion("no", windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150)
 				if TextInRegion.Has("Word") {
 					rect := TextInRegion["Word"].BoundingRect
 					MouseMove rect.x, rect.y
@@ -19929,23 +19926,20 @@ ba_harvestPlanter(planterNum){
 					return 1
 				}
 			}
-		}
-		else {
+		} else {
 			loop 3 {
-				TextInRegion := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				TextInRegion := findTextInRegion("yes", windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150)
 				if TextInRegion.Has("Word") {
 					rect := TextInRegion["Word"].BoundingRect
 					MouseMove rect.x, rect.y
 					Sleep 150
 					Click
-					sleep 100
+					Sleep 100
 					MouseMove windowX+350, windowY+offsetY+100
-					Gdip_DisposeImage(pBMScreen)
 					If PlanterHarvestNow%planterNum%
 						IniWrite 0, "settings\nm_config.ini", "Planters", "PlanterHarvestNow" planterNum
 					break
 				}
-				Gdip_DisposeImage(pBMScreen)
 				Sleep 50 ; delay in case of lag
 			}
 		}
@@ -20217,42 +20211,21 @@ mp_PlantPlanter(PlanterIndex) {
 		CycleIndex := PlanterManualCycle%PlanterIndex%
 		MFieldName := MSlot%PlanterIndex%Cycle%CycleIndex%Field
 		MPlanterName := (StrReplace(MSlot%PlanterIndex%Cycle%CycleIndex%Planter, " ") (MSlot%PlanterIndex%Cycle%CycleIndex%Planter = "Planter Of Plenty" ? "" : "Planter"))
-		If (PlanterField1 = MFieldName || PlanterField2 = MFieldName || PlanterField3 = MFieldName || PlanterName1 = MPlanterName || PlanterName2 = MPlanterName || PlanterName3 = MPlanterName) {
+		if (PlanterField1 = MFieldName || PlanterField2 = MFieldName || PlanterField3 = MFieldName || PlanterName1 = MPlanterName || PlanterName2 = MPlanterName || PlanterName3 = MPlanterName) {
 			PlanterManualCycle%PlanterIndex% := Mod(PlanterManualCycle%PlanterIndex%, MSlot%PlanterIndex%MaxCycle) + 1
 			mp_UpdateCycles()
-		} Else
-			Break
-		If (A_Index = MSlot%PlanterIndex%MaxCycle)
-			Return
+		} else {
+			break
+		}
+		if (A_Index = MSlot%PlanterIndex%MaxCycle) {
+			return
+		}
 	}
 
-	nm_setShiftLock(0)
-
-	nm_Reset()
-	nm_OpenMenu("itemmenu")
-	nm_setStatus("Traveling", MPlanterName " (" MFieldName ")")
-	nm_gotoPlanter(MFieldName, 0)
-
-	ActivateRoblox()
-	GetRobloxClientPos()
-
-	planterPos := nm_InventorySearch(MPlanterName, "up", 4) ;~ new function
-
-	if (planterPos = 0) { ; planter not in inventory
-		nm_setStatus("Missing", MPlanterName)
-		return 0
+	res := ba_placePlanter(MFieldName, MPlanterName, PlanterIndex,,0)
+	if res != 1 {
+		return res
 	}
-	else
-		MouseMove windowX+30, windowY+planterPos[3]+planterPos[4]
-
-	KeyWait "F14", "T120 L" ; wait for gotoPlanter finish
-	nm_endWalk()
-
-	nm_setStatus("Placing", MPlanterName)
-	hwnd := GetRobloxHWND()
-	offsetY := GetYOffset(hwnd)
-
-	placePlanter(MPlanterName)
 
 	PlanterName%PlanterIndex% := MPlanterName
 	PlanterField%PlanterIndex% := MFieldName
@@ -20269,9 +20242,11 @@ mp_PlantPlanter(PlanterIndex) {
 		}
 	} else {
 		PlanterHarvestTime%PlanterIndex% := nowUnix() + Integer(3600 * MHarvestIntervalValue[MHarvestInterval])
-		Loop 3
-			If (PlanterHarvestTime%A_Index% < PlanterHarvestTime%PlanterIndex% && PlanterHarvestTime%A_Index% > PlanterHarvestTime%PlanterIndex% - 300)
+		Loop 3 {
+			If (PlanterHarvestTime%A_Index% < PlanterHarvestTime%PlanterIndex% && PlanterHarvestTime%A_Index% > PlanterHarvestTime%PlanterIndex% - 300) {
 				PlanterHarvestTime%PlanterIndex% := PlanterHarvestTime%A_Index%
+			}
+		}
 	}
 
 	IniWrite PlanterName%PlanterIndex%, "settings\nm_config.ini", "Planters", "PlanterName" PlanterIndex
@@ -20282,8 +20257,9 @@ mp_PlantPlanter(PlanterIndex) {
 	IniWrite PlanterHarvestFull%PlanterIndex%, "settings\nm_config.ini", "Planters", "PlanterHarvestFull" PlanterIndex
 	IniWrite PlanterHarvestTime%PlanterIndex%, "settings\nm_config.ini", "Planters", "PlanterHarvestTime" PlanterIndex
 
-	If (nowUnix() - LastGlitter >= 900 && PlanterGlitterC%PlanterIndex% && !PlanterGlitter%PlanterIndex%)
+	If (nowUnix() - LastGlitter >= 900 && PlanterGlitterC%PlanterIndex% && !PlanterGlitter%PlanterIndex%) {
 		mp_UseGlitter(PlanterIndex, 1)
+	}
 
 	return 1
 }
@@ -20309,7 +20285,7 @@ mp_UseGlitter(PlanterIndex, atField:=0) {
 	}
 	else {
 		GetRobloxClientPos()
-		MouseMove windowX+30, windowY+glitterPos[3]+glitterPos[4]
+		MouseMove windowX + 30, glitterPos[3] + glitterPos[4]
 	}
 
 	KeyWait "F14", "T120 L" ; wait for gotoPlanter finish
@@ -20388,9 +20364,7 @@ mp_HarvestPlanter(PlanterIndex) {
 		;check for phantom planter
 		nm_setStatus("Checking", "Phantom Planter: " . MPlanterName)
 
-		planterPos := nm_InventorySearch(MPlanterName, "up", 4) ;~ new function
-
-		if (planterPos != 0) { ; found planter in inventory planter is a phantom
+		if (nm_InventorySearch(MPlanterName, "up", 4) != 0) { ; found planter in inventory planter is a phantom
 			nm_setStatus("Found", MPlanterName . ". Clearing Data.")
 
 			;reset disable auto harvest values if phantom planter
@@ -20464,7 +20438,7 @@ mp_HarvestPlanter(PlanterIndex) {
 		GetRobloxClientPos(hwnd)
 		if ((PlanterHarvestFull%PlanterIndex% == "Full") && !PlanterHarvestNow%PlanterIndex%) {
 			loop 3 {
-				TextInRegion := findTextInRegion("no",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				TextInRegion := findTextInRegion("no", windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150)
 				if TextInRegion.Has("Word") {
 					rect := TextInRegion["Word"].BoundingRect
 					MouseMove rect.x, rect.y
@@ -20474,28 +20448,23 @@ mp_HarvestPlanter(PlanterIndex) {
 					MouseMove windowX+350, windowY+offsetY+100
 					If PlanterHarvestNow%PlanterIndex%
 						IniWrite 0, "settings\nm_config.ini", "Planters", "PlanterHarvestNow" PlanterIndex
-					Gdip_DisposeImage(pBMScreen)
 					nm_PlanterTimeUpdate(MFieldName)
 					return 2
 				}
-				Gdip_DisposeImage(pBMScreen)
 				Sleep 50 ; delay in case of lag
 			}
-		}
-		else {
+		} else {
 			loop 3 {
-				TextInRegion := findTextInRegion("yes",,windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150, true)
+				TextInRegion := findTextInRegion("yes", windowX+windowWidth//2-250, windowY+windowHeight//2-52, 500, 150)
 				if TextInRegion.Has("Word") {
 					rect := TextInRegion["Word"].BoundingRect
 					MouseMove rect.x, rect.y
 					Sleep 150
 					Click
-					sleep 100
-					Gdip_DisposeImage(pBMScreen)
+					Sleep 100
 					MouseMove windowX+350, windowY+offsetY+100
 					break
 				}
-				Gdip_DisposeImage(pBMScreen)
 				Sleep 50 ; delay in case of lag
 			}
 		}
