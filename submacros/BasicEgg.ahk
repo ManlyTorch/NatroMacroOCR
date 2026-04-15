@@ -5,6 +5,7 @@
 #Include "Gdip_All.ahk"
 #Include "Gdip_ImageSearch.ahk"
 #Include "Roblox.ahk"
+#Include "OCR.ahk"
 #Include "nm_OpenMenu.ahk"
 #Include "nm_InventorySearch.ahk"
 
@@ -69,7 +70,7 @@ Loop {
 	}
 
 	GetRobloxClientPos(hwnd)
-	SendEvent "{Click " windowX + 30 " " windowY + pos[3] + pos[4] " 0}"
+	SendEvent "{Click " windowX + 30 " " pos[3] + pos[4] " 0}"
 	Send "{Click Down}"
 	Sleep 100
 	SendEvent "{Click " beeX " " beeY " 0}"
@@ -78,7 +79,7 @@ Loop {
 	found := false
 	Loop 10 {
 		Sleep 100
-        TextInRegion := findTextInRegion("yes",, windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2, true)
+        TextInRegion := findTextInRegion("yes", windowX + windowWidth // 4, windowY + windowHeight//2, windowWidth // 4, windowHeight//2)
 		if TextInRegion.Has("Word") {
 			rect := TextInRegion["Word"].BoundingRect
 			Click rect.x, rect.y

@@ -79,7 +79,7 @@ Loop {
     
     GetRobloxClientPos(hwnd)
 
-    SendEvent "{Click " windowX + 30 " " windowY + bitterBerryPos[3] + bitterBerryPos[4] " 0}"
+    SendEvent "{Click " windowX + 30 " " bitterBerryPos[3] + bitterBerryPos[4] " 0}"
     Send "{Click Down}"
     Sleep 100
     SendEvent "{Click " beeX " " beeY " 0}"
@@ -87,7 +87,7 @@ Loop {
     Send "{Click Up}"
     Loop 10 {
         Sleep 100
-        TextInRegion := findTextInRegion("feed:",, windowX+(54*windowWidth)//100-300, windowY+offsetY+(46*windowHeight)//100-59, 250, 100, true)
+        TextInRegion := findTextInRegion("feed:", windowX+(54*windowWidth)//100-300, windowY+offsetY+(46*windowHeight)//100-59, 250, 100)
         if TextInRegion.Has("Word") {
             rect := TextInRegion["Word"].BoundingRect
             SendEvent "{Click " rect.X + 140 " " rect.Y + 5 "}" ; Click Number
