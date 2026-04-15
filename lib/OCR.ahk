@@ -111,25 +111,6 @@
  * Powershell (run as admin) with the following command: Get-WindowsCapability -Online | Where-Object { $_.Name -Like 'Language.OCR*' } 
  */
 
-LevenshteinDistance(s1, s2) {
-	len1 := StrLen(s1), len2 := StrLen(s2)
-	s1 := StrSplit(s1), s2 := StrSplit(s2)
-	d := {}, d.0 := { 0: 0 }
-	Loop len1
-		d.%A_Index% := { 0: A_Index }
-	Loop len2
-		d.0.%A_Index% := A_Index
-	Loop len1 {
-		i := A_Index
-		Loop len2 {
-			j := A_Index  ; only for simplicity
-			cost := s1[i] != s2[j]
-			d.%i%.%j% := Min(d.%i - 1%.%j% + 1, d.%i%.%j - 1% + 1, d.%i - 1%.%j - 1% + cost)
-		}
-	}
-	return d.%len1%.%len2%
-}
-
 isCorrectWord(items, wordsList, idx) {
     if items.Length <= 1 {
         return true
@@ -169,14 +150,16 @@ isUnspacedWord(items, wordsList, idx, max:=4) {
     return
 }
 
-findTextInRegion(item, img:="", x:=0, y:=0, w:=0, h:=0, absolute:=False) {
-	wordsList := {}
-	if img is Integer {
-        wordsList := OCR.FromBitmap(img)
-    } else if img != "" {
-		wordsList := OCR.FromFile(img)
+findTextInRegion(item, x, y?, w?, h?) {
+	ocrResult := {}
+	if !IsSet(y) {
+        if x is Integer {
+            ocrResult := OCR.FromBitmap(x)
+        } else if x is String {
+		    ocrResult := OCR.FromFile(x)
+        }
 	} else {
-		wordsList := OCR.FromRect(x, y, w, h)
+		ocrResult := OCR.FromRect(x, y, w, h)
 	}
 
 	exactMatch := False
@@ -185,54 +168,15 @@ findTextInRegion(item, img:="", x:=0, y:=0, w:=0, h:=0, absolute:=False) {
 	region := ""
     bestDist := [9999999999]
 	TextRegion := Map()
-	TextRegion["Words"] := wordsList.Words
-    TextRegion["Obj"] := wordsList
-	if absolute {
-		for idx, word in wordsList.Words {
-			if itemName == StrLower(word.Text) and isCorrectWord(items, wordsList, idx) {
-				TextRegion["Word"] := word
-				return TextRegion
-			} else if isUnspacedWord(items, wordsList, idx) {
-				TextRegion["Word"] := word
-				return TextRegion
-            }
-		}
-		return TextRegion
-	} else {
-		for idx, word in wordsList.Words {
-			text := StrLower(word.Text)
-			rect := word.BoundingRect
-			if itemName == text and isCorrectWord(items, wordsList, idx) {
-				TextRegion["Word"] := word
-				return TextRegion
-			} else if StrLen(text) >= 1 {
-                if isUnspacedWord(items, wordsList, idx) {
-			    	TextRegion["Word"] := word
-			    	return TextRegion
-                }
-    	        foundPos := InStr(StrLower(itemName), StrLower(text))
-    	        dist := 0
-    	        if foundPos {
-    	            dist := (StrLen(text) - foundPos) / StrLen(itemName)
-    	        } else {
-    	            dist := LevenshteinDistance(itemName, text)
-    	        }
-    	        if bestDist[1] > dist {
-    	            bestDist := [dist, word]
-    	        }
-			}
-		}
-	}
-
-	word := bestDist[2]
-	text := word.Text
-	rect := word.BoundingRect
-    if bestDist[1] > .15 || bestDist[1] < 0 {
-        return TextRegion
-	}
-    
-    TextRegion["Word"] := word
-	return TextRegion
+	TextRegion["Words"] := ocrResult.Words
+    TextRegion["Obj"] := ocrResult
+    for idx, word in ocrResult.Words {
+        if (itemName == StrLower(word.Text) and isCorrectWord(items, ocrResult, idx)) or isUnspacedWord(items, ocrResult, idx) {
+            TextRegion["Word"] := word
+            break
+        }
+    }
+    return TextRegion
 }
 
 getAvailableLang() {
