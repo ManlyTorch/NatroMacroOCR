@@ -1,10 +1,10 @@
 /************************************************************************
  * @description Auto-Jelly is a macro for the game Bee Swarm Simulator on Roblox. It automatically rolls bees for mutations and stops when a bee with the desired mutation is found. It also has the ability to stop on mythic and gifted bees.
-    * @file auto-jelly.ahk
-    * @author ninju | .ninju.
-    * @date 2024/07/24
-    * @version 0.0.1
-    ***********************************************************************/
+ * @file auto-jelly.ahk
+ * @author ninju | .ninju.
+ * @date 2024/07/24
+ * @version 0.0.1
+***********************************************************************/
 
 #SingleInstance Force
 #Requires AutoHotkey v2.0
@@ -434,9 +434,8 @@ blc_start() {
         pEffect := Gdip_CreateEffect(5, -60,30)
         Gdip_BitmapApplyEffect(pBitmap, pEffect)
         Gdip_DisposeEffect(pEffect)
-        hBitmap := Gdip_CreateHBITMAPFromBitmap(pBitmap)
-        pIRandomAccessStream := OCR.HBitmapToRandomAccessStream(hBitmap)
-        text:= RegExReplace(ocr(pIRandomAccessStream), "i)([\r\n\s]|mutation)*")
+        text:= RegExReplace(OCR.FromBitmap(pBitmap).Text, "i)([\r\n\s]|mutation)*")
+        Gdip_DisposeImage(pBitmap)
         found := 0
         for i, j in selectedMutations
             for k, trigger in j.triggers

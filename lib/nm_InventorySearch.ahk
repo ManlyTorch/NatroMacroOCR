@@ -41,7 +41,7 @@ nm_InventorySearch(item, direction:="down", prescroll:=0, prescrolldir:="", scro
 		ActivateRoblox()
 		GetRobloxClientPos(hwnd)
 		
-		TextInRegion := findTextInRegion(item,, windowX, windowY, 360, windowHeight, true)
+		TextInRegion := findTextInRegion(item, windowX, windowY, 360, windowHeight)
 		
 		TopEntry := ""
 		if idx > 10 {
