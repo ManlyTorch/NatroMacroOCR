@@ -10012,7 +10012,7 @@ nm_Reset(checkAll:=1, wait:=2000, convert:=1, force:=0){
 		Sleep 2000 + 1000 * A_Index
 
 		; hive check
-		if !atHive() && nm_DetectSpawn() {
+		if !nm_ConfirmAtHive() && nm_DetectSpawn() {
 			Sleep 500
 			GetRobloxClientPos(hwnd)
 			MouseMove windowX+350, windowY+offsetY+100
@@ -10023,7 +10023,7 @@ nm_Reset(checkAll:=1, wait:=2000, convert:=1, force:=0){
 			KeyWait "F14", "T20 L"
 			nm_endWalk()
 			sleep 500
-			if atHive()
+			if nm_ConfirmAtHive()
 				HiveConfirmed := 1
 		} else {
 			nm_SetHiveCameraDirection(4)
@@ -10043,12 +10043,6 @@ nm_Reset(checkAll:=1, wait:=2000, convert:=1, force:=0){
 			Sleep (remaining*1000) ;miliseconds
 		}
 	}
-
-	atHive() {
-		ActivateRoblox()
-		GetRobloxClientPos()
-		return findTextInRegion("make", windowX + windowWidth // 2 - 150, windowY + GetYOffset() + 40, 350, 60).Has("Word")
-	}
 }
 nm_HealthBar() { 
 	local detection := 0
@@ -10063,7 +10057,13 @@ nm_HealthBar() {
 	return detection
 }
 nm_ConfirmAtHive(){
-	return findTextInRegion("make", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word")
+	ActivateRoblox()
+	GetRobloxClientPos()
+	Loop 4 {
+		if findTextInRegion("make", windowX+windowWidth//2-250, windowY+offsetY, 500, 200, 2).Has("Word") {
+			return 1
+		}
+	}
 }
 nm_DetectSpawn() { ; some of the code was from hive check, repurposing it here since it seems to reliably detect hive slots even when the stuff is really bad
     ActivateRoblox()
@@ -15836,7 +15836,7 @@ nm_convert(){
 		return
 	}
 	Gdip_DisposeImage(pBMScreen)
-	if findTextInRegion("make", windowX+windowWidth//2-200, windowY+offsetY+36, 400, 120).Has("Word") {
+	if nm_ConfirmAtHive() {
 		SendInput "{" SC_E " down}"
 		Sleep 100
 		SendInput "{" SC_E " up}"
@@ -15869,7 +15869,7 @@ nm_convert(){
 				return
 			}
 			GetRobloxClientPos(hwnd)
-			if findTextInRegion("make", windowX+windowWidth//2-200, windowY+offsetY+36, windowWidth//2+200, windowHeight-offsetY-36).Has("Word") {
+			if nm_ConfirmAtHive() {
 				SendInput "{" SC_E " down}"
 				Sleep 100
 				SendInput "{" SC_E " up}"
@@ -15939,7 +15939,7 @@ nm_convert(){
 					MouseMove windowX+windowWidth-30, windowY+offsetY+16
 					click
 				}
-				if findTextInRegion("make", windowX+windowWidth//2-200, windowY+offsetY+36, windowWidth//2+200, windowHeight-offsetY-36).Has("Word") {
+				if nm_ConfirmAtHive() {
 					SendInput "{" SC_E " down}"
 					Sleep 100
 					SendInput "{" SC_E " up}"
@@ -20046,6 +20046,9 @@ ba_placePlanter(fieldName, planter, planterNum, atField:=0, ba:=1){
 
 	nm_setShiftLock(0)
 
+	ActivateRoblox()
+	GetRobloxClientPos()
+
 	planterName := planter[1]
 	if (atField = 0) {
 		nm_Reset()
@@ -20064,7 +20067,6 @@ ba_placePlanter(fieldName, planter, planterNum, atField:=0, ba:=1){
 		}
 		return 0
 	} else {
-		GetRobloxClientPos()
 		MouseMove windowX+30, invResult[3] + invResult[4]
 	}
 	yPos := invResult[3]+30
@@ -20527,7 +20529,7 @@ mp_PlantPlanter(PlanterIndex) {
 		}
 	}
 
-	res := ba_placePlanter(MFieldName, MPlanterName, PlanterIndex,,0)
+	res := ba_placePlanter(MFieldName, [MPlanterName], PlanterIndex,,0)
 	if res != 1 {
 		return res
 	}
