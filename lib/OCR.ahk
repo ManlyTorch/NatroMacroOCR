@@ -211,6 +211,25 @@ verifyEnglishInstalled() {
     ExitApp
 }
 
+getAvailableLang() {
+    GlobalizationPreferencesStatics := OCR.CreateClass("Windows.System.UserProfile.GlobalizationPreferences", IGlobalizationPreferencesStatics := "{01BF4326-ED37-4E96-B0E9-C1340D1EA158}")
+    LanguageFactory := OCR.CreateClass("Windows.Globalization.Language", ILanguageFactory := "{9B0252AC-0C27-44F8-B792-9793FB66C63E}")
+	ComCall(9, GlobalizationPreferencesStatics, "ptr*", &LanguageList:=0)   ; get_Languages
+	ComCall(7, LanguageList, "int*", &count:=0)   ; count
+	loop count {
+		ComCall(6, LanguageList, "int", A_Index-1, "ptr*", &hString:=0)   ; get_Item
+		ComCall(6, LanguageFactory, "ptr", hString, "ptr*", &LanguageTest:=0)   ; CreateLanguage
+		ComCall(8, OCR.OcrEngineStatics, "ptr", LanguageTest, "int*", &bool:=0)   ; IsLanguageSupported
+		if (bool = 1) {
+			ComCall(6, LanguageTest, "ptr*", &hText:=0)
+			b := DllCall("Combase.dll\WindowsGetStringRawBuffer", "ptr", hText, "uint*", &length:=0, "ptr")
+			text .= StrGet(b, "UTF-16") "`n"
+		}
+		ObjRelease(LanguageTest)
+	}
+	ObjRelease(LanguageList)
+	return text
+}
 class OCR {
     static Version => "2.0.0"
     static IID_IRandomAccessStream := "{905A0FE1-BC53-11DF-8C49-001E4FC686DA}"
