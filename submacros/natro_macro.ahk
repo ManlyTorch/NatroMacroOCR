@@ -16448,17 +16448,19 @@ nm_claimHiveSlot(){
 				nm_endWalk()
 				sleep 500
 				RemoveFriendJoin()
-				if findTextInRegion("claim", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word") {
-					Send "{" SC_E " down}"
-					sleep 100
-					Send "{" SC_E " up}"
-					HiveConfirmed := 1
-					HiveSlot := preferred
-					MainGui["HiveSlot"].Text := HiveSlot
-					IniWrite HiveSlot, "settings\nm_config.ini", "Settings", "HiveSlot"
-					nm_setStatus("Claimed", "Hive Slot " HiveSlot)
-					MouseMove windowX+350, windowY+offsetY+100
-					return 1
+				Loop 3 {
+					if findTextInRegion("claim", windowX+windowWidth//2-250, windowY+offsetY, 500, 200, 2).Has("Word") {
+						Send "{" SC_E " down}"
+						sleep 100
+						Send "{" SC_E " up}"
+						HiveConfirmed := 1
+						HiveSlot := preferred
+						MainGui["HiveSlot"].Text := HiveSlot
+						IniWrite HiveSlot, "settings\nm_config.ini", "Settings", "HiveSlot"
+						nm_setStatus("Claimed", "Hive Slot " HiveSlot)
+						MouseMove windowX+350, windowY+offsetY+100
+						return 1
+					}
 				}
 			}
 			DetectHiveslots := 0
@@ -16499,8 +16501,10 @@ nm_claimHiveSlot(){
 
 			Sleep 500
 			RemoveFriendJoin()
-			if findTextInRegion("claim", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word") {
-				slots[A_Index] := 1
+			Loop 3 {
+				if findTextInRegion("claim", windowX+windowWidth//2-250, windowY+offsetY, 500, 200, 2).Has("Word") {
+					slots[A_Index] := 1
+				}
 			}
 		}
 
@@ -16516,9 +16520,11 @@ nm_claimHiveSlot(){
 
 				Sleep 500
 				RemoveFriendJoin()
-				if findTextInRegion("claim", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word") {
-					HiveSlot := slot
-					break
+				Loop 3 {
+					if findTextInRegion("claim", windowX+windowWidth//2-250, windowY+offsetY, 500, 200, 2).Has("Word") {
+						HiveSlot := slot
+						break
+					}
 				}
 			} else {
 				Loop (6 - HiveSlot) {
@@ -16529,9 +16535,11 @@ nm_claimHiveSlot(){
 
 					Sleep 500
 					RemoveFriendJoin()
-					if findTextInRegion("claim", windowX+windowWidth//2-200, windowY+offsetY, 400, 125).Has("Word") {
-						HiveSlot += A_Index
-						break 2
+					Loop 3 {
+						if findTextInRegion("claim", windowX+windowWidth//2-250, windowY+offsetY, 500, 200, 2).Has("Word") {
+							HiveSlot += A_Index
+							break 2
+						}
 					}
 				}
 			}
