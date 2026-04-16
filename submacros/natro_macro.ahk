@@ -36,6 +36,8 @@ You should have received a copy of the license along with Natro Macro. If not, p
 
 #Warn VarUnset, Off
 
+verifyEnglishInstalled()
+
 SetWorkingDir A_ScriptDir "\.."
 Updater := AutoUpdater("ManlyTorch", "NatroMacroOCR", "main", "settings\natro_version")
 
