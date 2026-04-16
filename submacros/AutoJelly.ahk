@@ -354,35 +354,6 @@ blc_start() {
                 selectedMutations.push(i)
     }
 
-
-    ocr_enabled := 1
-    ocr_language := ""
-    for k,v in Map("Windows.Globalization.Language","{9B0252AC-0C27-44F8-B792-9793FB66C63E}", "Windows.Graphics.Imaging.BitmapDecoder","{438CCB26-BCEF-4E95-BAD6-23A822E58D01}",    "Windows.Media.Ocr.OcrEngine","{5BFFA85A-3384-3540-9940-699120D428A8}") {
-    	hString := OCR.CreateHString(k)
-    	GUID := Buffer(16), DllCall("ole32\CLSIDFromString", "WStr", v, "Ptr", GUID)
-    	result := DllCall("Combase.dll\RoGetActivationFactory", "Ptr", hString, "Ptr", GUID, "PtrP", &pClass:=0)
-    	OCR.DeleteHString(hString)
-    	if (result != 0) {
-    		ocr_enabled := 0
-    		break
-    	}
-    }
-
-    if !(ocr_enabled) && mutations
-        msgbox "OCR is disabled. This means that the macro will not be able to detect mutations.",, 0x40010
-
-    list := getAvailableLang()
-    lang:="en-"
-    Loop Parse list, "`n", "`r" {
-        if (InStr(A_LoopField, lang) = 1) {
-            ocr_language := A_LoopField
-            break
-        }
-    }
-
-    if (ocr_language = "" && ocr_enabled)
-        if ((ocr_language := SubStr(list, 1, InStr(list, "`n")-1)) = "")
-            return msgbox("No OCR supporting languages are installed on your system! Please follow the Knowledge Base guide to install a supported language as a secondary language on Windows.", "WARNING!!", 0x1030)
     if !(hwndRoblox:=GetRobloxHWND()) || !(GetRobloxClientPos(), windowWidth)
         return msgbox("You must have Bee Swarm Simulator open to use this!", "Auto-Jelly", 0x40030)
     if !selectedBees.length
@@ -416,7 +387,7 @@ blc_start() {
         found := 0
         for i, j in selectedBees {
             if Gdip_ImageSearch(pBitmap, bitmaps["-" j]) || Gdip_ImageSearch(pBitmap, bitmaps["+" j]) {
-                if (!mutations || !ocr_enabled || !selectedMutations.length) {
+                if (!mutations || !selectedMutations.length) {
                     Gdip_DisposeImage(pBitmap)
                     if msgbox("Found a match!`nDo you want to keep this?","Auto-Jelly!", 0x40044) = "Yes"
                         break 2
