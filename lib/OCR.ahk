@@ -182,25 +182,35 @@ findTextInRegion(item, x, y?, w?, h?, scale:=1) {
     return TextRegion
 }
 
-getAvailableLang() {
-    GlobalizationPreferencesStatics := OCR.CreateClass("Windows.System.UserProfile.GlobalizationPreferences", IGlobalizationPreferencesStatics := "{01BF4326-ED37-4E96-B0E9-C1340D1EA158}")
-    LanguageFactory := OCR.CreateClass("Windows.Globalization.Language", ILanguageFactory := "{9B0252AC-0C27-44F8-B792-9793FB66C63E}")
-	ComCall(9, GlobalizationPreferencesStatics, "ptr*", &LanguageList:=0)   ; get_Languages
-	ComCall(7, LanguageList, "int*", &count:=0)   ; count
-	loop count {
-		ComCall(6, LanguageList, "int", A_Index-1, "ptr*", &hString:=0)   ; get_Item
-		ComCall(6, LanguageFactory, "ptr", hString, "ptr*", &LanguageTest:=0)   ; CreateLanguage
-		ComCall(8, OCR.OcrEngineStatics, "ptr", LanguageTest, "int*", &bool:=0)   ; IsLanguageSupported
-		if (bool = 1) {
-			ComCall(6, LanguageTest, "ptr*", &hText:=0)
-			b := DllCall("Combase.dll\WindowsGetStringRawBuffer", "ptr", hText, "uint*", &length:=0, "ptr")
-			text .= StrGet(b, "UTF-16") "`n"
-		}
-		ObjRelease(LanguageTest)
-	}
-	ObjRelease(LanguageList)
-	return text
+verifyEnglishInstalled() {
+    ocr_enabled := 1
+    for k,v in Map("Windows.Globalization.Language","{9B0252AC-0C27-44F8-B792-9793FB66C63E}", "Windows.Graphics.Imaging.BitmapDecoder","{438CCB26-BCEF-4E95-BAD6-23A822E58D01}",    "Windows.Media.Ocr.OcrEngine","{5BFFA85A-3384-3540-9940-699120D428A8}") {
+    	hString := OCR.CreateHString(k)
+    	GUID := Buffer(16), DllCall("ole32\CLSIDFromString", "WStr", v, "Ptr", GUID)
+    	result := DllCall("Combase.dll\RoGetActivationFactory", "Ptr", hString, "Ptr", GUID, "PtrP", &pClass:=0)
+    	OCR.DeleteHString(hString)
+    	if result != 0 {
+    		ocr_enabled := 0
+    		break
+    	}
+    }
+
+    if !ocr_enabled {
+        MsgBox "OCR not detected, ensure you have an English language pack installed on your system!`nif you're on a debloated windows, please search up how to install it for your given distro",, 0x40010
+        ExitApp
+    }
+
+    list := OCR.GetAvailableLanguages()
+    Loop Parse list, "`n", "`r" {
+        if InStr(A_LoopField, "en-") = 1 {
+            return
+        }
+    }
+
+    MsgBox("Couldn't find an English language pack installed on your system! Please follow the Knowledge Base guide to install a supported language as a secondary language on Windows.", "WARNING!!", 0x1030)
+    ExitApp
 }
+
 class OCR {
     static Version => "2.0.0"
     static IID_IRandomAccessStream := "{905A0FE1-BC53-11DF-8C49-001E4FC686DA}"
