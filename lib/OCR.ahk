@@ -150,7 +150,7 @@ isUnspacedWord(items, wordsList, idx, max:=4) {
     return
 }
 
-findTextInRegion(item, x, y?, w?, h?) {
+findTextInRegion(item, x, y?, w?, h?, scale:=1) {
 	ocrResult := {}
 	if !IsSet(y) {
         if x is Integer {
@@ -158,15 +158,18 @@ findTextInRegion(item, x, y?, w?, h?) {
         } else if x is String {
 		    ocrResult := OCR.FromFile(x)
         }
-	} else {
-		ocrResult := OCR.FromRect(x, y, w, h)
+	} else if scale > 1 {
+        pBMScreen := Gdip_BitmapFromScreen(x "|" y "|" w "|" h)
+        pBMScaled := Gdip_ResizeBitmap(pBMScreen, Floor(w*scale), Floor(h*scale))
+        ocrResult := OCR.FromBitmap(pBMScaled)
+        Gdip_DisposeImage(pBMScaled)
+        Gdip_DisposeImage(pBMScreen)
+    } else {
+        ocrResult := OCR.FromRect(x, y, w, h)
 	}
 
-	exactMatch := False
 	items := StrSplit(item, " ")
 	itemName := StrLower(items[1])
-	region := ""
-    bestDist := [9999999999]
 	TextRegion := Map()
 	TextRegion["Words"] := ocrResult.Words
     TextRegion["Obj"] := ocrResult
