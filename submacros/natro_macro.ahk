@@ -9905,13 +9905,26 @@ nm_HealthBar() {
 	return detection
 }
 nm_ConfirmAtHive(){
+	global DebugLogEnabled
 	ActivateRoblox()
-	GetRobloxClientPos()
+	hwnd := GetRobloxHWND()
+	GetRobloxClientPos(hwnd)
+	offsetY := GetYOffset(hwnd)
 	Loop 4 {
-		if findTextInRegion("make", windowX+windowWidth//2-250, windowY+offsetY, 500, 200, 2).Has("Word") {
+		result := findTextInRegion("make", windowX+windowWidth//2-250, windowY+offsetY, 500, windowHeight//2, 2)
+		if (DebugLogEnabled = 1) {
+			words := []
+			for _, w in result["Words"]
+				words.Push(w.Text)
+			nm_setStatus("Detected", "ConfirmAtHive attempt " A_Index ": [" ObjStrJoin(", ", words) "]")
+		}
+		if result.Has("Word") {
+			nm_setStatus("Detected", "ConfirmAtHive: found 'make' on attempt " A_Index)
 			return 1
 		}
 	}
+	if (DebugLogEnabled = 1)
+		nm_setStatus("Detected", "ConfirmAtHive: 'make' not found after 4 attempts")
 }
 nm_DetectSpawn() { ; some of the code was from hive check, repurposing it here since it seems to reliably detect hive slots even when the stuff is really bad
     ActivateRoblox()
