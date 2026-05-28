@@ -11066,37 +11066,48 @@ nm_TestWreathRun(){
 	nm_setStatus("Traveling", "Test Wreath")
 	nm_gotoCollect("wreath")
 
-	; press E to activate wreath
+	; check for E prompt (wreath available) or "Admire" text (on cooldown but at right spot)
+	hwnd := GetRobloxHWND()
+	offsetY := GetYOffset(hwnd)
+	GetRobloxClientPos(hwnd)
+
 	searchRet := nm_imgSearch("e_button.png", 30, "high")
-	if (searchRet[1] = 0) {
+	wreathAvailable := (searchRet[1] = 0)
+	atWreath := wreathAvailable || findTextInRegion("admire", windowX+windowWidth//2-250, windowY+offsetY, 500, windowHeight//2).Has("Word")
+
+	if !atWreath {
+		nm_setStatus("Skipped", "Test Wreath (not at wreath)")
+		return
+	}
+
+	if wreathAvailable {
 		SendInput "{" SC_E " down}"
 		Sleep 100
 		SendInput "{" SC_E " up}"
 		Sleep 4000
-
-		; improved loot sweep: back corner at 1.5 tiles, sweeps 7 tiles
-		movement :=
-		(
-		nm_Walk(1.5, BackKey) "
-		" nm_Walk(4.5, BackKey, LeftKey) "
-		" nm_Walk(1, LeftKey) "
-		Loop 3 {
-			" nm_Walk(7, FwdKey) "
-			" nm_Walk(1.25, RightKey) "
-			" nm_Walk(7, BackKey) "
-			" nm_Walk(1.25, RightKey) "
-		}
-		" nm_Walk(7, FwdKey)
-		)
-		nm_createWalk(movement)
-		KeyWait "F14", "D T5 L"
-		KeyWait "F14", "T60 L"
-		nm_endWalk()
-
 		nm_setStatus("Collected", "Test Wreath")
 	} else {
-		nm_setStatus("Skipped", "Test Wreath (no E prompt)")
+		nm_setStatus("Testing", "Test Wreath (on cooldown)")
 	}
+
+	; loot sweep — runs regardless to test movement pattern
+	movement :=
+	(
+	nm_Walk(1.5, BackKey) "
+	" nm_Walk(4.5, BackKey, LeftKey) "
+	" nm_Walk(1, LeftKey) "
+	Loop 3 {
+		" nm_Walk(7, FwdKey) "
+		" nm_Walk(1.25, RightKey) "
+		" nm_Walk(7, BackKey) "
+		" nm_Walk(1.25, RightKey) "
+	}
+	" nm_Walk(7, FwdKey)
+	)
+	nm_createWalk(movement)
+	KeyWait "F14", "D T5 L"
+	KeyWait "F14", "T60 L"
+	nm_endWalk()
 
 	; return to wreath activation point — sweep ends ~+2.3F +3.3R from E-press spot
 	movement :=
