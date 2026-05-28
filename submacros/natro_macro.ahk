@@ -2390,6 +2390,7 @@ MainGui.SetFont("s8 cDefault Norm", "Tahoma")
 MainGui.Add("Button", "x5 y260 w65 h20 -Wrap Disabled vStartButton", " Start (" StartHotkey ")").OnEvent("Click", nm_StartButton)
 MainGui.Add("Button", "x75 y260 w65 h20 -Wrap Disabled vPauseButton", " Pause (" PauseHotkey ")").OnEvent("Click", nm_PauseButton)
 MainGui.Add("Button", "x145 y260 w65 h20 -Wrap Disabled vStopButton", " Stop (" StopHotkey ")").OnEvent("Click", nm_StopButton)
+MainGui.Add("Button", "x215 y260 w95 h20 -Wrap Disabled vTestWreathButton", "Test Wreath").OnEvent("Click", nm_TestWreathButton)
 for k,v in ["PMondoGuid","PMondoGuidComplete","PFieldBoosted","PFieldGuidExtend","PFieldGuidExtendMins","PFieldBoostExtend","PPopStarExtend"]
 	%v%:=0
 #include "*i %A_ScriptDir%\..\settings\personal.ahk"
@@ -3351,6 +3352,7 @@ MainGui.Title := "Natro Macro"
 MainGui["StartButton"].Enabled := 1
 MainGui["PauseButton"].Enabled := 1
 MainGui["StopButton"].Enabled := 1
+MainGui["TestWreathButton"].Enabled := 1
 
 ;enable hotkeys
 try {
@@ -3387,6 +3389,11 @@ nm_StopButton(GuiCtrl, *){
 	MouseGetPos , , , &hCtrl, 2
 	if (hCtrl = GuiCtrl.Hwnd)
 		return stop()
+}
+nm_TestWreathButton(GuiCtrl, *){
+	MouseGetPos , , , &hCtrl, 2
+	if (hCtrl = GuiCtrl.Hwnd)
+		SetTimer nm_TestWreathRun, -50
 }
 
 ;save GUI position (on exit)
@@ -4093,6 +4100,7 @@ nm_TabSettingsLock(){
 	MainGui["ResetFieldDefaultsButton"].Enabled := 0
 	MainGui["ResetAllButton"].Enabled := 0
 	MainGui["TestReconnectButton"].Enabled := 0
+	MainGui["TestWreathButton"].Enabled := 0
 	MainGui["ReconnectMethodHelp"].Enabled := 0
 	MainGui["ReconnectInterval"].Enabled := 0
 	MainGui["ReconnectHour"].Enabled := 0
@@ -4137,6 +4145,7 @@ nm_TabSettingsUnLock(){
 	MainGui["ResetFieldDefaultsButton"].Enabled := 1
 	MainGui["ResetAllButton"].Enabled := 1
 	MainGui["TestReconnectButton"].Enabled := 1
+	MainGui["TestWreathButton"].Enabled := 1
 	MainGui["ReconnectMethodHelp"].Enabled := 1
 	MainGui["ReconnectInterval"].Enabled := 1
 	MainGui["ReconnectHour"].Enabled := 1
@@ -11037,6 +11046,71 @@ nm_Wreath(){
 		KeyWait "F14", "T60 L"
 		nm_endWalk()
 	}
+}
+nm_TestWreathRun(){
+	; POC: test improved wreath loot sweep and walk-back without touching nm_Wreath()
+	hwnd := GetRobloxHWND()
+	if !hwnd {
+		MsgBox "Roblox window not found.", "Test Wreath", 0x1000
+		return
+	}
+	WinActivate("ahk_id " hwnd)
+	Sleep 500
+
+	; confirm at hive and align
+	nm_findHiveSlot()
+
+	; navigate to wreath
+	nm_setStatus("Traveling", "Test Wreath")
+	nm_gotoCollect("wreath")
+
+	; press E to activate wreath
+	searchRet := nm_imgSearch("e_button.png", 30, "high")
+	if (searchRet[1] = 0) {
+		SendInput "{" SC_E " down}"
+		Sleep 100
+		SendInput "{" SC_E " up}"
+		Sleep 4000
+
+		; improved loot sweep: extends back corner by 1 tile, sweeps 7 tiles instead of 6
+		movement :=
+		(
+		nm_Walk(2, BackKey) "
+		" nm_Walk(4.5, BackKey, LeftKey) "
+		" nm_Walk(1, LeftKey) "
+		Loop 3 {
+			" nm_Walk(7, FwdKey) "
+			" nm_Walk(1.25, RightKey) "
+			" nm_Walk(7, BackKey) "
+			" nm_Walk(1.25, RightKey) "
+		}
+		" nm_Walk(7, FwdKey)
+		)
+		nm_createWalk(movement)
+		KeyWait "F14", "D T5 L"
+		KeyWait "F14", "T60 L"
+		nm_endWalk()
+
+		nm_setStatus("Collected", "Test Wreath")
+	} else {
+		nm_setStatus("Skipped", "Test Wreath (no E prompt)")
+	}
+
+	; improved walk-back: goes south of wreath then left to avoid collision on right side
+	movement :=
+	(
+	nm_Walk(6, BackKey) "
+	" nm_Walk(16, LeftKey) "
+	" nm_Walk(4, FwdKey, LeftKey)
+	)
+	nm_createWalk(movement)
+	KeyWait "F14", "D T5 L"
+	KeyWait "F14", "T60 L"
+	nm_endWalk()
+
+	; return to hive
+	nm_findHiveSlot()
+	nm_setStatus("Done", "Test Wreath")
 }
 nm_Stockings(fromClock:=0){
 	global StockingsCheck, LastStockings
