@@ -11120,6 +11120,20 @@ nm_TestWreathRun(){
 	KeyWait "F14", "T60 L"
 	nm_endWalk()
 
+	; walk back to hive
+	movement :=
+	(
+	nm_Walk(4, BackKey) "
+	" nm_Walk(12, FwdKey, RightKey) "
+	" nm_Walk(24, LeftKey) "
+	" nm_Walk(6, BackKey, LeftKey)
+	)
+	nm_createWalk(movement)
+	KeyWait "F14", "D T5 L"
+	KeyWait "F14", "T60 L"
+	nm_endWalk()
+
+	nm_findHiveSlot()
 	nm_setStatus("Done", "Test Wreath")
 }
 nm_Stockings(fromClock:=0){
