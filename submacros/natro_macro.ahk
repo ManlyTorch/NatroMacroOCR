@@ -11049,6 +11049,13 @@ nm_Wreath(){
 }
 nm_TestWreathRun(){
 	; POC: test improved wreath loot sweep and walk-back without touching nm_Wreath()
+	; Requires MoveSpeed Correction: Walk.ahk's DetectMovespeed() monitors haste stack level
+	; in real-time during each Walk() call. Haste tokens picked up mid-sweep change speed
+	; dynamically — without this, movement distances will be wrong for hasted players.
+	if !NewWalk {
+		MsgBox "Test Wreath requires MoveSpeed Correction to be enabled.`n`nHaste tokens picked up during the sweep stack movement speed in real-time. Walk.ahk's DetectMovespeed() compensates dynamically — the test won't produce reliable results without it.", "Test Wreath", 0x1030
+		return
+	}
 	hwnd := GetRobloxHWND()
 	if !hwnd {
 		MsgBox "Roblox window not found.", "Test Wreath", 0x1000
