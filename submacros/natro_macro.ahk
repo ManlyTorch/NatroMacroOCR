@@ -11074,10 +11074,10 @@ nm_TestWreathRun(){
 		SendInput "{" SC_E " up}"
 		Sleep 4000
 
-		; improved loot sweep: extends back corner by 1 tile, sweeps 7 tiles instead of 6
+		; improved loot sweep: back corner at 1.5 tiles, sweeps 7 tiles
 		movement :=
 		(
-		nm_Walk(2, BackKey) "
+		nm_Walk(1.5, BackKey) "
 		" nm_Walk(4.5, BackKey, LeftKey) "
 		" nm_Walk(1, LeftKey) "
 		Loop 3 {
@@ -11098,20 +11098,17 @@ nm_TestWreathRun(){
 		nm_setStatus("Skipped", "Test Wreath (no E prompt)")
 	}
 
-	; improved walk-back: goes south of wreath then left to avoid collision on right side
+	; return to wreath activation point — sweep ends ~+2.3F +3.3R from E-press spot
 	movement :=
 	(
-	nm_Walk(6, BackKey) "
-	" nm_Walk(16, LeftKey) "
-	" nm_Walk(4, FwdKey, LeftKey)
+	nm_Walk(3.3, LeftKey) "
+	" nm_Walk(2.3, BackKey)
 	)
 	nm_createWalk(movement)
 	KeyWait "F14", "D T5 L"
 	KeyWait "F14", "T60 L"
 	nm_endWalk()
 
-	; return to hive
-	nm_findHiveSlot()
 	nm_setStatus("Done", "Test Wreath")
 }
 nm_Stockings(fromClock:=0){
