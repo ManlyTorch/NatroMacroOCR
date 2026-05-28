@@ -11109,24 +11109,14 @@ nm_TestWreathRun(){
 	KeyWait "F14", "T60 L"
 	nm_endWalk()
 
-	; return to wreath activation point — sweep ends ~+2.3F +3.3R from E-press spot
+	; walk back to hive directly from post-sweep position (~+2.3F, +3.3R from wreath)
+	; go north first to clear the wreath east side and rise above the cannon level,
+	; then west to the hive column, then south to the hive pad level
 	movement :=
 	(
-	nm_Walk(3.3, LeftKey) "
-	" nm_Walk(2.3, BackKey)
-	)
-	nm_createWalk(movement)
-	KeyWait "F14", "D T5 L"
-	KeyWait "F14", "T60 L"
-	nm_endWalk()
-
-	; walk back to hive
-	movement :=
-	(
-	nm_Walk(4, BackKey) "
-	" nm_Walk(12, FwdKey, RightKey) "
+	nm_Walk(3, FwdKey) "
 	" nm_Walk(24, LeftKey) "
-	" nm_Walk(6, BackKey, LeftKey)
+	" nm_Walk(6, BackKey)
 	)
 	nm_createWalk(movement)
 	KeyWait "F14", "D T5 L"
