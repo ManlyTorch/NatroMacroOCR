@@ -1,4 +1,4 @@
-﻿/*
+/*
 Natro Macro (https://github.com/NatroTeam/NatroMacro)
 Copyright © Natro Team (https://github.com/NatroTeam)
 
@@ -10998,15 +10998,46 @@ nm_Wreath(){
 	global LastWreath, WreathCheck
 	if (WreathCheck && (nowUnix()-LastWreath)>1800) { ;0.5 hours
 		nm_setStatus("Traveling", "Honey Wreath")
-		nm_gotoCollect("wreath")
+		global HiveConfirmed := 0
+		nm_setShiftLock(0)
+		nm_createPath(paths["gtc"]["wreath"])
+		KeyWait "F14", "D T5 L"
 
-		searchRet := nm_imgSearch("e_button.png",30,"high")
-		if (searchRet[1] = 0) {
+		hwnd := GetRobloxHWND()
+		offsetY := GetYOffset(hwnd)
+		GetRobloxClientPos(hwnd)
+		aX := windowX+windowWidth//2-250, aY := windowY+offsetY, aW := 500, aH := windowHeight//2
+
+		wreathAvailable := false, atWreath := false
+		while GetKeyState("F14") {
+			Sleep 150
+			if findTextInRegion("wreath", aX, aY, aW, aH).Has("Word") {
+				nm_endWalk()
+				wreathAvailable := true, atWreath := true
+				break
+			}
+			if findTextInRegion("admire", aX, aY, aW, aH).Has("Word") {
+				nm_endWalk()
+				atWreath := true
+				break
+			}
+		}
+		if !atWreath {
+			nm_endWalk()
+			searchRet := nm_imgSearch("e_button.png", 30, "high")
+			wreathAvailable := (searchRet[1] = 0)
+			atWreath := wreathAvailable || findTextInRegion("admire", aX, aY, aW, aH).Has("Word")
+		}
+
+		if !atWreath
+			return
+
+		if wreathAvailable {
 			SendInput "{" SC_E " down}"
 			Sleep 100
 			SendInput "{" SC_E " up}"
 
-			LastWreath:=nowUnix()
+			LastWreath := nowUnix()
 			IniWrite LastWreath, "settings\nm_config.ini", "Collect", "LastWreath"
 
 			Sleep 4000
@@ -11014,16 +11045,16 @@ nm_Wreath(){
 			;loot
 			movement :=
 			(
-			nm_Walk(1, BackKey) "
+			nm_Walk(1.5, BackKey) "
 			" nm_Walk(4.5, BackKey, LeftKey) "
 			" nm_Walk(1, LeftKey) "
 			Loop 3 {
-				" nm_Walk(6, FwdKey) "
+				" nm_Walk(7, FwdKey) "
 				" nm_Walk(1.25, RightKey) "
-				" nm_Walk(6, BackKey) "
+				" nm_Walk(7, BackKey) "
 				" nm_Walk(1.25, RightKey) "
 			}
-			" nm_Walk(6, FwdKey)
+			" nm_Walk(7, FwdKey)
 			)
 			nm_createWalk(movement)
 			KeyWait "F14", "D T5 L"
@@ -11031,16 +11062,24 @@ nm_Wreath(){
 			nm_endWalk()
 
 			nm_setStatus("Collected", "Honey Wreath")
-		}
 
-		;walk back
-		movement :=
-		(
-		nm_Walk(4, BackKey) "
-		" nm_Walk(12, FwdKey, RightKey) "
-		" nm_Walk(24, LeftKey) "
-		" nm_Walk(6, BackKey, LeftKey)
-		)
+			;walk back from post-sweep position (~+2.3F, +3.3R of wreath)
+			movement :=
+			(
+			nm_Walk(3, FwdKey) "
+			" nm_Walk(24, LeftKey) "
+			" nm_Walk(6, BackKey)
+			)
+		} else {
+			;walk back from wreath activation point (cooldown edge case)
+			movement :=
+			(
+			nm_Walk(4, BackKey) "
+			" nm_Walk(12, FwdKey, RightKey) "
+			" nm_Walk(24, LeftKey) "
+			" nm_Walk(6, BackKey, LeftKey)
+			)
+		}
 		nm_createWalk(movement)
 		KeyWait "F14", "D T5 L"
 		KeyWait "F14", "T60 L"
@@ -11136,7 +11175,7 @@ nm_TestWreathRun(){
 	(
 	nm_Walk(3, FwdKey) "
 	" nm_Walk(24, LeftKey) "
-	" nm_Walk(6, BackKey)
+	" nm_Walk(8, BackKey)
 	)
 	nm_createWalk(movement)
 	KeyWait "F14", "D T5 L"
