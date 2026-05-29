@@ -11077,8 +11077,7 @@ nm_TestWreathRun(){
 	wreathAvailable := false, atWreath := false
 	while GetKeyState("F14") {
 		Sleep 150
-		searchRet := nm_imgSearch("e_button.png", 30, "high")
-		if (searchRet[1] = 0) {
+		if findTextInRegion("wreath", aX, aY, aW, aH).Has("Word") {
 			nm_endWalk()
 			wreathAvailable := true, atWreath := true
 			break
