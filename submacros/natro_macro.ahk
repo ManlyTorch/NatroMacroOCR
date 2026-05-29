@@ -11062,18 +11062,39 @@ nm_TestWreathRun(){
 	; confirm at hive and align
 	nm_findHiveSlot()
 
-	; navigate to wreath
+	; navigate to wreath, stopping early when E button or "Admire" is detected mid-path
 	nm_setStatus("Traveling", "Test Wreath")
-	nm_gotoCollect("wreath")
+	global HiveConfirmed := 0
+	nm_setShiftLock(0)
+	nm_createPath(paths["gtc"]["wreath"])
+	KeyWait "F14", "D T5 L"
 
-	; check for E prompt (wreath available) or "Admire" text (on cooldown but at right spot)
 	hwnd := GetRobloxHWND()
 	offsetY := GetYOffset(hwnd)
 	GetRobloxClientPos(hwnd)
+	aX := windowX+windowWidth//2-250, aY := windowY+offsetY, aW := 500, aH := windowHeight//2
 
-	searchRet := nm_imgSearch("e_button.png", 30, "high")
-	wreathAvailable := (searchRet[1] = 0)
-	atWreath := wreathAvailable || findTextInRegion("admire", windowX+windowWidth//2-250, windowY+offsetY, 500, windowHeight//2).Has("Word")
+	wreathAvailable := false, atWreath := false
+	while GetKeyState("F14") {
+		Sleep 150
+		searchRet := nm_imgSearch("e_button.png", 30, "high")
+		if (searchRet[1] = 0) {
+			nm_endWalk()
+			wreathAvailable := true, atWreath := true
+			break
+		}
+		if findTextInRegion("admire", aX, aY, aW, aH).Has("Word") {
+			nm_endWalk()
+			atWreath := true
+			break
+		}
+	}
+	if !atWreath {
+		nm_endWalk()
+		searchRet := nm_imgSearch("e_button.png", 30, "high")
+		wreathAvailable := (searchRet[1] = 0)
+		atWreath := wreathAvailable || findTextInRegion("admire", aX, aY, aW, aH).Has("Word")
+	}
 
 	if !atWreath {
 		nm_setStatus("Skipped", "Test Wreath (not at wreath)")
