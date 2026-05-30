@@ -1,4 +1,4 @@
-﻿/*
+/*
 Natro Macro (https://github.com/NatroTeam/NatroMacro)
 Copyright © Natro Team (https://github.com/NatroTeam)
 
@@ -2390,6 +2390,7 @@ MainGui.SetFont("s8 cDefault Norm", "Tahoma")
 MainGui.Add("Button", "x5 y260 w65 h20 -Wrap Disabled vStartButton", " Start (" StartHotkey ")").OnEvent("Click", nm_StartButton)
 MainGui.Add("Button", "x75 y260 w65 h20 -Wrap Disabled vPauseButton", " Pause (" PauseHotkey ")").OnEvent("Click", nm_PauseButton)
 MainGui.Add("Button", "x145 y260 w65 h20 -Wrap Disabled vStopButton", " Stop (" StopHotkey ")").OnEvent("Click", nm_StopButton)
+MainGui.Add("Button", "x215 y260 w95 h20 -Wrap Disabled vTestWreathButton", "Test Wreath").OnEvent("Click", nm_TestWreathButton)
 for k,v in ["PMondoGuid","PMondoGuidComplete","PFieldBoosted","PFieldGuidExtend","PFieldGuidExtendMins","PFieldBoostExtend","PPopStarExtend"]
 	%v%:=0
 #include "*i %A_ScriptDir%\..\settings\personal.ahk"
@@ -3351,6 +3352,7 @@ MainGui.Title := "Natro Macro"
 MainGui["StartButton"].Enabled := 1
 MainGui["PauseButton"].Enabled := 1
 MainGui["StopButton"].Enabled := 1
+MainGui["TestWreathButton"].Enabled := 1
 
 ;enable hotkeys
 try {
@@ -3387,6 +3389,11 @@ nm_StopButton(GuiCtrl, *){
 	MouseGetPos , , , &hCtrl, 2
 	if (hCtrl = GuiCtrl.Hwnd)
 		return stop()
+}
+nm_TestWreathButton(GuiCtrl, *){
+	MouseGetPos , , , &hCtrl, 2
+	if (hCtrl = GuiCtrl.Hwnd)
+		SetTimer nm_TestWreathRun, -50
 }
 
 ;save GUI position (on exit)
@@ -4093,6 +4100,7 @@ nm_TabSettingsLock(){
 	MainGui["ResetFieldDefaultsButton"].Enabled := 0
 	MainGui["ResetAllButton"].Enabled := 0
 	MainGui["TestReconnectButton"].Enabled := 0
+	MainGui["TestWreathButton"].Enabled := 0
 	MainGui["ReconnectMethodHelp"].Enabled := 0
 	MainGui["ReconnectInterval"].Enabled := 0
 	MainGui["ReconnectHour"].Enabled := 0
@@ -4137,6 +4145,7 @@ nm_TabSettingsUnLock(){
 	MainGui["ResetFieldDefaultsButton"].Enabled := 1
 	MainGui["ResetAllButton"].Enabled := 1
 	MainGui["TestReconnectButton"].Enabled := 1
+	MainGui["TestWreathButton"].Enabled := 1
 	MainGui["ReconnectMethodHelp"].Enabled := 1
 	MainGui["ReconnectInterval"].Enabled := 1
 	MainGui["ReconnectHour"].Enabled := 1
@@ -9905,13 +9914,26 @@ nm_HealthBar() {
 	return detection
 }
 nm_ConfirmAtHive(){
+	global DebugLogEnabled
 	ActivateRoblox()
-	GetRobloxClientPos()
+	hwnd := GetRobloxHWND()
+	GetRobloxClientPos(hwnd)
+	offsetY := GetYOffset(hwnd)
 	Loop 4 {
-		if findTextInRegion("make", windowX+windowWidth//2-250, windowY+offsetY, 500, 200, 2).Has("Word") {
+		result := findTextInRegion("make", windowX+windowWidth//2-250, windowY+offsetY, 500, windowHeight//2, 2)
+		if (DebugLogEnabled = 1) {
+			words := []
+			for _, w in result["Words"]
+				words.Push(w.Text)
+			nm_setStatus("Detected", "ConfirmAtHive attempt " A_Index ": [" ObjStrJoin(", ", words) "]")
+		}
+		if result.Has("Word") {
+			nm_setStatus("Detected", "ConfirmAtHive: found 'make' on attempt " A_Index)
 			return 1
 		}
 	}
+	if (DebugLogEnabled = 1)
+		nm_setStatus("Detected", "ConfirmAtHive: 'make' not found after 4 attempts")
 }
 nm_DetectSpawn() { ; some of the code was from hive check, repurposing it here since it seems to reliably detect hive slots even when the stuff is really bad
     ActivateRoblox()
@@ -10976,15 +10998,47 @@ nm_Wreath(){
 	global LastWreath, WreathCheck
 	if (WreathCheck && (nowUnix()-LastWreath)>1800) { ;0.5 hours
 		nm_setStatus("Traveling", "Honey Wreath")
-		nm_gotoCollect("wreath")
+		global HiveConfirmed := 0
+		nm_setShiftLock(0)
+		nm_createPath(paths["gtc"]["wreath"])
+		KeyWait "F14", "D T5 L"
 
-		searchRet := nm_imgSearch("e_button.png",30,"high")
-		if (searchRet[1] = 0) {
+		hwnd := GetRobloxHWND()
+		offsetY := GetYOffset(hwnd)
+		GetRobloxClientPos(hwnd)
+		aX := windowX+windowWidth//2-250, aY := windowY+offsetY, aW := 500, aH := windowHeight//2
+
+		wreathAvailable := false, atWreath := false
+		while GetKeyState("F14") {
+			Sleep 150
+			if findTextInRegion("wreath", aX, aY, aW, aH).Has("Word") {
+				nm_endWalk()
+				wreathAvailable := true, atWreath := true
+				break
+			}
+			if findTextInRegion("admire", aX, aY, aW, aH).Has("Word") {
+				nm_endWalk()
+				atWreath := true
+				break
+			}
+		}
+		if !atWreath {
+			nm_endWalk()
+			searchRet := nm_imgSearch("e_button.png", 30, "high")
+			wreathAvailable := (searchRet[1] = 0)
+			atWreath := wreathAvailable || findTextInRegion("admire", aX, aY, aW, aH).Has("Word")
+		}
+
+		if !atWreath
+			return
+
+		if wreathAvailable {
+			nm_setStatus("Collecting", "Honey Wreath")
 			SendInput "{" SC_E " down}"
 			Sleep 100
 			SendInput "{" SC_E " up}"
 
-			LastWreath:=nowUnix()
+			LastWreath := nowUnix()
 			IniWrite LastWreath, "settings\nm_config.ini", "Collect", "LastWreath"
 
 			Sleep 4000
@@ -10992,16 +11046,16 @@ nm_Wreath(){
 			;loot
 			movement :=
 			(
-			nm_Walk(1, BackKey) "
+			nm_Walk(1.5, BackKey) "
 			" nm_Walk(4.5, BackKey, LeftKey) "
 			" nm_Walk(1, LeftKey) "
 			Loop 3 {
-				" nm_Walk(6, FwdKey) "
+				" nm_Walk(7, FwdKey) "
 				" nm_Walk(1.25, RightKey) "
-				" nm_Walk(6, BackKey) "
+				" nm_Walk(7, BackKey) "
 				" nm_Walk(1.25, RightKey) "
 			}
-			" nm_Walk(6, FwdKey)
+			" nm_Walk(7, FwdKey)
 			)
 			nm_createWalk(movement)
 			KeyWait "F14", "D T5 L"
@@ -11009,21 +11063,128 @@ nm_Wreath(){
 			nm_endWalk()
 
 			nm_setStatus("Collected", "Honey Wreath")
-		}
 
-		;walk back
-		movement :=
-		(
-		nm_Walk(4, BackKey) "
-		" nm_Walk(12, FwdKey, RightKey) "
-		" nm_Walk(24, LeftKey) "
-		" nm_Walk(6, BackKey, LeftKey)
-		)
+			;walk back from post-sweep position (~+2.3F, +3.3R of wreath)
+			movement :=
+			(
+			nm_Walk(3, FwdKey) "
+			" nm_Walk(24, LeftKey) "
+			" nm_Walk(6, BackKey)
+			)
+		} else {
+			;walk back from wreath activation point (cooldown edge case)
+			movement :=
+			(
+			nm_Walk(4, BackKey) "
+			" nm_Walk(12, FwdKey, RightKey) "
+			" nm_Walk(24, LeftKey) "
+			" nm_Walk(6, BackKey, LeftKey)
+			)
+		}
 		nm_createWalk(movement)
 		KeyWait "F14", "D T5 L"
 		KeyWait "F14", "T60 L"
 		nm_endWalk()
 	}
+}
+nm_TestWreathRun(){
+	; POC: test improved wreath loot sweep and walk-back without touching nm_Wreath()
+	; Walk.ahk's DetectMovespeed() monitors haste stack level in real-time during each
+	; Walk() call, so distances stay accurate as the player picks up haste tokens mid-sweep.
+	hwnd := GetRobloxHWND()
+	if !hwnd {
+		MsgBox "Roblox window not found.", "Test Wreath", 0x1000
+		return
+	}
+	WinActivate("ahk_id " hwnd)
+	Sleep 500
+
+	; confirm at hive and align
+	nm_findHiveSlot()
+
+	; navigate to wreath, stopping early when E button or "Admire" is detected mid-path
+	nm_setStatus("Traveling", "Test Wreath")
+	global HiveConfirmed := 0
+	nm_setShiftLock(0)
+	nm_createPath(paths["gtc"]["wreath"])
+	KeyWait "F14", "D T5 L"
+
+	hwnd := GetRobloxHWND()
+	offsetY := GetYOffset(hwnd)
+	GetRobloxClientPos(hwnd)
+	aX := windowX+windowWidth//2-250, aY := windowY+offsetY, aW := 500, aH := windowHeight//2
+
+	wreathAvailable := false, atWreath := false
+	while GetKeyState("F14") {
+		Sleep 150
+		if findTextInRegion("wreath", aX, aY, aW, aH).Has("Word") {
+			nm_endWalk()
+			wreathAvailable := true, atWreath := true
+			break
+		}
+		if findTextInRegion("admire", aX, aY, aW, aH).Has("Word") {
+			nm_endWalk()
+			atWreath := true
+			break
+		}
+	}
+	if !atWreath {
+		nm_endWalk()
+		searchRet := nm_imgSearch("e_button.png", 30, "high")
+		wreathAvailable := (searchRet[1] = 0)
+		atWreath := wreathAvailable || findTextInRegion("admire", aX, aY, aW, aH).Has("Word")
+	}
+
+	if !atWreath {
+		nm_setStatus("Skipped", "Test Wreath (not at wreath)")
+		return
+	}
+
+	if wreathAvailable {
+		SendInput "{" SC_E " down}"
+		Sleep 100
+		SendInput "{" SC_E " up}"
+		Sleep 4000
+		nm_setStatus("Collected", "Test Wreath")
+	} else {
+		nm_setStatus("Testing", "Test Wreath (on cooldown)")
+	}
+
+	; loot sweep — runs regardless to test movement pattern
+	movement :=
+	(
+	nm_Walk(1.5, BackKey) "
+	" nm_Walk(4.5, BackKey, LeftKey) "
+	" nm_Walk(1, LeftKey) "
+	Loop 3 {
+		" nm_Walk(7, FwdKey) "
+		" nm_Walk(1.25, RightKey) "
+		" nm_Walk(7, BackKey) "
+		" nm_Walk(1.25, RightKey) "
+	}
+	" nm_Walk(7, FwdKey)
+	)
+	nm_createWalk(movement)
+	KeyWait "F14", "D T5 L"
+	KeyWait "F14", "T60 L"
+	nm_endWalk()
+
+	; walk back to hive directly from post-sweep position (~+2.3F, +3.3R from wreath)
+	; go north first to clear the wreath east side and rise above the cannon level,
+	; then west to the hive column, then south to the hive pad level
+	movement :=
+	(
+	nm_Walk(3, FwdKey) "
+	" nm_Walk(24, LeftKey) "
+	" nm_Walk(8, BackKey)
+	)
+	nm_createWalk(movement)
+	KeyWait "F14", "D T5 L"
+	KeyWait "F14", "T60 L"
+	nm_endWalk()
+
+	nm_findHiveSlot()
+	nm_setStatus("Done", "Test Wreath")
 }
 nm_Stockings(fromClock:=0){
 	global StockingsCheck, LastStockings
