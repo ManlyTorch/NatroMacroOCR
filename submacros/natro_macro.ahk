@@ -11033,6 +11033,7 @@ nm_Wreath(){
 			return
 
 		if wreathAvailable {
+			nm_setStatus("Collecting", "Honey Wreath")
 			SendInput "{" SC_E " down}"
 			Sleep 100
 			SendInput "{" SC_E " up}"
